@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recover Password - PortFive</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    :root { --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; --green: #10B981; --green-dark: #059669; --line: #E2E8F0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .card { background: var(--surface); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid var(--line); }
+    .logo { text-align: center; font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+    .logo span { color: var(--green); }
+    .subtitle { text-align: center; font-size: 0.9rem; color: #64748B; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+    input { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; }
+    input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+    .btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+    .btn:hover { background: var(--green-dark); }
+    .error { color: #EF4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
+    .success { color: var(--green); font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo">Port<span>Five</span></div>
+    <div class="subtitle">Enter your username, one of your recovery codes, and a new password.</div>
+    <form id="recoverForm">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="@username" required>
+      </div>
+      <div class="form-group">
+        <label>Recovery Code</label>
+        <input type="text" id="recoveryCode" placeholder="e.g. A1B2C3D4E5F6G7H8" required>
+      </div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="newPassword" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">Reset Password</button>
+      <div class="error" id="errorMsg"></div>
+      <div class="success" id="successMsg"></div>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('recoverForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      
+      const username = document.getElementById('username').value;
+      const recoveryCode = document.getElementById('recoveryCode').value;
+      const newPassword = document.getElementById('newPassword').value;
+
+      btn.innerText = 'Processing...'; btn.disabled = true; 
+      errorMsg.style.display = 'none'; successMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/recover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, recoveryCode, newPassword })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          successMsg.innerText = data.message;
+          successMsg.style.display = 'block';
+          setTimeout(() => window.location.href = '/login.html', 2000);
+        } else {
+          errorMsg.innerText = data.message;
+          errorMsg.style.display = 'block';
+          btn.innerText = 'Reset Password'; btn.disabled = false;
+        }
+      } catch (err) {
+        errorMsg.innerText = 'Server error';
+        errorMsg.style.display = 'block';
+        btn.innerText = 'Reset Password'; btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

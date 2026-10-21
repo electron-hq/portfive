@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - PortFive</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <style>
+    :root { --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; --green: #10B981; --green-dark: #059669; --line: #E2E8F0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .card { background: var(--surface); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid var(--line); }
+    .logo { text-align: center; font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 20px; }
+    .logo span { color: var(--green); }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+    input { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; }
+    input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+    .btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+    .btn:hover { background: var(--green-dark); }
+    .error { color: #EF4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
+    .links { text-align: center; margin-top: 15px; font-size: 0.9rem; }
+    .links a { color: var(--green); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo">Port<span>Five</span></div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="@username" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      
+      <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="light"></div>
+      <input type="hidden" id="captchaToken" value="dummy_token_for_dev">
+
+      <button type="submit" class="btn" id="submitBtn">Log In</button>
+      <div class="error" id="errorMsg"></div>
+    </form>
+    <div class="links">
+      <a href="/recover.html">Forgot Password?</a><br><br>
+      Don't have an account? <a href="/register.html">Sign Up</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 'dummy_token_for_dev';
+
+      btn.innerText = 'Logging in...'; btn.disabled = true; errorMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, captchaToken })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          window.location.href = '/feed.html'; // Or home
+        } else {
+          errorMsg.innerText = data.message;
+          errorMsg.style.display = 'block';
+          btn.innerText = 'Log In'; btn.disabled = false;
+        }
+      } catch (err) {
+        errorMsg.innerText = 'Server error';
+        errorMsg.style.display = 'block';
+        btn.innerText = 'Log In'; btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - PortFive</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <style>
+    :root { --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; --green: #10B981; --green-dark: #059669; --line: #E2E8F0; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .card { background: var(--surface); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid var(--line); }
+    .logo { text-align: center; font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 20px; }
+    .logo span { color: var(--green); }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
+    input { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; }
+    input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+    .btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+    .btn:hover { background: var(--green-dark); }
+    .error { color: #EF4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
+    
+    /* Success Modal for Recovery Codes */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+    .modal { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 16px; text-align: center; }
+    .modal h2 { color: var(--green); margin-bottom: 10px; }
+    .modal p { font-size: 0.9rem; color: #64748B; margin-bottom: 15px; }
+    .code-list { background: #F1F5F9; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 1.1rem; font-weight: bold; color: var(--text); margin-bottom: 20px; letter-spacing: 1px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo">Port<span>Five</span></div>
+    <form id="registerForm">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="fullName" placeholder="John Doe" required>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="username" placeholder="@username" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      
+      <!-- Cloudflare Turnstile Widget (Automatic if site key exists) -->
+      <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="light"></div>
+      <input type="hidden" id="captchaToken" value="dummy_token_for_dev">
+
+      <button type="submit" class="btn" id="submitBtn">Create Account</button>
+      <div class="error" id="errorMsg"></div>
+    </form>
+  </div>
+
+  <!-- Modal to show and download codes -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal">
+      <h2>Account Created!</h2>
+      <p>Please save these 3 Recovery Codes securely. You will need one of them if you forget your password. We will NOT show them again.</p>
+      <div class="code-list" id="displayCodes"></div>
+      <button class="btn" onclick="downloadCodes()">Download .txt File</button>
+      <button class="btn" style="background: transparent; color: var(--text); border: 1px solid var(--line); margin-top: 10px;" onclick="window.location.href='/login.html'">I have saved them, Go to Login</button>
+    </div>
+  </div>
+
+  <script>
+    let generatedCodes = [];
+    let userPassword = "";
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const errorMsg = document.getElementById('errorMsg');
+      
+      const fullName = document.getElementById('fullName').value;
+      const username = document.getElementById('username').value;
+      userPassword = document.getElementById('password').value;
+      
+      // Turnstile token
+      const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 'dummy_token_for_dev';
+
+      btn.innerText = 'Creating...'; btn.disabled = true; errorMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, username, password: userPassword, captchaToken })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          generatedCodes = data.recoveryCodes;
+          document.getElementById('displayCodes').innerHTML = generatedCodes.join('<br>');
+          document.getElementById('successModal').style.display = 'flex';
+        } else {
+          errorMsg.innerText = data.message;
+          errorMsg.style.display = 'block';
+          btn.innerText = 'Create Account'; btn.disabled = false;
+        }
+      } catch (err) {
+        errorMsg.innerText = 'Server error';
+        errorMsg.style.display = 'block';
+        btn.innerText = 'Create Account'; btn.disabled = false;
+      }
+    });
+
+    // Function to generate and download TXT file
+    function downloadCodes() {
+      const username = document.getElementById('username').value;
+      const content = `PortFive Account Recovery\n\nUsername: ${username}\nPassword: ${userPassword}\n\nRecovery Codes (Use one if you forget your password):\n1. ${generatedCodes[0]}\n2. ${generatedCodes[1]}\n3. ${generatedCodes[2]}\n\nKeep this file safe!`;
+      
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PortFive_Recovery_${username}.txt`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
