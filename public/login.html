@@ -38,7 +38,7 @@
         <input type="password" id="password" placeholder="••••••••" required>
       </div>
       
-      <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="light"></div>
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAFfS2ppXHpN_9kZg" data-theme="light"></div>
       <input type="hidden" id="captchaToken" value="dummy_token_for_dev">
 
       <button type="submit" class="btn" id="submitBtn">Log In</button>
@@ -58,7 +58,7 @@
       
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 'dummy_token_for_dev';
+      const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 'dummy_token';
 
       btn.innerText = 'Logging in...'; btn.disabled = true; errorMsg.style.display = 'none';
 
@@ -71,7 +71,7 @@
         const data = await res.json();
 
         if (res.ok) {
-          window.location.href = '/feed.html'; // Or home
+          window.location.href = '/feed.html'; 
         } else {
           errorMsg.innerText = data.message;
           errorMsg.style.display = 'block';
