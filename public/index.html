@@ -59,7 +59,7 @@
   <!-- Navbar -->
   <nav class="navbar">
     <div class="logo">Port<span>Five</span></div>
-    <div class="nav-buttons" id="navButtons">
+    <div class="nav-buttons">
       <a href="/login.html" class="btn btn-outline">Log In</a>
       <a href="/register.html" class="btn btn-primary">Sign Up</a>
     </div>
@@ -69,9 +69,9 @@
   <section class="hero">
     <h1>Where Art Meets<br><span>Opportunity</span></h1>
     <p>PortFive is the visual canvas for creators and professionals. Share images, read insightful articles, discover job opportunities, and connect with others—all in one place.</p>
-    <div class="hero-buttons" id="heroButtons">
+    <div class="hero-buttons">
       <a href="/register.html" class="btn btn-primary">Get Started for Free</a>
-      <a href="/home.html" class="btn btn-outline">Explore Feed</a>
+      <a href="/login.html" class="btn btn-outline">Log In</a>
     </div>
   </section>
 
@@ -119,26 +119,5 @@
     &copy; 2026 PortFive by Electron Team. All rights reserved.
   </footer>
 
-  <script>
-    // Check if user is logged in to update buttons
-    async function checkLogin() {
-      try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (res.ok) {
-          // User is logged in
-          document.getElementById('navButtons').innerHTML = `
-            <a href="/home.html" class="btn btn-primary">Go to App</a>
-          `;
-          document.getElementById('heroButtons').innerHTML = `
-            <a href="/home.html" class="btn btn-primary">Go to Your Feed</a>
-            <a href="/create-post.html" class="btn btn-outline">Create a Post</a>
-          `;
-        }
-      } catch (err) {
-        // Not logged in, keep default buttons
-      }
-    }
-    checkLogin();
-  </script>
 </body>
 </html>
