@@ -32,6 +32,13 @@
     .create-post-box .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     .create-post-box .input-fake { flex: 1; background: var(--bg); padding: 12px; border-radius: 999px; color: var(--text-muted); font-size: 0.95rem; }
 
+    /* Global Empty State */
+    .global-empty-state { display: none; text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .global-empty-state svg { width: 60px; height: 60px; stroke: var(--line); margin-bottom: 15px; }
+    .global-empty-state h2 { color: var(--text); font-size: 1.2rem; margin-bottom: 8px; }
+    .global-empty-state p { font-size: 0.95rem; margin-bottom: 20px; }
+    .btn-start { background: var(--green); color: white; padding: 10px 24px; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 0.95rem; display: inline-block; }
+
     /* Section Styles */
     .section { margin-bottom: 25px; display: none; /* Hidden by default */ }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
@@ -112,6 +119,14 @@
     <div class="create-post-box" onclick="window.location.href='/create-post.html'">
       <div class="avatar" id="userAvatar">U</div>
       <div class="input-fake">What's on your mind?</div>
+    </div>
+
+    <!-- Global Empty State (Shows when whole feed is empty) -->
+    <div class="global-empty-state" id="globalEmptyState">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <h2>It's a bit quiet here!</h2>
+      <p>Be the first to share an image, write a pen, or post a job.</p>
+      <a href="/create-post.html" class="btn-start">Create a Post</a>
     </div>
 
     <!-- 1. Who to Follow -->
@@ -234,23 +249,33 @@
         const images = await imageRes.json();
         const jobs = await jobRes.json();
 
-        renderFollow(followUsers);
-        renderVideos(videos);
-        renderPens(pens);
-        renderImages(images);
-        renderJobs(jobs);
+        // Check if EVERYTHING is empty
+        const isEverythingEmpty = 
+          (!followUsers || followUsers.length === 0) &&
+          (!videos || videos.length === 0) &&
+          (!pens || pens.length === 0) &&
+          (!images || images.length === 0) &&
+          (!jobs || jobs.length === 0);
+
+        if (isEverythingEmpty) {
+          document.getElementById('globalEmptyState').style.display = 'block';
+        } else {
+          document.getElementById('globalEmptyState').style.display = 'none';
+          renderFollow(followUsers);
+          renderVideos(videos);
+          renderPens(pens);
+          renderImages(images);
+          renderJobs(jobs);
+        }
 
       } catch (err) { console.error('Error loading homepage data', err); }
     }
 
-    // Render Functions (Hide section if empty)
+    // Render Functions (Hide individual section if empty)
     function renderFollow(users) {
-      const section = document.getElementById('section-follow');
-      const container = document.getElementById('followContainer');
-      if (!users || users.length === 0) { section.style.display = 'none'; return; }
-      
-      section.style.display = 'block';
-      container.innerHTML = users.map(u => `
+      if (!users || users.length === 0) return;
+      document.getElementById('section-follow').style.display = 'block';
+      document.getElementById('followContainer').innerHTML = users.map(u => `
         <div class="card follow-card">
           <div class="avatar" style="${u.profilePic ? `background-image:url('${u.profilePic}')` : ''}">${u.profilePic ? '' : u.fullName.charAt(0)}</div>
           <div class="name">${u.fullName}</div>
@@ -261,12 +286,9 @@
     }
 
     function renderVideos(videos) {
-      const section = document.getElementById('section-video');
-      const container = document.getElementById('videoContainer');
-      if (!videos || videos.length === 0) { section.style.display = 'none'; return; }
-      
-      section.style.display = 'block';
-      container.innerHTML = videos.map(v => `
+      if (!videos || videos.length === 0) return;
+      document.getElementById('section-video').style.display = 'block';
+      document.getElementById('videoContainer').innerHTML = videos.map(v => `
         <div class="card video-card" onclick="window.location.href='/post.html?id=${v._id}'">
           <div class="video-thumb">
             <img src="${v.mediaUrl || 'https://via.placeholder.com/300x200/0F172A/ffffff?text=Video'}" onerror="this.style.display='none'">
@@ -281,12 +303,9 @@
     }
 
     function renderPens(pens) {
-      const section = document.getElementById('section-pen');
-      const container = document.getElementById('penContainer');
-      if (!pens || pens.length === 0) { section.style.display = 'none'; return; }
-      
-      section.style.display = 'block';
-      container.innerHTML = pens.map(p => `
+      if (!pens || pens.length === 0) return;
+      document.getElementById('section-pen').style.display = 'block';
+      document.getElementById('penContainer').innerHTML = pens.map(p => `
         <div class="card pen-card" onclick="window.location.href='/post.html?id=${p._id}'">
           ${p.mediaUrl ? `<div class="pen-cover" style="background-image:url('${p.mediaUrl}')"></div>` : ''}
           <div class="pen-info">
@@ -299,23 +318,17 @@
     }
 
     function renderImages(images) {
-      const section = document.getElementById('section-image');
-      const container = document.getElementById('imageContainer');
-      if (!images || images.length === 0) { section.style.display = 'none'; return; }
-      
-      section.style.display = 'block';
-      container.innerHTML = images.map(img => `
+      if (!images || images.length === 0) return;
+      document.getElementById('section-image').style.display = 'block';
+      document.getElementById('imageContainer').innerHTML = images.map(img => `
         <div class="img-card" style="background-image:url('${img.mediaUrl}')" onclick="window.location.href='/post.html?id=${img._id}'"></div>
       `).join('');
     }
 
     function renderJobs(jobs) {
-      const section = document.getElementById('section-job');
-      const container = document.getElementById('jobContainer');
-      if (!jobs || jobs.length === 0) { section.style.display = 'none'; return; }
-      
-      section.style.display = 'block';
-      container.innerHTML = jobs.map(j => `
+      if (!jobs || jobs.length === 0) return;
+      document.getElementById('section-job').style.display = 'block';
+      document.getElementById('jobContainer').innerHTML = jobs.map(j => `
         <div class="job-card" onclick="window.location.href='/job.html?id=${j._id}'">
           <div class="job-icon">
             <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
