@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { protect } = require('../middlewares/authMiddleware');
-const { createPost, getFeed, reactToPost } = require('../controllers/postController');
+const { createPost, getTopPosts, getUserPosts } = require('../controllers/postController');
 
-// Multer memory storage setup
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/', protect, upload.single('media'), createPost);
-router.get('/', protect, getFeed);
-router.post('/:postId/react', protect, reactToPost);
+router.get('/top/:type', protect, getTopPosts);
+router.get('/user/:userId', protect, getUserPosts);
 
 module.exports = router;
