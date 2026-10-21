@@ -29,7 +29,7 @@
 
     /* Create Post Box */
     .create-post-box { background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid var(--line); display: flex; align-items: center; gap: 12px; margin-bottom: 20px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .create-post-box .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .create-post-box .avatar-container { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
     .create-post-box .input-fake { flex: 1; background: var(--bg); padding: 12px; border-radius: 999px; color: var(--text-muted); font-size: 0.95rem; }
 
     /* Global Empty State */
@@ -55,7 +55,7 @@
 
     /* Follow Card */
     .follow-card { width: 130px; padding: 15px; text-align: center; }
-    .follow-card .avatar { width: 60px; height: 60px; border-radius: 50%; background: var(--green); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 10px; background-size: cover; background-position: center; }
+    .follow-card .avatar-container { width: 60px; height: 60px; border-radius: 50%; overflow: hidden; margin: 0 auto 10px; }
     .follow-card .name { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .follow-card .username { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; }
     .btn-follow { width: 100%; background: var(--green); color: white; border: none; padding: 6px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; cursor: pointer; }
@@ -76,7 +76,7 @@
     .pen-title { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .pen-snippet { font-size: 0.8rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 8px; }
     .pen-author { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; }
-    .pen-author .avatar-sm { width: 20px; height: 20px; border-radius: 50%; background: var(--green); }
+    .pen-author .avatar-sm { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; }
 
     /* Image Grid */
     .image-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -97,7 +97,7 @@
     .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.58rem; font-weight: 600; gap: 4px; }
     .nav-item.active { color: var(--green); }
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
-    .nav-item.profile-nav .profile-pic { width: 24px; height: 24px; border-radius: 50%; background: #ccc; background-size: cover; }
+    .nav-item.profile-nav .profile-pic { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; justify-content: center; align-items: center; }
   </style>
 </head>
 <body>
@@ -118,7 +118,9 @@
   <div class="container">
     <!-- Create Post Box -->
     <div class="create-post-box" onclick="window.location.href='/create-post.html'">
-      <div class="avatar" id="userAvatar">U</div>
+      <div class="avatar-container" id="userAvatarContainer">
+        <!-- SVG Avatar will be injected here -->
+      </div>
       <div class="input-fake">What's on your mind?</div>
     </div>
 
@@ -200,12 +202,29 @@
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
       Images
     </a>
-    <a href="/profile.html" class="nav-item profile-nav" id="navProfile">
-      <div class="profile-pic" id="navProfilePic"></div>
+    <a href="/profile.html" class="nav-item profile-nav">
+      <div class="profile-pic" id="navProfilePicContainer">
+        <!-- SVG Avatar will be injected here -->
+      </div>
     </a>
   </div>
 
   <script>
+    // Perfect SVG Avatar Generator Function
+    function getAvatarSVG(user) {
+      if (user.profilePic) {
+        return `<div style="width:100%; height:100%; background-image:url('${user.profilePic}'); background-size:cover; background-position:center;"></div>`;
+      }
+      
+      const initial = user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U';
+      return `
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%; display:block;">
+          <circle cx="50" cy="50" r="50" fill="#10B981" />
+          <text x="50" y="54" font-size="50" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">${initial}</text>
+        </svg>
+      `;
+    }
+
     // Load User & Avatar
     async function init() {
       try {
@@ -213,23 +232,11 @@
         if (res.ok) {
           const data = await res.json();
           const u = data.user;
-          const initial = u.fullName.charAt(0).toUpperCase();
           
-          document.getElementById('userAvatar').innerText = initial;
+          // Inject SVG into DOM
+          document.getElementById('userAvatarContainer').innerHTML = getAvatarSVG(u);
+          document.getElementById('navProfilePicContainer').innerHTML = getAvatarSVG(u);
           
-          const navPic = document.getElementById('navProfilePic');
-          if (u.profilePic) {
-            navPic.style.backgroundImage = `url(${u.profilePic})`;
-          } else {
-            navPic.style.background = '#10B981';
-            navPic.style.color = 'white';
-            navPic.style.display = 'flex';
-            navPic.style.justifyContent = 'center';
-            navPic.style.alignItems = 'center';
-            navPic.style.fontSize = '12px';
-            navPic.style.fontWeight = 'bold';
-            navPic.innerText = initial;
-          }
         } else {
           window.location.href = '/login.html';
         }
@@ -284,7 +291,7 @@
       document.getElementById('section-follow').style.display = 'block';
       document.getElementById('followContainer').innerHTML = users.map(u => `
         <div class="card follow-card">
-          <div class="avatar" style="${u.profilePic ? `background-image:url('${u.profilePic}')` : ''}">${u.profilePic ? '' : u.fullName.charAt(0)}</div>
+          <div class="avatar-container">${getAvatarSVG(u)}</div>
           <div class="name">${u.fullName}</div>
           <div class="username">@${u.username}</div>
           <button class="btn-follow">Follow</button>
@@ -318,7 +325,7 @@
           <div class="pen-info">
             <div class="pen-title">${p.title || 'Untitled Article'}</div>
             <div class="pen-snippet">${p.content.substring(0, 80)}...</div>
-            <div class="pen-author"><div class="avatar-sm"></div> @${p.author.username}</div>
+            <div class="pen-author"><div class="avatar-sm">${getAvatarSVG(p.author)}</div> @${p.author.username}</div>
           </div>
         </div>
       `).join('');
