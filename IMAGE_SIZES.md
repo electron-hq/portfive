@@ -3,29 +3,31 @@
 To ensure the best visual experience and fast loading times across the platform, please follow these image size guidelines.
 
 ## 1. Image Scroller (Images Tab / Feed)
-*   **Recommended Size:** 1080 x 1920 pixels (Aspect Ratio 9:16)
+*   **Requested Size:** **1080 x 1920 pixels** (Aspect Ratio 9:16)
 *   **Format:** JPG, PNG, or WebP
 *   **Max File Size:** 2 MB
-*   *Note:* This is a full-screen scroller. Portrait images look best.
+*   *Note:* This is a full-screen portrait scroller. 
 
-## 2. Pen (Article) Cover Image
-*   **Recommended Size:** 1200 x 400 pixels (Aspect Ratio 3:1)
-*   **Format:** JPG, PNG, or WebP
-*   **Max File Size:** 1 MB
-
-## 3. Homepage Image Grid
-*   **Recommended Size:** 1080 x 1080 pixels (Aspect Ratio 1:1 - Square)
-*   **Format:** JPG, PNG, or WebP
-
-## 4. Profile & Cover Pictures
-*   **Profile Pic:** 400 x 400 pixels (1:1)
-*   **Cover Photo:** 1200 x 400 pixels (3:1)
+### ⚠️ Auto-Cropping Notice
+If you upload an image that is **not** 1080x1920 (e.g., square or landscape), PortFive will automatically **crop** the image to fit the screen. Please ensure your main subject is in the center.
 
 ---
 
-## 💰 Monetization Guidelines for Creators
-If you have enabled **Monetization (Allow Ads)** on your profile, you must follow these rules for the Image Scroller:
+## 2. Pen (Article) Cover Image
+*   **Requested Size:** **1200 x 400 pixels** (Aspect Ratio 3:1)
+*   **Format:** JPG, PNG, or WebP
 
-*   **Leave Bottom Space:** Your image must still be **1080 x 1920** pixels, but **you must leave the bottom 150-200 pixels empty/blank**.
-*   **Why?** PortFive will display a sponsored ad banner in that bottom space. If you place important text or faces there, the ad will cover it.
-*   **Ads:** PortFive uses 320x50 banners for mobile full-screen views.
+## 3. Profile Pictures & Homepage Grid
+*   **Profile Pic:** 400 x 400 pixels (1:1 Square)
+*   **Homepage Grid:** 1080 x 1080 pixels (1:1 Square)
+
+---
+
+## 💰 Monetization Guidelines (For Creators with Ads Enabled)
+
+If you have turned on **"Allow Ads"** in your settings:
+
+*   **Ad Overlay:** PortFive will place a **320x50 Ad Banner** at the very bottom of your image slide.
+*   **Keep Content Safe:** You must keep the **bottom 100 pixels** of your image visually clear. If you put text, faces, or important details there, the ad banner will cover it.
+*   **If You Don't Follow the Size:** If you upload a different size, our system will crop it, but the ad banner will still sit at the bottom. 
+*   **Crop Rule:** PortFive reserves the right to crop or adjust any image to ensure the ad space is clean and visible.
