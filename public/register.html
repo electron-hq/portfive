@@ -7,21 +7,30 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
-    :root { --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; --green: #10B981; --green-dark: #059669; --line: #E2E8F0; }
+    :root { --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; --green: #10B981; --green-dark: #059669; --line: #E2E8F0; --red: #EF4444; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
     .card { background: var(--surface); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid var(--line); }
     .logo { text-align: center; font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 20px; }
     .logo span { color: var(--green); }
-    .form-group { margin-bottom: 15px; }
+    .form-group { margin-bottom: 15px; position: relative; }
     label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-    input { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; }
+    input { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; transition: border-color 0.2s; }
     input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+    .input-error { border-color: var(--red) !important; }
+    .input-success { border-color: var(--green) !important; }
+    
+    .status-msg { font-size: 0.75rem; margin-top: 5px; font-weight: 500; display: none; }
+    .status-error { color: var(--red); display: block; }
+    .status-success { color: var(--green); display: block; }
+    .status-checking { color: var(--text-muted); display: block; }
+
     .btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; }
     .btn:hover { background: var(--green-dark); }
-    .error { color: #EF4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .error { color: var(--red); font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
     
-    /* Success Modal for Recovery Codes */
+    /* Success Modal */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
     .modal { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 16px; text-align: center; }
     .modal h2 { color: var(--green); margin-bottom: 10px; }
@@ -40,7 +49,8 @@
       </div>
       <div class="form-group">
         <label>Username</label>
-        <input type="text" id="username" placeholder="@username" required>
+        <input type="text" id="username" placeholder="e.g. john_doe" autocomplete="off" required>
+        <div class="status-msg" id="usernameStatus"></div>
       </div>
       <div class="form-group">
         <label>Password</label>
@@ -51,7 +61,7 @@
       <div class="cf-turnstile" data-sitekey="0x4AAAAAAFfS2ppXHpN_9kZg" data-theme="light"></div>
       <input type="hidden" id="captchaToken" value="dummy_token_for_dev">
 
-      <button type="submit" class="btn" id="submitBtn">Create Account</button>
+      <button type="submit" class="btn" id="submitBtn" disabled>Create Account</button>
       <div class="error" id="errorMsg"></div>
     </form>
   </div>
@@ -70,14 +80,92 @@
   <script>
     let generatedCodes = [];
     let userPassword = "";
+    
+    // Username Validation & Live Checker Logic
+    const usernameInput = document.getElementById('username');
+    const usernameStatus = document.getElementById('usernameStatus');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    let checkTimeout;
+    let isUsernameAvailable = false;
 
+    usernameInput.addEventListener('input', (e) => {
+      // Force lowercase
+      e.target.value = e.target.value.toLowerCase();
+      const username = e.target.value.trim();
+      
+      clearTimeout(checkTimeout);
+      usernameStatus.className = 'status-msg';
+      usernameInput.classList.remove('input-error', 'input-success');
+      submitBtn.disabled = true;
+      isUsernameAvailable = false;
+
+      if (username.length === 0) {
+        usernameStatus.style.display = 'none';
+        return;
+      }
+
+      // Regex: lowercase letters, numbers, underscore only
+      const regex = /^[a-z0-9_]+$/;
+      if (!regex.test(username)) {
+        usernameStatus.textContent = 'Only lowercase letters, numbers, and underscore (_) are allowed.';
+        usernameStatus.classList.add('status-error');
+        usernameInput.classList.add('input-error');
+        return;
+      }
+
+      if (username.length < 3) {
+        usernameStatus.textContent = 'Username must be at least 3 characters.';
+        usernameStatus.classList.add('status-error');
+        usernameInput.classList.add('input-error');
+        return;
+      }
+
+      // Show checking status
+      usernameStatus.textContent = 'Checking availability...';
+      usernameStatus.classList.add('status-checking');
+
+      // Debounce API call to prevent spamming
+      checkTimeout = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/auth/check-username/${username}`);
+          const data = await res.json();
+          
+          if (data.available) {
+            usernameStatus.textContent = 'Username is available!';
+            usernameStatus.className = 'status-msg status-success';
+            usernameInput.classList.add('input-success');
+            isUsernameAvailable = true;
+            submitBtn.disabled = false; // Enable submit
+          } else {
+            usernameStatus.textContent = 'Username is already taken.';
+            usernameStatus.className = 'status-msg status-error';
+            usernameInput.classList.add('input-error');
+            isUsernameAvailable = false;
+            submitBtn.disabled = true;
+          }
+        } catch (err) {
+          usernameStatus.textContent = 'Error checking username.';
+          usernameStatus.className = 'status-msg status-error';
+          usernameInput.classList.add('input-error');
+        }
+      }, 500); // Wait 500ms after typing stops
+    });
+
+    // Form Submit Logic
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      if (!isUsernameAvailable) {
+        showError('Please enter a valid and available username.');
+        return;
+      }
+
       const btn = document.getElementById('submitBtn');
       const errorMsg = document.getElementById('errorMsg');
       
       const fullName = document.getElementById('fullName').value;
-      const username = document.getElementById('username').value;
+      const username = usernameInput.value;
       userPassword = document.getElementById('password').value;
       
       const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 'dummy_token';
@@ -97,19 +185,23 @@
           document.getElementById('displayCodes').innerHTML = generatedCodes.join('<br>');
           document.getElementById('successModal').style.display = 'flex';
         } else {
-          errorMsg.innerText = data.message;
-          errorMsg.style.display = 'block';
+          showError(data.message);
           btn.innerText = 'Create Account'; btn.disabled = false;
         }
       } catch (err) {
-        errorMsg.innerText = 'Server error';
-        errorMsg.style.display = 'block';
+        showError('Server error');
         btn.innerText = 'Create Account'; btn.disabled = false;
       }
     });
 
+    function showError(msg) {
+      const errorMsg = document.getElementById('errorMsg');
+      errorMsg.innerText = msg;
+      errorMsg.style.display = 'block';
+    }
+
     function downloadCodes() {
-      const username = document.getElementById('username').value;
+      const username = usernameInput.value;
       const content = `PortFive Account Recovery\n\nUsername: ${username}\nPassword: ${userPassword}\n\nRecovery Codes (Use one if you forget your password):\n1. ${generatedCodes[0]}\n2. ${generatedCodes[1]}\n3. ${generatedCodes[2]}\n\nKeep this file safe!`;
       
       const blob = new Blob([content], { type: 'text/plain' });

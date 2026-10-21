@@ -23,7 +23,7 @@ const verifyCaptcha = async (token) => {
 
 // Helper: Generate Token & Set Cookie
 const generateTokenAndSetCookie = (res, userId) => {
-  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
   
   const cookieOptions = {
     httpOnly: true,
@@ -35,44 +35,51 @@ const generateTokenAndSetCookie = (res, userId) => {
   res.cookie('portfive_token', token, cookieOptions);
 };
 
+// @desc    Check if username is available
+// @route   GET /api/auth/check-username/:username
+const checkUsername = async (req, res) => {
+  try {
+    const { username } = req.params;
+    if (!username) return res.status(400).json({ message: 'Username required' });
+
+    const user = await User.findOne({ username: username.toLowerCase() });
+    if (user) {
+      return res.status(200).json({ available: false, message: 'Username is already taken' });
+    }
+    res.status(200).json({ available: true, message: 'Username is available' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 const registerUser = async (req, res) => {
   try {
     const { fullName, username, password, captchaToken } = req.body;
 
-    // 1. Verify Captcha
     const isCaptchaValid = await verifyCaptcha(captchaToken);
-    if (!isCaptchaValid) {
-      return res.status(400).json({ message: 'Invalid Captcha' });
-    }
+    if (!isCaptchaValid) return res.status(400).json({ message: 'Invalid Captcha' });
 
-    // 2. Validate Input
-    if (!fullName || !username || !password) {
-      return res.status(400).json({ message: 'Please provide all fields' });
-    }
+    if (!fullName || !username || !password) return res.status(400).json({ message: 'Please provide all fields' });
 
     const userExists = await User.findOne({ username: username.toLowerCase() });
-    if (userExists) {
-      return res.status(400).json({ message: 'Username already taken' });
-    }
+    if (userExists) return res.status(400).json({ message: 'Username already taken' });
 
-    // 3. Hash Password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 4. Generate 3 Recovery Codes
     const plainRecoveryCodes = [];
     const hashedRecoveryCodes = [];
 
     for (let i = 0; i < 3; i++) {
-      const code = crypto.randomBytes(8).toString('hex').toUpperCase(); // e.g. A1B2C3D4E5F6G7H8
+      const code = crypto.randomBytes(8).toString('hex').toUpperCase();
       plainRecoveryCodes.push(code);
       const codeHash = await bcrypt.hash(code, salt);
       hashedRecoveryCodes.push({ codeHash });
     }
 
-    // 5. Create User
     const user = await User.create({
       fullName,
       username: username.toLowerCase(),
@@ -85,7 +92,7 @@ const registerUser = async (req, res) => {
       res.status(201).json({
         message: 'Registration successful!',
         user: { id: user._id, fullName: user.fullName, username: user.username },
-        recoveryCodes: plainRecoveryCodes // Send plain codes to frontend to download as .txt
+        recoveryCodes: plainRecoveryCodes
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
@@ -102,25 +109,15 @@ const loginUser = async (req, res) => {
   try {
     const { username, password, captchaToken } = req.body;
 
-    // 1. Verify Captcha
     const isCaptchaValid = await verifyCaptcha(captchaToken);
-    if (!isCaptchaValid) {
-      return res.status(400).json({ message: 'Invalid Captcha' });
-    }
+    if (!isCaptchaValid) return res.status(400).json({ message: 'Invalid Captcha' });
 
-    // 2. Find User
     const user = await User.findOne({ username: username.toLowerCase() });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-    // 3. Check Password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    // 4. Login Success
     generateTokenAndSetCookie(res, user._id);
     res.status(200).json({
       message: 'Login successful',
@@ -128,6 +125,18 @@ const loginUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// @desc    Get current logged in user
+// @route   GET /api/auth/me
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.status(200).json({ user: { id: user._id, fullName: user.fullName, username: user.username, profilePic: user.profilePic, badge: user.badge } });
+  } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -143,11 +152,8 @@ const recoverPassword = async (req, res) => {
     }
 
     const user = await User.findOne({ username: username.toLowerCase() });
-    if (!user) {
-      return res.status(400).json({ message: 'User not found' });
-    }
+    if (!user) return res.status(400).json({ message: 'User not found' });
 
-    // Check recovery codes
     let isCodeValid = false;
     let codeIndexToMarkUsed = -1;
 
@@ -163,14 +169,9 @@ const recoverPassword = async (req, res) => {
       }
     }
 
-    if (!isCodeValid) {
-      return res.status(400).json({ message: 'Invalid or already used recovery code' });
-    }
+    if (!isCodeValid) return res.status(400).json({ message: 'Invalid or already used recovery code' });
 
-    // Mark code as used
     user.recoveryCodes[codeIndexToMarkUsed].isUsed = true;
-
-    // Hash new password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
 
@@ -190,4 +191,4 @@ const logoutUser = (req, res) => {
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
-module.exports = { registerUser, loginUser, recoverPassword, logoutUser };
+module.exports = { registerUser, loginUser, getMe, recoverPassword, logoutUser, checkUsername };
