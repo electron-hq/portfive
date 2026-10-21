@@ -7,8 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root { 
-      --bg: #000000; /* Full dark background for scroller */
-      --surface: #FFFFFF; --text: #FFFFFF; 
+      --bg: #000000; --surface: #FFFFFF; --text: #FFFFFF; 
       --text-muted: #A1A1AA; --line: #27272A; --green: #10B981; 
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,12 +15,12 @@
 
     /* Scroller Container */
     .scroller-container {
-      height: calc(100vh - 65px); /* Leave space for bottom nav */
+      height: calc(100vh - 65px);
       overflow-y: scroll;
       scroll-snap-type: y mandatory;
-      scrollbar-width: none; /* Hide scrollbar Firefox */
+      scrollbar-width: none;
     }
-    .scroller-container::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+    .scroller-container::-webkit-scrollbar { display: none; }
 
     /* Individual Slide */
     .image-slide {
@@ -38,24 +37,32 @@
     .post-image {
       max-width: 100%;
       max-height: 100%;
-      object-fit: contain; /* Ensures whole image fits without cropping */
+      object-fit: contain;
       user-select: none;
       -webkit-user-drag: none;
     }
 
+    /* Ad Space for Monetized Creators */
+    .creator-ad-space {
+      position: absolute;
+      bottom: 100px; /* Positioned above the overlay */
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 5;
+      min-height: 50px;
+      background: rgba(0, 0, 0, 0.5); /* Slight background for visibility */
+    }
+
     /* Double tap to like heart animation */
     .heart-animation {
-      position: absolute;
-      top: 50%; left: 50%;
+      position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%) scale(0);
-      color: #EF4444;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 10;
+      color: #EF4444; opacity: 0; pointer-events: none; z-index: 10;
     }
-    .heart-animation.animate {
-      animation: heartPop 0.8s ease-out;
-    }
+    .heart-animation.animate { animation: heartPop 0.8s ease-out; }
     @keyframes heartPop {
       0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
       50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
@@ -64,21 +71,18 @@
 
     /* Bottom Overlay */
     .overlay {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
+      position: absolute; bottom: 0; left: 0; right: 0;
       padding: 20px;
       background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
+      display: flex; justify-content: space-between; align-items: flex-end;
+      z-index: 6;
     }
 
     .user-info { display: flex; flex-direction: column; gap: 6px; max-width: 80%; }
-    
     .user-header { display: flex; align-items: center; gap: 10px; cursor: pointer; }
     .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; background-size: cover; background-position: center; }
     .username { font-weight: 600; font-size: 0.95rem; color: white; }
-    .caption { font-size: 0.9rem; color: #E4E4E7; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .caption { font-size: 0.9rem; color: #E4E4E7; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
     /* Action Buttons */
     .actions { display: flex; flex-direction: column; align-items: center; gap: 5px; }
@@ -94,18 +98,16 @@
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
     .nav-item.profile-nav .profile-pic { width: 24px; height: 24px; border-radius: 50%; background: #333; background-size: cover; }
 
-    /* Loading / Empty State */
+    /* Loading */
     .state-msg { color: white; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; font-size: 1.1rem; }
   </style>
 </head>
 <body>
 
   <div class="scroller-container" id="scroller">
-    <!-- Slides will be injected here -->
     <div class="state-msg">Loading images...</div>
   </div>
 
-  <!-- Bottom Nav -->
   <div class="bottom-nav">
     <a href="/jobs.html" class="nav-item">
       <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
@@ -131,7 +133,6 @@
   <script>
     let currentUser = null;
 
-    // Load User Profile Pic for Nav
     async function initAuth() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
@@ -139,28 +140,20 @@
           const data = await res.json();
           currentUser = data.user;
           const navPic = document.getElementById('navProfilePic');
-          if (currentUser.profilePic) {
-            navPic.style.backgroundImage = `url(${currentUser.profilePic})`;
-          } else {
+          if (currentUser.profilePic) navPic.style.backgroundImage = `url(${currentUser.profilePic})`;
+          else {
             navPic.style.background = '#10B981';
-            navPic.style.display = 'flex';
-            navPic.style.justifyContent = 'center';
-            navPic.style.alignItems = 'center';
-            navPic.style.color = 'white';
-            navPic.style.fontSize = '12px';
-            navPic.style.fontWeight = 'bold';
+            navPic.style.display = 'flex'; navPic.style.justifyContent = 'center'; navPic.style.alignItems = 'center';
+            navPic.style.color = 'white'; navPic.style.fontSize = '12px'; navPic.style.fontWeight = 'bold';
             navPic.innerText = currentUser.fullName.charAt(0).toUpperCase();
           }
           loadImages();
         } else {
           window.location.href = '/login.html';
         }
-      } catch (err) {
-        window.location.href = '/login.html';
-      }
+      } catch (err) { window.location.href = '/login.html'; }
     }
 
-    // Fetch and Render Images
     async function loadImages() {
       const scroller = document.getElementById('scroller');
       try {
@@ -172,7 +165,11 @@
           return;
         }
 
-        scroller.innerHTML = images.map(img => `
+        scroller.innerHTML = images.map(img => {
+          // Check if the author allows ads
+          const showAd = img.author.allowAds === true;
+          
+          return `
           <div class="image-slide" data-id="${img._id}">
             <img src="${img.mediaUrl}" class="post-image" onerror="this.src='https://via.placeholder.com/600x800/111111/ffffff?text=Image+Not+Found'">
             
@@ -181,6 +178,13 @@
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
             </div>
+
+            ${showAd ? `
+              <div class="creator-ad-space">
+                <!-- Adsterra 320x50 Code for Creator Ads -->
+                <iframe src="/ad-320x50.html" width="320" height="50" frameborder="0" scrolling="no" style="border:none; overflow:hidden;"></iframe>
+              </div>
+            ` : ''}
 
             <div class="overlay">
               <div class="user-info">
@@ -201,7 +205,7 @@
               </div>
             </div>
           </div>
-        `).join('');
+        `}).join('');
 
         setupDoubleTapLike();
 
@@ -210,16 +214,13 @@
       }
     }
 
-    // Toggle Like API Call
     async function toggleLike(postId, isDoubleTap = false) {
       const btn = document.getElementById(`like-btn-${postId}`);
       const countSpan = document.getElementById(`like-count-${postId}`);
       if (!btn || !countSpan) return;
 
-      // Optimistic UI Update
       const currentlyLiked = btn.classList.contains('liked');
-      
-      if (isDoubleTap && currentlyLiked) return; // Already liked
+      if (isDoubleTap && currentlyLiked) return; 
       
       if (currentlyLiked) {
         btn.classList.remove('liked');
@@ -230,43 +231,32 @@
       }
 
       try {
-        const res = await fetch(`/api/posts/${postId}/react`, {
+        await fetch(`/api/posts/${postId}/react`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type: 'love' }),
           credentials: 'include'
         });
-        
-        // Note: Backend just returns reactions array, we rely on optimistic UI here.
       } catch (err) {
-        // Revert if error
         if (currentlyLiked) { btn.classList.add('liked'); countSpan.innerText = parseInt(countSpan.innerText) + 1; }
         else { btn.classList.remove('liked'); countSpan.innerText = parseInt(countSpan.innerText) - 1; }
       }
     }
 
-    // Double Tap to Like Logic
     function setupDoubleTapLike() {
       const slides = document.querySelectorAll('.image-slide');
       slides.forEach(slide => {
         let lastTap = 0;
         slide.addEventListener('click', (e) => {
-          // Prevent firing on buttons or links
-          if (e.target.closest('button') || e.target.closest('.user-header')) return;
-
+          if (e.target.closest('button') || e.target.closest('.user-header') || e.target.closest('iframe')) return;
           const currentTime = new Date().getTime();
           const tapLength = currentTime - lastTap;
           
           if (tapLength < 300 && tapLength > 0) {
-            // Double Tap Detected
             const postId = slide.dataset.id;
             const heart = document.getElementById(`heart-${postId}`);
-            
-            // Show heart animation
             heart.classList.add('animate');
             setTimeout(() => heart.classList.remove('animate'), 800);
-
-            // Trigger Like
             toggleLike(postId, true);
           }
           lastTap = currentTime;

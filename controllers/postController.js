@@ -16,7 +16,7 @@ const uploadToCloudinary = (buffer) => {
   });
 };
 
-// @desc    Create a new Post (Image, Video, or Pen)
+// @desc    Create a new Post
 // @route   POST /api/posts
 const createPost = async (req, res) => {
   try {
@@ -30,7 +30,7 @@ const createPost = async (req, res) => {
       mediaUrl = result.secure_url;
       mediaType = result.resource_type === 'video' ? 'video' : 'image';
     } else if (postType !== 'pen') {
-      return res.status(400).json({ message: 'Media file is required for Images/Videos' });
+      return res.status(400).json({ message: 'Media file is required' });
     }
 
     const newPost = await Post.create({
@@ -43,14 +43,14 @@ const createPost = async (req, res) => {
       caption: caption || ""
     });
 
-    res.status(201).json({ message: 'Post created successfully!', post: newPost });
+    res.status(201).json({ message: 'Post created!', post: newPost });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error while creating post' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// @desc    Get Top Posts (For Homepage & Scroller)
+// @desc    Get Top Posts
 // @route   GET /api/posts/top/:type
 const getTopPosts = async (req, res) => {
   try {
@@ -62,11 +62,11 @@ const getTopPosts = async (req, res) => {
     else if (type === 'pen') query = { postType: 'pen' };
     else return res.status(400).json({ message: 'Invalid type' });
 
-    // For scroller, we need more than 10 posts. Let's fetch 50.
     const limit = type === 'image' ? 50 : 10;
 
+    // Added allowAds and adImpressions to populate
     const posts = await Post.find(query)
-      .populate('author', 'fullName username profilePic')
+      .populate('author', 'fullName username profilePic allowAds adImpressions')
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
@@ -80,11 +80,11 @@ const getTopPosts = async (req, res) => {
     res.status(200).json(formattedPosts);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error while fetching top posts' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
-// @desc    React to a post (Love, Wow, etc.)
+// @desc    React to a post
 // @route   POST /api/posts/:postId/react
 const reactToPost = async (req, res) => {
   try {
@@ -99,12 +99,12 @@ const reactToPost = async (req, res) => {
 
     if (existingReactionIndex > -1) {
       if (post.reactions[existingReactionIndex].type === type) {
-        post.reactions.splice(existingReactionIndex, 1); // Remove if same
+        post.reactions.splice(existingReactionIndex, 1);
       } else {
-        post.reactions[existingReactionIndex].type = type; // Update
+        post.reactions[existingReactionIndex].type = type;
       }
     } else {
-      post.reactions.push({ user: req.user.id, type: type || 'love' }); // Add
+      post.reactions.push({ user: req.user.id, type: type || 'love' });
     }
 
     await post.save();
@@ -115,7 +115,7 @@ const reactToPost = async (req, res) => {
   }
 };
 
-// @desc    Get User Profile Tabs (Posts)
+// @desc    Get User Posts
 // @route   GET /api/posts/user/:userId
 const getUserPosts = async (req, res) => {
   try {
