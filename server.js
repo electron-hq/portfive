@@ -24,14 +24,17 @@ app.use(cookieParser());
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
-  message: { message: "Too many requests from this IP, please try again later." }
+  message: { message: "Too many requests, please try again later." }
 });
 app.use('/api/', globalLimiter);
 
-// Static Files (Frontend PWA)
+// Static Files
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ================= ROUTES =================
+const authRoutes = require('./routes/authRoutes');
+app.use('/api/auth', authRoutes);
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'active', message: 'PortFive API is running.' });
 });
