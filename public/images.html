@@ -7,98 +7,47 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root { 
-      --bg: #000000; --surface: #FFFFFF; --text: #FFFFFF; 
-      --text-muted: #A1A1AA; --line: #27272A; --green: #10B981; 
+      --bg: #000000; /* Midnight Canvas */
+      --surface: #09090B; --text: #FFFFFF; 
+      --text-muted: #A1A1AA; --line: #27272A; 
+      --accent: #6366F1; 
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', sans-serif; overflow: hidden; }
 
-    /* Scroller Container */
-    .scroller-container {
-      height: calc(100vh - 65px);
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      scrollbar-width: none;
-    }
+    .scroller-container { height: calc(100vh - 65px); overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; }
     .scroller-container::-webkit-scrollbar { display: none; }
 
-    /* Individual Slide */
-    .image-slide {
-      height: calc(100vh - 65px);
-      scroll-snap-align: start;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
-    }
+    .image-slide { height: calc(100vh - 65px); scroll-snap-align: start; position: relative; display: flex; justify-content: center; align-items: center; background: #000; }
 
-    /* Main Image */
-    .post-image {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
+    .post-image { max-width: 100%; max-height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
 
-    /* Ad Space for Monetized Creators */
-    .creator-ad-space {
-      position: absolute;
-      bottom: 100px; /* Positioned above the overlay */
-      left: 0;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 5;
-      min-height: 50px;
-      background: rgba(0, 0, 0, 0.5); /* Slight background for visibility */
-    }
+    .creator-ad-space { position: absolute; bottom: 100px; left: 0; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 5; min-height: 50px; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
 
-    /* Double tap to like heart animation */
-    .heart-animation {
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      color: #EF4444; opacity: 0; pointer-events: none; z-index: 10;
-    }
+    .heart-animation { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: #EF4444; opacity: 0; pointer-events: none; z-index: 10; }
     .heart-animation.animate { animation: heartPop 0.8s ease-out; }
-    @keyframes heartPop {
-      0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
-    }
+    @keyframes heartPop { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
 
-    /* Bottom Overlay */
-    .overlay {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 20px;
-      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
-      display: flex; justify-content: space-between; align-items: flex-end;
-      z-index: 6;
-    }
+    .overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 60%, transparent 100%); display: flex; justify-content: space-between; align-items: flex-end; z-index: 6; }
 
     .user-info { display: flex; flex-direction: column; gap: 6px; max-width: 80%; }
     .user-header { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green); display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; background-size: cover; background-position: center; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #27272A; display: flex; justify-content: center; align-items: center; font-weight: bold; color: white; background-size: cover; background-position: center; border: 1px solid rgba(255,255,255,0.2); }
     .username { font-weight: 600; font-size: 0.95rem; color: white; }
     .caption { font-size: 0.9rem; color: #E4E4E7; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-    /* Action Buttons */
     .actions { display: flex; flex-direction: column; align-items: center; gap: 5px; }
     .like-btn { background: none; border: none; cursor: pointer; color: white; display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .like-btn svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-width: 2; transition: 0.2s; }
     .like-btn.liked svg { fill: #EF4444; stroke: #EF4444; transform: scale(1.1); }
     .like-count { font-size: 0.85rem; font-weight: 600; }
 
-    /* Bottom Nav */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111111; border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 65px; z-index: 1000; max-width: 600px; margin: 0 auto; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #71717A; font-size: 0.58rem; font-weight: 600; gap: 4px; }
-    .nav-item.active { color: var(--green); }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 65px; z-index: 1000; max-width: 600px; margin: 0 auto; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.58rem; font-weight: 600; gap: 4px; }
+    .nav-item.active { color: #FFFFFF; }
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
     .nav-item.profile-nav .profile-pic { width: 24px; height: 24px; border-radius: 50%; background: #333; background-size: cover; }
 
-    /* Loading */
     .state-msg { color: white; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; font-size: 1.1rem; }
   </style>
 </head>
@@ -109,48 +58,24 @@
   </div>
 
   <div class="bottom-nav">
-    <a href="/jobs.html" class="nav-item">
-      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-      Jobs
-    </a>
-    <a href="/pens.html" class="nav-item">
-      <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>
-      Pens
-    </a>
-    <a href="/home.html" class="nav-item">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-      Home
-    </a>
-    <a href="/images.html" class="nav-item active">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-      Images
-    </a>
-    <a href="/profile.html" class="nav-item profile-nav" id="navProfile">
-      <div class="profile-pic" id="navProfilePic"></div>
-    </a>
+    <a href="/jobs.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>Jobs</a>
+    <a href="/pens.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Pens</a>
+    <a href="/home.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Home</a>
+    <a href="/images.html" class="nav-item active"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>Images</a>
+    <a href="/profile.html" class="nav-item profile-nav" id="navProfile"><div class="profile-pic" id="navProfilePic"></div></a>
   </div>
 
   <script>
-    let currentUser = null;
-
     async function initAuth() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
-          currentUser = data.user;
           const navPic = document.getElementById('navProfilePic');
-          if (currentUser.profilePic) navPic.style.backgroundImage = `url(${currentUser.profilePic})`;
-          else {
-            navPic.style.background = '#10B981';
-            navPic.style.display = 'flex'; navPic.style.justifyContent = 'center'; navPic.style.alignItems = 'center';
-            navPic.style.color = 'white'; navPic.style.fontSize = '12px'; navPic.style.fontWeight = 'bold';
-            navPic.innerText = currentUser.fullName.charAt(0).toUpperCase();
-          }
+          if (data.user.profilePic) navPic.style.backgroundImage = `url(${data.user.profilePic})`;
+          else { navPic.style.background = '#18181B'; navPic.innerText = data.user.fullName.charAt(0).toUpperCase(); navPic.style.display = 'flex'; navPic.style.justifyContent = 'center'; navPic.style.alignItems = 'center'; navPic.style.color = '#fff'; navPic.style.fontSize = '12px'; navPic.style.fontWeight = 'bold'; }
           loadImages();
-        } else {
-          window.location.href = '/login.html';
-        }
+        } else { window.location.href = '/login.html'; }
       } catch (err) { window.location.href = '/login.html'; }
     }
 
@@ -161,42 +86,28 @@
         const images = await res.json();
 
         if (!images || images.length === 0) {
-          scroller.innerHTML = '<div class="state-msg">No images yet. Be the first to upload!</div>';
+          scroller.innerHTML = '<div class="state-msg">No images yet.<br><span style="font-size:0.85rem; color:#71717A; margin-top:10px;">Be the first to upload!</span></div>';
           return;
         }
 
         scroller.innerHTML = images.map(img => {
-          // Check if the author allows ads
           const showAd = img.author.allowAds === true;
-          
           return `
           <div class="image-slide" data-id="${img._id}">
             <img src="${img.mediaUrl}" class="post-image" onerror="this.src='https://via.placeholder.com/600x800/111111/ffffff?text=Image+Not+Found'">
             
-            <div class="heart-animation" id="heart-${img._id}">
-              <svg width="80" height="80" viewBox="0 0 24 24" fill="#EF4444" stroke="none">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
-            </div>
+            <div class="heart-animation" id="heart-${img._id}"><svg width="80" height="80" viewBox="0 0 24 24" fill="#EF4444" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
 
-            ${showAd ? `
-              <div class="creator-ad-space">
-                <!-- Adsterra 320x50 Code for Creator Ads -->
-                <iframe src="/ad-320x50.html" width="320" height="50" frameborder="0" scrolling="no" style="border:none; overflow:hidden;"></iframe>
-              </div>
-            ` : ''}
+            ${showAd ? `<div class="creator-ad-space"><iframe src="/ad-320x50.html" width="320" height="50" frameborder="0" scrolling="no" style="border:none; overflow:hidden;"></iframe></div>` : ''}
 
             <div class="overlay">
               <div class="user-info">
                 <div class="user-header" onclick="window.location.href='/profile.html?id=${img.author._id}'">
-                  <div class="avatar" style="${img.author.profilePic ? `background-image: url('${img.author.profilePic}')` : ''}">
-                    ${img.author.profilePic ? '' : img.author.fullName.charAt(0).toUpperCase()}
-                  </div>
+                  <div class="avatar" style="${img.author.profilePic ? `background-image: url('${img.author.profilePic}')` : ''}">${img.author.profilePic ? '' : img.author.fullName.charAt(0).toUpperCase()}</div>
                   <div class="username">${img.author.username}</div>
                 </div>
                 ${img.caption ? `<div class="caption">${img.caption}</div>` : ''}
               </div>
-
               <div class="actions">
                 <button class="like-btn ${img.hasLiked ? 'liked' : ''}" id="like-btn-${img._id}" onclick="toggleLike('${img._id}')">
                   <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
@@ -208,50 +119,30 @@
         `}).join('');
 
         setupDoubleTapLike();
-
-      } catch (err) {
-        scroller.innerHTML = '<div class="state-msg">Failed to load images.</div>';
-      }
+      } catch (err) { scroller.innerHTML = '<div class="state-msg">Failed to load images.</div>'; }
     }
 
     async function toggleLike(postId, isDoubleTap = false) {
       const btn = document.getElementById(`like-btn-${postId}`);
       const countSpan = document.getElementById(`like-count-${postId}`);
       if (!btn || !countSpan) return;
-
       const currentlyLiked = btn.classList.contains('liked');
       if (isDoubleTap && currentlyLiked) return; 
       
-      if (currentlyLiked) {
-        btn.classList.remove('liked');
-        countSpan.innerText = parseInt(countSpan.innerText) - 1;
-      } else {
-        btn.classList.add('liked');
-        countSpan.innerText = parseInt(countSpan.innerText) + 1;
-      }
+      if (currentlyLiked) { btn.classList.remove('liked'); countSpan.innerText = parseInt(countSpan.innerText) - 1; }
+      else { btn.classList.add('liked'); countSpan.innerText = parseInt(countSpan.innerText) + 1; }
 
-      try {
-        await fetch(`/api/posts/${postId}/react`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'love' }),
-          credentials: 'include'
-        });
-      } catch (err) {
-        if (currentlyLiked) { btn.classList.add('liked'); countSpan.innerText = parseInt(countSpan.innerText) + 1; }
-        else { btn.classList.remove('liked'); countSpan.innerText = parseInt(countSpan.innerText) - 1; }
-      }
+      try { await fetch(`/api/posts/${postId}/react`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'love' }), credentials: 'include' }); } 
+      catch (err) { if (currentlyLiked) { btn.classList.add('liked'); countSpan.innerText = parseInt(countSpan.innerText) + 1; } else { btn.classList.remove('liked'); countSpan.innerText = parseInt(countSpan.innerText) - 1; } }
     }
 
     function setupDoubleTapLike() {
-      const slides = document.querySelectorAll('.image-slide');
-      slides.forEach(slide => {
+      document.querySelectorAll('.image-slide').forEach(slide => {
         let lastTap = 0;
         slide.addEventListener('click', (e) => {
           if (e.target.closest('button') || e.target.closest('.user-header') || e.target.closest('iframe')) return;
           const currentTime = new Date().getTime();
           const tapLength = currentTime - lastTap;
-          
           if (tapLength < 300 && tapLength > 0) {
             const postId = slide.dataset.id;
             const heart = document.getElementById(`heart-${postId}`);

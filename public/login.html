@@ -7,21 +7,26 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
-    :root { --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; --green: #10B981; --green-dark: #059669; --line: #E2E8F0; }
+    :root { 
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B; 
+      --text-muted: #71717A; --line: #E4E4E7; 
+      --primary: #18181B; --primary-hover: #27272A; --accent: #6366F1;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-    .card { background: var(--surface); width: 100%; max-width: 400px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid var(--line); }
-    .logo { text-align: center; font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 20px; }
-    .logo span { color: var(--green); }
+    .card { background: var(--surface); width: 100%; max-width: 400px; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--line); }
+    .logo { text-align: center; font-size: 2rem; font-weight: 800; color: var(--text); margin-bottom: 25px; letter-spacing: -1px; }
+    .logo span { color: var(--accent); }
     .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-    input { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; }
-    input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-    .btn { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; }
-    .btn:hover { background: var(--green-dark); }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text); }
+    input { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 1rem; outline: none; background: var(--bg); transition: 0.2s; }
+    input:focus { border-color: var(--primary); background: var(--surface); }
+    .btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+    .btn:hover { background: var(--primary-hover); }
     .error { color: #EF4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
-    .links { text-align: center; margin-top: 15px; font-size: 0.9rem; }
-    .links a { color: var(--green); text-decoration: none; font-weight: 600; }
+    .links { text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted); }
+    .links a { color: var(--text); text-decoration: none; font-weight: 600; }
+    .links a:hover { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -71,7 +76,7 @@
         const data = await res.json();
 
         if (res.ok) {
-          window.location.href = '/home.html'; // FIX: Redirecting to home.html
+          window.location.href = '/home.html'; 
         } else {
           errorMsg.innerText = data.message;
           errorMsg.style.display = 'block';
