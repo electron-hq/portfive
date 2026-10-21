@@ -33,7 +33,7 @@
     .create-post-box .input-fake { flex: 1; background: var(--bg); padding: 12px; border-radius: 999px; color: var(--text-muted); font-size: 0.95rem; }
 
     /* Section Styles */
-    .section { margin-bottom: 25px; }
+    .section { margin-bottom: 25px; display: none; /* Hidden by default */ }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
     .see-all { font-size: 0.85rem; color: var(--green); font-weight: 600; cursor: pointer; }
@@ -115,57 +115,47 @@
     </div>
 
     <!-- 1. Who to Follow -->
-    <div class="section">
+    <div class="section" id="section-follow">
       <div class="section-header">
         <div class="section-title">Who to Follow</div>
       </div>
-      <div class="h-scroll" id="followContainer">
-        <!-- Injected via JS -->
-      </div>
+      <div class="h-scroll" id="followContainer"></div>
     </div>
 
     <!-- 2. Videos -->
-    <div class="section">
+    <div class="section" id="section-video">
       <div class="section-header">
         <div class="section-title">Top Videos</div>
         <div class="see-all" onclick="window.location.href='/videos.html'">See All</div>
       </div>
-      <div class="h-scroll" id="videoContainer">
-        <!-- Injected via JS -->
-      </div>
+      <div class="h-scroll" id="videoContainer"></div>
     </div>
 
     <!-- 3. Pens (Articles) -->
-    <div class="section">
+    <div class="section" id="section-pen">
       <div class="section-header">
         <div class="section-title">Top Pens</div>
         <div class="see-all" onclick="window.location.href='/pens.html'">See All</div>
       </div>
-      <div class="h-scroll" id="penContainer">
-        <!-- Injected via JS -->
-      </div>
+      <div class="h-scroll" id="penContainer"></div>
     </div>
 
     <!-- 4. Images -->
-    <div class="section">
+    <div class="section" id="section-image">
       <div class="section-header">
         <div class="section-title">Top Images</div>
         <div class="see-all" onclick="window.location.href='/images.html'">See All</div>
       </div>
-      <div class="image-grid" id="imageContainer">
-        <!-- Injected via JS -->
-      </div>
+      <div class="image-grid" id="imageContainer"></div>
     </div>
 
     <!-- 5. Jobs -->
-    <div class="section">
+    <div class="section" id="section-job">
       <div class="section-header">
         <div class="section-title">Latest Jobs</div>
         <div class="see-all" onclick="window.location.href='/jobs.html'">See All</div>
       </div>
-      <div class="job-list" id="jobContainer">
-        <!-- Injected via JS -->
-      </div>
+      <div class="job-list" id="jobContainer"></div>
     </div>
 
   </div>
@@ -253,10 +243,13 @@
       } catch (err) { console.error('Error loading homepage data', err); }
     }
 
-    // Render Functions
+    // Render Functions (Hide section if empty)
     function renderFollow(users) {
+      const section = document.getElementById('section-follow');
       const container = document.getElementById('followContainer');
-      if (!users || users.length === 0) { container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No suggestions yet.</p>'; return; }
+      if (!users || users.length === 0) { section.style.display = 'none'; return; }
+      
+      section.style.display = 'block';
       container.innerHTML = users.map(u => `
         <div class="card follow-card">
           <div class="avatar" style="${u.profilePic ? `background-image:url('${u.profilePic}')` : ''}">${u.profilePic ? '' : u.fullName.charAt(0)}</div>
@@ -268,8 +261,11 @@
     }
 
     function renderVideos(videos) {
+      const section = document.getElementById('section-video');
       const container = document.getElementById('videoContainer');
-      if (!videos || videos.length === 0) { container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No videos yet.</p>'; return; }
+      if (!videos || videos.length === 0) { section.style.display = 'none'; return; }
+      
+      section.style.display = 'block';
       container.innerHTML = videos.map(v => `
         <div class="card video-card" onclick="window.location.href='/post.html?id=${v._id}'">
           <div class="video-thumb">
@@ -285,8 +281,11 @@
     }
 
     function renderPens(pens) {
+      const section = document.getElementById('section-pen');
       const container = document.getElementById('penContainer');
-      if (!pens || pens.length === 0) { container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No articles yet.</p>'; return; }
+      if (!pens || pens.length === 0) { section.style.display = 'none'; return; }
+      
+      section.style.display = 'block';
       container.innerHTML = pens.map(p => `
         <div class="card pen-card" onclick="window.location.href='/post.html?id=${p._id}'">
           ${p.mediaUrl ? `<div class="pen-cover" style="background-image:url('${p.mediaUrl}')"></div>` : ''}
@@ -300,17 +299,22 @@
     }
 
     function renderImages(images) {
+      const section = document.getElementById('section-image');
       const container = document.getElementById('imageContainer');
-      if (!images || images.length === 0) { container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No images yet.</p>'; return; }
+      if (!images || images.length === 0) { section.style.display = 'none'; return; }
+      
+      section.style.display = 'block';
       container.innerHTML = images.map(img => `
-        <div class="img-card" style="background-image:url('${img.mediaUrl}')" onclick="window.location.href='/post.html?id=${img._id}'">
-        </div>
+        <div class="img-card" style="background-image:url('${img.mediaUrl}')" onclick="window.location.href='/post.html?id=${img._id}'"></div>
       `).join('');
     }
 
     function renderJobs(jobs) {
+      const section = document.getElementById('section-job');
       const container = document.getElementById('jobContainer');
-      if (!jobs || jobs.length === 0) { container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">No jobs yet.</p>'; return; }
+      if (!jobs || jobs.length === 0) { section.style.display = 'none'; return; }
+      
+      section.style.display = 'block';
       container.innerHTML = jobs.map(j => `
         <div class="job-card" onclick="window.location.href='/job.html?id=${j._id}'">
           <div class="job-icon">
