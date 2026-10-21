@@ -9,7 +9,7 @@
     :root { 
       --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; 
       --text-muted: #64748B; --line: #E2E8F0; --green: #10B981; 
-      --green-dark: #059669; 
+      --green-dark: #059669; --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
@@ -33,8 +33,8 @@
     .form-group { margin-bottom: 20px; display: none; }
     .form-group.active { display: block; }
 
-    input[type="text"], textarea { width: 100%; padding: 15px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 1rem; outline: none; background: var(--surface); color: var(--text); }
-    input[type="text"]:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
+    input[type="text"], input[type="url"], textarea { width: 100%; padding: 15px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 1rem; outline: none; background: var(--surface); color: var(--text); }
+    input[type="text"]:focus, input[type="url"]:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
     
     textarea { resize: vertical; min-height: 250px; line-height: 1.6; }
 
@@ -50,7 +50,12 @@
     .pen-cover-preview { width: 100%; aspect-ratio: 3 / 1; border-radius: 12px; margin-top: 15px; display: none; background-size: cover; background-position: center; border: 1px solid var(--line); }
     .char-count { text-align: right; font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
 
-    .error-msg { color: #EF4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
+    /* Video Specific Warning */
+    .warning-box { background: #FEF2F2; border: 1px solid #FECACA; padding: 12px; border-radius: 8px; margin-top: 15px; display: flex; gap: 10px; align-items: flex-start; }
+    .warning-box svg { width: 20px; height: 20px; stroke: var(--red); fill: none; flex-shrink: 0; }
+    .warning-box p { font-size: 0.8rem; color: #991B1B; line-height: 1.4; }
+
+    .error-msg { color: var(--red); font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
   </style>
 </head>
 <body>
@@ -85,15 +90,21 @@
         <input type="text" id="imageCaption" placeholder="Write a caption..." style="margin-top: 15px;">
       </div>
 
-      <!-- Video Post -->
+      <!-- Video Post (Embed Link) -->
       <div class="form-group" id="group-video">
-        <div class="file-upload">
-          <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
-          <p>Click to upload a video</p>
-          <input type="file" id="videoFile" accept="video/*" onchange="previewFile(this, 'videoPreview')">
+        <input type="url" id="videoUrl" placeholder="Paste YouTube link here (e.g. https://youtube.com/watch?v=...)" oninput="previewYouTube(this.value)">
+        
+        <div id="videoPreviewContainer" style="display:none; margin-top: 15px; text-align: center;">
+          <img id="videoThumb" style="width: 100%; max-height: 300px; border-radius: 12px; object-fit: cover; background: #000;">
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Video Preview</p>
         </div>
-        <video id="videoPreview" class="preview-img" controls style="display:none; max-height: 300px; background: #000;"></video>
+
         <input type="text" id="videoCaption" placeholder="Write a caption..." style="margin-top: 15px;">
+
+        <div class="warning-box">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <p><strong>Copyright Notice:</strong> You must be the original creator of this video or have explicit permission. PortFive is not responsible for any copyright infringements. Embedding YouTube links is subject to YouTube's Terms of Service.</p>
+        </div>
       </div>
 
       <!-- Pen (Article) Post -->
@@ -136,6 +147,7 @@
       document.getElementById(`group-${tab}`).classList.add('active');
     }
 
+    // Image Preview
     function previewFile(input, previewId) {
       const preview = document.getElementById(previewId);
       if (input.files && input.files[0]) {
@@ -148,6 +160,7 @@
       }
     }
 
+    // Pen Cover Preview
     function previewPenCover(input) {
       const preview = document.getElementById('penCoverPreview');
       if (input.files && input.files[0]) {
@@ -165,6 +178,32 @@
       document.getElementById('charCount').innerText = `${val} / 8000`;
     }
 
+    // YouTube Thumbnail Preview Logic
+    function getYouTubeID(url) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function previewYouTube(url) {
+      const container = document.getElementById('videoPreviewContainer');
+      const thumb = document.getElementById('videoThumb');
+      
+      if (!url) {
+        container.style.display = 'none';
+        return;
+      }
+
+      const ytId = getYouTubeID(url);
+      if (ytId) {
+        thumb.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        container.style.display = 'block';
+      } else {
+        // Hide preview if not a valid YouTube link (could be direct MP4)
+        container.style.display = 'none';
+      }
+    }
+
     async function submitPost() {
       const btn = document.getElementById('publishBtn');
       const errorMsg = document.getElementById('errorMsg');
@@ -179,9 +218,9 @@
         formData.append('caption', document.getElementById('imageCaption').value);
       } 
       else if (currentTab === 'video') {
-        const file = document.getElementById('videoFile').files[0];
-        if (!file) return showError('Please select a video.');
-        formData.append('media', file);
+        const videoUrl = document.getElementById('videoUrl').value.trim();
+        if (!videoUrl) return showError('Please paste a video link.');
+        formData.append('videoUrl', videoUrl);
         formData.append('caption', document.getElementById('videoCaption').value);
       } 
       else if (currentTab === 'pen') {

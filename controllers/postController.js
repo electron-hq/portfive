@@ -2,7 +2,7 @@ const Post = require('../models/Post');
 const cloudinary = require('../config/cloudinary');
 const streamifier = require('streamifier');
 
-// Helper: Upload to Cloudinary
+// Helper: Upload to Cloudinary (For Images & Pen Covers)
 const uploadToCloudinary = (buffer) => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -20,17 +20,23 @@ const uploadToCloudinary = (buffer) => {
 // @route   POST /api/posts
 const createPost = async (req, res) => {
   try {
-    const { postType, title, content, caption } = req.body;
+    const { postType, title, content, caption, videoUrl } = req.body;
     
-    let mediaUrl = "";
-    let mediaType = "none";
+    let mediaUrl = videoUrl || "";
+    let mediaType = postType === 'video' ? 'video' : 'image';
 
+    // If a file is uploaded (Images for Image tab, Cover for Pen tab)
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer);
       mediaUrl = result.secure_url;
-      mediaType = result.resource_type === 'video' ? 'video' : 'image';
-    } else if (postType !== 'pen') {
-      return res.status(400).json({ message: 'Media file is required' });
+      // If it's a pen cover, mediaType should be image
+      if (postType === 'pen') mediaType = 'image';
+    } 
+    else if (postType === 'image' && !req.file) {
+      return res.status(400).json({ message: 'Image file is required' });
+    }
+    else if (postType === 'video' && !videoUrl) {
+      return res.status(400).json({ message: 'Video link is required' });
     }
 
     const newPost = await Post.create({
@@ -64,7 +70,6 @@ const getTopPosts = async (req, res) => {
 
     const limit = type === 'image' ? 50 : 10;
 
-    // Added allowAds and adImpressions to populate
     const posts = await Post.find(query)
       .populate('author', 'fullName username profilePic allowAds adImpressions')
       .sort({ createdAt: -1 })

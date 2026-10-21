@@ -63,7 +63,7 @@
     /* Video Card */
     .video-card { width: 220px; }
     .video-thumb { width: 100%; height: 120px; background: #000; position: relative; }
-    .video-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+    .video-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
     .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 40px; height: 40px; background: rgba(16, 185, 129, 0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
     .video-info { padding: 10px; }
     .video-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -118,13 +118,11 @@
   <div class="container">
     <!-- Create Post Box -->
     <div class="create-post-box" onclick="window.location.href='/create-post.html'">
-      <div class="avatar-container" id="userAvatarContainer">
-        <!-- SVG Avatar will be injected here -->
-      </div>
+      <div class="avatar-container" id="userAvatarContainer"></div>
       <div class="input-fake">What's on your mind?</div>
     </div>
 
-    <!-- Global Empty State (Shows when whole feed is empty) -->
+    <!-- Global Empty State -->
     <div class="global-empty-state" id="globalEmptyState">
       <div class="icon-wrapper">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
@@ -140,9 +138,7 @@
 
     <!-- 1. Who to Follow -->
     <div class="section" id="section-follow">
-      <div class="section-header">
-        <div class="section-title">Who to Follow</div>
-      </div>
+      <div class="section-header"><div class="section-title">Who to Follow</div></div>
       <div class="h-scroll" id="followContainer"></div>
     </div>
 
@@ -203,19 +199,15 @@
       Images
     </a>
     <a href="/profile.html" class="nav-item profile-nav">
-      <div class="profile-pic" id="navProfilePicContainer">
-        <!-- SVG Avatar will be injected here -->
-      </div>
+      <div class="profile-pic" id="navProfilePicContainer"></div>
     </a>
   </div>
 
   <script>
-    // Perfect SVG Avatar Generator Function
     function getAvatarSVG(user) {
       if (user.profilePic) {
         return `<div style="width:100%; height:100%; background-image:url('${user.profilePic}'); background-size:cover; background-position:center;"></div>`;
       }
-      
       const initial = user.fullName ? user.fullName.charAt(0).toUpperCase() : 'U';
       return `
         <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%; display:block;">
@@ -225,28 +217,28 @@
       `;
     }
 
-    // Load User & Avatar
+    // Helper for YouTube Thumbnails
+    function getYouTubeID(url) {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return (match && match[2].length === 11) ? match[2] : null;
+    }
+
     async function init() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
           const u = data.user;
-          
-          // Inject SVG into DOM
           document.getElementById('userAvatarContainer').innerHTML = getAvatarSVG(u);
           document.getElementById('navProfilePicContainer').innerHTML = getAvatarSVG(u);
-          
         } else {
           window.location.href = '/login.html';
         }
-      } catch (err) {
-        window.location.href = '/login.html';
-      }
+      } catch (err) { window.location.href = '/login.html'; }
     }
     init();
 
-    // Fetch Data for Homepage Sections
     async function loadHomepageData() {
       try {
         const [followRes, videoRes, penRes, imageRes, jobRes] = await Promise.all([
@@ -263,7 +255,6 @@
         const images = await imageRes.json();
         const jobs = await jobRes.json();
 
-        // Check if EVERYTHING is empty
         const isEverythingEmpty = 
           (!followUsers || followUsers.length === 0) &&
           (!videos || videos.length === 0) &&
@@ -281,11 +272,9 @@
           renderImages(images);
           renderJobs(jobs);
         }
-
       } catch (err) { console.error('Error loading homepage data', err); }
     }
 
-    // Render Functions (Hide individual section if empty)
     function renderFollow(users) {
       if (!users || users.length === 0) return;
       document.getElementById('section-follow').style.display = 'block';
@@ -302,18 +291,25 @@
     function renderVideos(videos) {
       if (!videos || videos.length === 0) return;
       document.getElementById('section-video').style.display = 'block';
-      document.getElementById('videoContainer').innerHTML = videos.map(v => `
-        <div class="card video-card" onclick="window.location.href='/post.html?id=${v._id}'">
-          <div class="video-thumb">
-            <img src="${v.mediaUrl || 'https://via.placeholder.com/300x200/0F172A/ffffff?text=Video'}" onerror="this.style.display='none'">
-            <div class="play-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>
+      
+      document.getElementById('videoContainer').innerHTML = videos.map(v => {
+        // If it's a YouTube link, use the auto-generated thumbnail
+        const ytId = getYouTubeID(v.mediaUrl);
+        const thumbUrl = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : v.mediaUrl;
+
+        return `
+          <div class="card video-card" onclick="window.location.href='/post.html?id=${v._id}'">
+            <div class="video-thumb">
+              <img src="${thumbUrl}" onerror="this.src='https://via.placeholder.com/300x200/0F172A/ffffff?text=Video'">
+              <div class="play-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>
+            </div>
+            <div class="video-info">
+              <div class="video-title">${v.caption || 'Watch Video'}</div>
+              <div class="video-author">@${v.author.username}</div>
+            </div>
           </div>
-          <div class="video-info">
-            <div class="video-title">${v.caption || 'Untitled Video'}</div>
-            <div class="video-author">@${v.author.username}</div>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderPens(pens) {
