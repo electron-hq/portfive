@@ -3,6 +3,19 @@ const router = express.Router();
 const { protect } = require('../middlewares/authMiddleware');
 const User = require('../models/User');
 
+// @desc    Get Top 10 Suggested Users
+router.get('/suggested', protect, async (req, res) => {
+  try {
+    const users = await User.find({ _id: { $ne: req.user.id } })
+      .select('fullName username profilePic')
+      .limit(10)
+      .lean();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // @desc    Get user's followers (Friends tab)
 router.get('/friends/:userId', protect, async (req, res) => {
   try {
@@ -17,11 +30,9 @@ router.get('/friends/:userId', protect, async (req, res) => {
 // @desc    Get saved posts (Saved tab)
 router.get('/saved/:userId', protect, async (req, res) => {
   try {
-    // Note: Only the user themselves should see their saved posts
     if (req.user.id !== req.params.userId) {
-      return res.status(403).json({ message: 'Unauthorized to view saved posts' });
+      return res.status(403).json({ message: 'Unauthorized' });
     }
-    
     const user = await User.findById(req.params.userId).populate({
       path: 'savedPosts',
       populate: { path: 'author', select: 'fullName username profilePic' }
