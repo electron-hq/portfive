@@ -71,7 +71,7 @@
         const data = await res.json();
 
         if (res.ok) {
-          window.location.href = '/feed.html'; 
+          window.location.href = '/home.html'; // FIX: Redirecting to home.html
         } else {
           errorMsg.innerText = data.message;
           errorMsg.style.display = 'block';
