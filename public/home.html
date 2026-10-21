@@ -34,10 +34,11 @@
 
     /* Global Empty State */
     .global-empty-state { display: none; text-align: center; padding: 60px 20px; color: var(--text-muted); }
-    .global-empty-state svg { width: 60px; height: 60px; stroke: var(--line); margin-bottom: 15px; }
+    .global-empty-state .icon-wrapper { width: 100px; height: 100px; background: #ECFDF5; color: var(--green); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px; }
+    .global-empty-state .icon-wrapper svg { width: 48px; height: 48px; stroke-width: 1.5; }
     .global-empty-state h2 { color: var(--text); font-size: 1.2rem; margin-bottom: 8px; }
-    .global-empty-state p { font-size: 0.95rem; margin-bottom: 20px; }
-    .btn-start { background: var(--green); color: white; padding: 10px 24px; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 0.95rem; display: inline-block; }
+    .global-empty-state p { font-size: 0.95rem; margin-bottom: 25px; }
+    .btn-start { background: var(--green); color: white; padding: 12px 28px; border-radius: 999px; font-weight: 600; text-decoration: none; font-size: 0.95rem; display: inline-block; box-shadow: 0 4px 12px rgba(16,185,129,0.3); }
 
     /* Section Styles */
     .section { margin-bottom: 25px; display: none; /* Hidden by default */ }
@@ -123,7 +124,13 @@
 
     <!-- Global Empty State (Shows when whole feed is empty) -->
     <div class="global-empty-state" id="globalEmptyState">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      <div class="icon-wrapper">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
+        </svg>
+      </div>
       <h2>It's a bit quiet here!</h2>
       <p>Be the first to share an image, write a pen, or post a job.</p>
       <a href="/create-post.html" class="btn-start">Create a Post</a>
