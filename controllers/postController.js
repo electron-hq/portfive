@@ -25,7 +25,6 @@ const createPost = async (req, res) => {
     let mediaUrl = "";
     let mediaType = "none";
 
-    // If a file is uploaded (Image for Pens, Image/Video for others)
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer);
       mediaUrl = result.secure_url;
@@ -51,11 +50,11 @@ const createPost = async (req, res) => {
   }
 };
 
-// @desc    Get Feed (For Homepage - Top 10 of specific types)
+// @desc    Get Top Posts (For Homepage & Scroller)
 // @route   GET /api/posts/top/:type
 const getTopPosts = async (req, res) => {
   try {
-    const { type } = req.params; // 'image', 'video', 'pen', 'job'
+    const { type } = req.params; 
     
     let query = {};
     if (type === 'image') query = { postType: 'image' };
@@ -63,11 +62,13 @@ const getTopPosts = async (req, res) => {
     else if (type === 'pen') query = { postType: 'pen' };
     else return res.status(400).json({ message: 'Invalid type' });
 
-    // Get Top 10 based on reactions/views
+    // For scroller, we need more than 10 posts. Let's fetch 50.
+    const limit = type === 'image' ? 50 : 10;
+
     const posts = await Post.find(query)
       .populate('author', 'fullName username profilePic')
-      .sort({ createdAt: -1 }) // Can be changed to 'views: -1' for actual "top"
-      .limit(10)
+      .sort({ createdAt: -1 })
+      .limit(limit)
       .lean();
 
     const formattedPosts = posts.map(post => ({
@@ -80,6 +81,37 @@ const getTopPosts = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error while fetching top posts' });
+  }
+};
+
+// @desc    React to a post (Love, Wow, etc.)
+// @route   POST /api/posts/:postId/react
+const reactToPost = async (req, res) => {
+  try {
+    const { type } = req.body;
+    const post = await Post.findById(req.params.postId);
+
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    const existingReactionIndex = post.reactions.findIndex(
+      r => r.user.toString() === req.user.id
+    );
+
+    if (existingReactionIndex > -1) {
+      if (post.reactions[existingReactionIndex].type === type) {
+        post.reactions.splice(existingReactionIndex, 1); // Remove if same
+      } else {
+        post.reactions[existingReactionIndex].type = type; // Update
+      }
+    } else {
+      post.reactions.push({ user: req.user.id, type: type || 'love' }); // Add
+    }
+
+    await post.save();
+    res.status(200).json({ message: 'Reaction updated', reactions: post.reactions });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -99,4 +131,4 @@ const getUserPosts = async (req, res) => {
   }
 };
 
-module.exports = { createPost, getTopPosts, getUserPosts };
+module.exports = { createPost, getTopPosts, reactToPost, getUserPosts };
