@@ -442,20 +442,24 @@
         currentIndex = 0;
         
         container.innerHTML = '';
-        loadMoreFeed(); 
+        
+        // CRITICAL FIX: Set loading false BEFORE calling loadMoreFeed
+        isFeedLoading = false; 
+        loadMoreFeed();
         
       } catch (err) {
         console.error(err);
         document.getElementById('globalEmptyState').style.display = 'block';
-      } finally {
         isFeedLoading = false;
       }
     }
 
     function generatePostHTML(post, index) {
-      const isOwner = post.author && (post.author._id === currentUserId || post.author.id === currentUserId);
-      const username = post.author && post.author.username ? post.author.username : 'unknown';
-      const authorName = post.author && post.author.fullName ? post.author.fullName : username;
+      const author = post.author || {};
+      const authorId = author._id || '';
+      const isOwner = authorId === currentUserId;
+      const username = author.username || 'unknown';
+      const authorName = author.fullName || username;
       const time = timeAgo(post.createdAt);
       
       const hasLoved = post.reactions && post.reactions.some(r => (r.user === currentUserId || r.user?._id === currentUserId) && r.type === 'love');
@@ -467,9 +471,9 @@
       const uniqueId = `${post._id}_${index}`;
 
       let adHtml = '';
-      if (post.author.allowAds === true) {
+      if (author.allowAds === true) {
         adHtml = `
-        <div class="ad-container" data-author-id="${esc(post.author._id)}">
+        <div class="ad-container" data-author-id="${esc(authorId)}">
           <span class="ad-label">Ad</span>
           <iframe src="/ad-320x50.html" frameborder="0" scrolling="no" onload="checkAdBlock(this)"></iframe>
         </div>
@@ -494,8 +498,8 @@
 
       const header = `
         <div class="post-header">
-          <div class="author-info" onclick="window.location.href='/profile.html?id=${esc(post.author._id)}'">
-            <div class="avatar-container">${getAvatarSVG(post.author)}</div>
+          <div class="author-info" onclick="window.location.href='/profile.html?id=${esc(authorId)}'">
+            <div class="avatar-container">${getAvatarSVG(author)}</div>
             <div class="author-text">
               <span class="author-name">${esc(authorName)}</span>
               <span class="post-date">${esc(time)}</span>
@@ -524,7 +528,7 @@
         const ytId = getYouTubeID(post.mediaUrl);
         const thumbUrl = post.thumbnailUrl || (ytId ? 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg' : post.mediaUrl);
         body = `
-          <div class="media-container aspect-vid" onclick="openVideoModal('${esc(post._id)}', '${esc(ytId)}', '${esc(authorName)}', '${esc(username)}', '${esc(post.author.profilePic || '')}')">
+          <div class="media-container aspect-vid" onclick="openVideoModal('${esc(post._id)}', '${esc(ytId)}', '${esc(authorName)}', '${esc(username)}', '${esc(author.profilePic || '')}')">
             <img src="${esc(thumbUrl)}" alt="" loading="lazy" onerror="this.onerror=null;this.src=VIDEO_PLACEHOLDER;">
             <div class="play-icon">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
