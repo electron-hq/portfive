@@ -79,27 +79,31 @@
     
     .empty-chat { text-align: center; color: var(--text-muted); margin-top: auto; margin-bottom: auto; font-size: 0.9rem; }
 
-    /* Call Modals (Incoming & Active) */
+    /* Call Modals */
     .call-modal { position: fixed; inset: 0; background: #09090B; z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; color: white; }
     .call-modal.active { display: flex; }
     
+    /* Video Container FIXED Z-INDEX */
+    .video-container { position: absolute; inset: 0; background: #000; display: none; z-index: 1; }
+    .video-container.active { display: block; }
+    #localVideo { position: absolute; top: 20px; right: 20px; width: 100px; height: 150px; background: #18181B; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2); object-fit: cover; z-index: 10; }
+    #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
+    
+    /* Call UI Overlay (On top of video) */
+    .call-ui-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 20; pointer-events: none; background: rgba(0,0,0,0.2); }
+    .call-ui-overlay > * { pointer-events: auto; }
+
     .call-avatar { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; background: #27272A; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     .call-avatar svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
     .call-name { font-family: 'Archivo', sans-serif; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
     .call-status { font-size: 1rem; color: #A1A1AA; margin-bottom: 40px; animation: pulse 1.5s infinite; }
     
-    .call-actions-row { display: flex; gap: 30px; }
+    .call-actions-row { display: flex; gap: 30px; margin-top: auto; margin-bottom: 40px; }
     .call-action-btn { width: 70px; height: 70px; border-radius: 50%; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.2s; }
     .call-action-btn svg { width: 32px; height: 32px; fill: currentColor; }
     .btn-reject { background: var(--red); color: white; }
     .btn-accept { background: var(--green); color: white; }
     .btn-hangup { background: var(--red); color: white; }
-    
-    /* Video Call Container */
-    .video-container { position: absolute; inset: 0; background: #000; display: none; z-index: -1; }
-    .video-container.active { display: block; z-index: 1; }
-    #localVideo { position: absolute; top: 20px; right: 20px; width: 100px; height: 150px; background: #18181B; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2); object-fit: cover; z-index: 10; }
-    #remoteVideo { width: 100%; height: 100%; object-fit: cover; }
   </style>
 </head>
 <body>
@@ -115,7 +119,6 @@
       </a>
     </div>
     
-    <!-- Call Buttons -->
     <div class="call-actions" id="callActions">
       <button class="call-btn" onclick="startCall('audio')" title="Voice Call">
         <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
@@ -161,27 +164,32 @@
 
   <!-- WebRTC Call Modals -->
   <div class="call-modal" id="callModal">
+    <!-- Video Container (Behind UI) -->
     <div class="video-container" id="videoContainer">
       <video id="remoteVideo" autoplay playsinline></video>
       <video id="localVideo" autoplay playsinline muted></video>
     </div>
-    <div class="call-avatar" id="callAvatar"></div>
-    <div class="call-name" id="callName">Unknown</div>
-    <div class="call-status" id="callStatus">Incoming Call...</div>
-    
-    <div class="call-actions-row" id="incomingActions" style="display:none;">
-      <button class="call-action-btn btn-reject" onclick="rejectCall()">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"></path></svg>
-      </button>
-      <button class="call-action-btn btn-accept" onclick="acceptCall()">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-      </button>
-    </div>
 
-    <div class="call-actions-row" id="activeActions" style="display:none;">
-      <button class="call-action-btn btn-hangup" onclick="endCall()">
-        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"></path></svg>
-      </button>
+    <!-- UI Overlay (On top of video) -->
+    <div class="call-ui-overlay">
+      <div class="call-avatar" id="callAvatar"></div>
+      <div class="call-name" id="callName">Unknown</div>
+      <div class="call-status" id="callStatus">Incoming Call...</div>
+      
+      <div class="call-actions-row" id="incomingActions" style="display:none;">
+        <button class="call-action-btn btn-reject" onclick="rejectCall()">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"></path></svg>
+        </button>
+        <button class="call-action-btn btn-accept" onclick="acceptCall()">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        </button>
+      </div>
+
+      <div class="call-actions-row" id="activeActions" style="display:none;">
+        <button class="call-action-btn btn-hangup" onclick="endCall()">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"></path></svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -192,18 +200,33 @@
     let targetUser = null;
     let socket = null;
 
-    // Audio Recording Variables
     let mediaRecorder = null;
     let audioChunks = [];
     let recordingInterval = null;
     let recordingSeconds = 0;
 
-    // WebRTC Variables
+    // WebRTC Variables with TURN Servers for better connectivity
     let pc = null;
     let localStream = null;
-    let currentCallType = null; // 'audio' or 'video'
+    let currentCallType = null;
     let incomingSignal = null;
-    const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+    
+    const configuration = { 
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { 
+          urls: 'turn:openrelay.metered.ca:80', 
+          username: 'openrelayproject', 
+          credential: 'openrelayproject' 
+        },
+        { 
+          urls: 'turn:openrelay.metered.ca:443', 
+          username: 'openrelayproject', 
+          credential: 'openrelayproject' 
+        }
+      ] 
+    };
 
     function esc(value) {
       return String(value === null || value === undefined ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -250,10 +273,7 @@
         socket = io();
         socket.emit('join_room', currentUserId);
 
-        // Chat Events
-        socket.on('receive_message', (msg) => {
-          if (msg.sender._id === targetUserId) appendMessage(msg, false);
-        });
+        socket.on('receive_message', (msg) => { if (msg.sender._id === targetUserId) appendMessage(msg, false); });
         socket.on('message_edited', (data) => {
           const row = document.getElementById('msg-' + data.messageId);
           if (row) {
@@ -268,7 +288,7 @@
           if (row) row.remove();
         });
 
-        // WebRTC Signaling Events
+        // WebRTC Signaling
         socket.on('incoming_call', async (data) => {
           incomingSignal = data.signal;
           currentCallType = data.type;
@@ -279,7 +299,6 @@
           document.getElementById('callStatus').innerText = 'Connected';
           document.getElementById('incomingActions').style.display = 'none';
           document.getElementById('activeActions').style.display = 'flex';
-          
           await pc.setRemoteDescription(new RTCSessionDescription(data.signal));
         });
 
@@ -289,15 +308,8 @@
           }
         });
 
-        socket.on('call_rejected', () => {
-          alert('Call rejected by user.');
-          cleanupCall();
-        });
-
-        socket.on('call_ended', () => {
-          alert('Call ended.');
-          cleanupCall();
-        });
+        socket.on('call_rejected', () => { alert('Call rejected by user.'); cleanupCall(); });
+        socket.on('call_ended', () => { alert('Call ended.'); cleanupCall(); });
 
         loadMessages();
       } catch (err) {
@@ -307,7 +319,6 @@
       }
     }
 
-    // --- Chat Logic (Same as before) ---
     async function loadMessages() {
       const body = document.getElementById('chatBody');
       try {
