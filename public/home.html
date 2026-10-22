@@ -4,8 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Home - PortFive</title>
+  
+  <!-- Favicon & PWA Links -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#FAFAFA">
+  
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -310,30 +316,23 @@
 
     const VIDEO_PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#18181B"/></svg>');
 
-    // Intersection Observer for Ad Impressions (3 Seconds Rule)
     const adObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const adElement = entry.target;
           const authorId = adElement.getAttribute('data-author-id');
-          
-          // Start 3-second timer (3000ms)
           adElement.viewTimer = setTimeout(() => {
             if (!adElement.dataset.counted && authorId !== currentUserId) {
               adElement.dataset.counted = 'true';
-              // Send impression to backend
               fetch(`/api/users/ad-impression/${authorId}`, { method: 'POST', credentials: 'include' })
                 .catch(err => console.error('Ad impression error:', err));
             }
-          }, 3000); // 3 seconds
+          }, 3000); 
         } else {
-          // If user scrolls away before 3 seconds, clear timer
-          if (entry.target.viewTimer) {
-            clearTimeout(entry.target.viewTimer);
-          }
+          if (entry.target.viewTimer) clearTimeout(entry.target.viewTimer);
         }
       });
-    }, { threshold: 0.5 }); // 50% of the ad must be visible
+    }, { threshold: 0.5 }); 
 
     async function init() {
       try {
@@ -538,7 +537,6 @@
           return `<div class="post-card" id="post-${esc(post._id)}">${header}${body}${footer}</div>`;
         }).join('');
         
-        // Start observing ads for impressions
         document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
 
       } catch (err) {

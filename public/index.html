@@ -5,13 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PortFive - The Visual Canvas of Opportunity | Social Media & Job Board</title>
   <meta name="description" content="PortFive is a premium visual canvas for creators and professionals. Share images, read in-depth articles, discover job opportunities, and connect via real-time chat.">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
+  <!-- Favicon & PWA Links -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FAFAFA">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root { 
-      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B; 
-      --text-muted: #71717A; --line: #E4E4E7; 
-      --primary: #18181B; --primary-hover: #27272A; 
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --primary-hover: #27272A;
       --accent: #6366F1; --accent-light: #EEF2FF;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,7 +64,7 @@
 
     .section { padding: 60px 20px; max-width: 1000px; margin: 0 auto; border-top: 1px solid var(--line); }
     .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 40px; letter-spacing: -0.5px; text-align: center; }
-    
+
     .bento-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
     .bento-card { background: var(--surface); padding: 30px; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .bento-card h3 { font-size: 1.2rem; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 10px; }
@@ -203,14 +210,16 @@
     function closeMenu() { sideMenu.classList.remove('open'); menuOverlay.classList.remove('open'); }
 
     document.getElementById('contactForm').addEventListener('submit', function(e) {
-      e.preventDefault(); 
+      e.preventDefault();
       const name = document.getElementById('contactName').value;
       const email = document.getElementById('contactEmail').value;
       const subject = document.getElementById('contactSubject').value;
       const message = document.getElementById('contactMessage').value;
+
       const targetEmail = 'electron.team@proton.me';
       const mailtoSubject = encodeURIComponent(`PortFive Contact: ${subject}`);
       const mailtoBody = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+
       window.location.href = `mailto:${targetEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
       this.reset();
     });
