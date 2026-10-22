@@ -106,7 +106,8 @@ const getUserPosts = async (req, res) => {
 
 const getSinglePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId).populate('author', 'fullName username profilePic').lean();
+    // Added allowAds to populate
+    const post = await Post.findById(req.params.postId).populate('author', 'fullName username profilePic allowAds').lean();
     if (!post) return res.status(404).json({ message: 'Post not found' });
     const commentsCount = await Comment.countDocuments({ postId: post._id });
     const user = await User.findById(req.user.id).select('savedPosts');
@@ -189,7 +190,6 @@ const toggleSavePost = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
-// New Report Post Function
 const reportPost = async (req, res) => {
   try {
     const { reason } = req.body;
@@ -198,26 +198,16 @@ const reportPost = async (req, res) => {
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
-    // Prevent self-reporting
     if (post.author.toString() === req.user.id) {
       return res.status(400).json({ message: 'You cannot report your own post' });
     }
 
-    // Check if already reported
     const existingReport = await Report.findOne({ reporter: req.user.id, postId: post._id });
     if (existingReport) return res.status(400).json({ message: 'You have already reported this post' });
 
-    await Report.create({
-      reporter: req.user.id,
-      postId: post._id,
-      reason: reason.trim()
-    });
-
+    await Report.create({ reporter: req.user.id, postId: post._id, reason: reason.trim() });
     res.status(201).json({ message: 'Post reported successfully. Moderators will review it.' });
-  } catch (error) { 
-    console.error('Report post error:', error);
-    res.status(500).json({ message: 'Server error' }); 
-  }
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
 module.exports = {

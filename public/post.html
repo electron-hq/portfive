@@ -27,7 +27,7 @@
     .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
     .post-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(9,9,11,0.03); margin-bottom: 24px; }
-    
+
     .post-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; }
     .author-info { display: flex; align-items: center; gap: 12px; cursor: pointer; }
     .avatar-container { width: 42px; height: 42px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #E4E4E7; }
@@ -41,7 +41,6 @@
     .video-container { width: 100%; aspect-ratio: 16 / 9; background: #000; }
     .video-container iframe { width: 100%; height: 100%; border: none; display: block; }
 
-    /* Pen Cover Image */
     .pen-cover-img { width: 100%; aspect-ratio: 3 / 1; object-fit: cover; display: block; border-bottom: 1px solid var(--line); }
 
     .pen-content-box { padding: 20px 16px; }
@@ -50,6 +49,11 @@
 
     .post-caption { padding: 16px; font-size: 0.95rem; line-height: 1.5; color: var(--text); border-bottom: 1px solid var(--line); }
     .post-caption .username { font-weight: 600; margin-right: 6px; }
+
+    /* Actual Ad Container */
+    .ad-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); position: relative; }
+    .ad-label { position: absolute; top: 4px; right: 16px; font-size: 0.6rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+    .ad-container iframe { width: 320px; height: 50px; border: none; overflow: hidden; display: block; }
 
     .action-bar { display: flex; gap: 24px; padding: 16px; background: var(--surface); }
     .action-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; color: var(--text-muted); font-size: 0.95rem; font-weight: 600; cursor: pointer; padding: 6px 10px; border-radius: 8px; transition: 0.2s; font-family: inherit; }
@@ -60,7 +64,6 @@
     .action-btn.static { cursor: default; }
     .action-btn.static:hover { background: none; color: var(--text-muted); }
 
-    /* Comments Modal */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .comments-modal { position: fixed; bottom: 0; left: 0; right: 0; height: 75vh; background: var(--surface); border-radius: 20px 20px 0 0; z-index: 2001; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); box-shadow: 0 -4px 24px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
@@ -70,7 +73,7 @@
     .modal-title { font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 1.1rem; }
     .modal-close { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; line-height: 1; }
     .comments-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
-    
+
     .comment-item { display: flex; gap: 12px; }
     .comment-item .avatar-container { width: 36px; height: 36px; }
     .comment-body { flex: 1; }
@@ -202,6 +205,34 @@
       return date.toLocaleDateString();
     }
 
+    function checkAdBlock(iframe) {
+      setTimeout(() => {
+        try {
+          if (iframe.contentDocument && iframe.contentDocument.body.innerHTML.trim() === '') {
+            iframe.parentElement.style.display = 'none';
+          }
+        } catch (e) { /* Cross-origin error (ignore) */ }
+      }, 1500);
+    }
+
+    // Ad Impression Tracker (3 sec)
+    const adObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const adElement = entry.target;
+          const authorId = adElement.getAttribute('data-author-id');
+          adElement.viewTimer = setTimeout(() => {
+            if (!adElement.dataset.counted && authorId !== currentUserId) {
+              adElement.dataset.counted = 'true';
+              fetch(`/api/users/ad-impression/${authorId}`, { method: 'POST', credentials: 'include' }).catch(console.error);
+            }
+          }, 3000); 
+        } else {
+          if (entry.target.viewTimer) clearTimeout(entry.target.viewTimer);
+        }
+      });
+    }, { threshold: 0.5 }); 
+
     async function init() {
       const urlParams = new URLSearchParams(window.location.search);
       currentPostId = urlParams.get('id');
@@ -214,23 +245,23 @@
         if (meRes.ok) {
           const meData = await meRes.json();
           currentUserId = meData.user.id || meData.user._id;
-          
+
           const navPic = document.getElementById('navProfilePic');
           if (meData.user.profilePic) {
             navPic.style.backgroundImage = `url('${safeUrl(meData.user.profilePic)}')`;
             navPic.style.backgroundSize = 'cover';
             navPic.style.backgroundPosition = 'center';
             navPic.innerHTML = '';
-          } else { 
-            navPic.style.background = '#E4E4E7'; 
-            navPic.innerHTML = `<span style="color:#09090B; font-weight:700; font-size:14px;">${esc(meData.user.fullName.charAt(0).toUpperCase())}</span>`; 
+          } else {
+            navPic.style.background = '#E4E4E7';
+            navPic.innerHTML = `<span style="color:#09090B; font-weight:700; font-size:14px;">${esc(meData.user.fullName.charAt(0).toUpperCase())}</span>`;
           }
           document.getElementById('modalMyAvatar').innerHTML = getAvatarSVG(meData.user);
-          
+
           fetch(`/api/posts/${currentPostId}/view`, { method: 'POST', credentials: 'include' }).catch(console.error);
           loadPostAndComments(meData.user);
         } else { window.location.href = '/login.html'; }
-      } catch (err) { 
+      } catch (err) {
         console.error(err);
         document.getElementById('mainContainer').innerHTML = '<div class="state-msg">Failed to load user session.</div>';
       }
@@ -260,19 +291,30 @@
       const authorName = author.fullName || username;
       const time = timeAgo(post.createdAt);
       const isOwner = authorId === currentUserId;
-      
+
       const hasLoved = post.hasLiked || false;
       const likesCount = post.likesCount || 0;
       const commentsCount = post.commentsCount || 0;
       const viewsCount = post.views || 0;
 
+      let adHtml = '';
+      if (post.author.allowAds === true) {
+        adHtml = `
+        <div class="ad-container" data-author-id="${esc(authorId)}">
+          <span class="ad-label">Ad</span>
+          <iframe src="/ad-320x50.html" frameborder="0" scrolling="no" onload="checkAdBlock(this)"></iframe>
+        </div>
+        `;
+      }
+
       let mediaHTML = '';
-      
+
       if (post.postType === 'image') {
         mediaHTML = `
           <div class="post-media">
             <img src="${esc(post.mediaUrl)}" alt="Post image">
           </div>
+          ${adHtml}
         `;
       } else if (post.postType === 'video') {
         const ytId = getYouTubeID(post.mediaUrl);
@@ -284,6 +326,9 @@
       } else if (post.postType === 'pen') {
         mediaHTML = `
           ${post.mediaUrl ? `<img src="${esc(post.mediaUrl)}" class="pen-cover-img" alt="Cover">` : ''}
+          
+          ${adHtml}
+
           <div class="pen-content-box">
             <h1 class="pen-title">${esc(post.title || 'Untitled Article')}</h1>
             <div class="pen-text">${esc(post.content || '')}</div>
@@ -313,7 +358,7 @@
             </div>
             <div>${editBtnHTML}</div>
           </div>
-          
+
           ${mediaHTML}
           ${captionHTML}
 
@@ -322,7 +367,7 @@
               <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
               <span id="loveCount">${formatCount(likesCount)}</span>
             </button>
-            
+
             <button class="action-btn" onclick="openCommentsModal()">
               <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
               <span id="actionCommentCount">${formatCount(commentsCount)}</span>
@@ -336,6 +381,8 @@
         </div>
       `;
       document.getElementById('mainContainer').innerHTML = html;
+      
+      document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
     }
 
     function renderComments(comments) {
@@ -405,7 +452,7 @@
       const input = document.getElementById('commentInput');
       const content = input.value.trim();
       if (!content) return;
-      input.value = ''; 
+      input.value = '';
       try {
         const res = await fetch(`/api/posts/${currentPostId}/comments`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ content })
