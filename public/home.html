@@ -199,12 +199,20 @@
     let videoViewTimer = null;
     let socket = null;
 
-    // Service Worker Registration (Keep this for Push to work globally)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed: ', err));
       });
     }
+
+    const urlBase64ToUint8Array = (base64String) => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+    };
 
     function esc(value) {
       return String(value === null || value === undefined ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -355,7 +363,7 @@
           return;
         }
 
-        container.innerHTML = allPosts.map(post => {
+        container.innerHTML = allPosts.map((post, index) => {
           const isOwner = post.author && (post.author._id === currentUserId || post.author.id === currentUserId);
           const username = post.author && post.author.username ? post.author.username : 'unknown';
           const authorName = post.author && post.author.fullName ? post.author.fullName : username;
@@ -484,7 +492,20 @@
             footer = `<div class="post-footer">${actionBar}</div>`;
           }
 
-          return `<div class="post-card" id="post-${esc(post._id)}">${header}${body}${footer}</div>`;
+          // IN-FEED AD LOGIC: Every 5th post (index 4, 9, 14...)
+          let inFeedAdHtml = '';
+          if (index > 0 && index % 5 === 0) {
+            inFeedAdHtml = `
+              <div class="post-card" style="padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: flex-end;">
+                  <span style="font-size: 0.65rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">Sponsored</span>
+                </div>
+                <iframe src="/ad-native.html" style="width: 100%; height: 250px; border: none; border-radius: 8px; overflow: hidden;" scrolling="no"></iframe>
+              </div>
+            `;
+          }
+
+          return inFeedAdHtml + `<div class="post-card" id="post-${esc(post._id)}">${header}${body}${footer}</div>`;
         }).join('');
         
         document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
