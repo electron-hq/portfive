@@ -11,7 +11,6 @@ const subscribe = async (req, res) => {
   try {
     const subscription = req.body;
     if (!subscription || !subscription.endpoint) {
-      console.log('Push Error: Invalid subscription object');
       return res.status(400).json({ message: 'Invalid subscription object' });
     }
 
@@ -23,8 +22,6 @@ const subscribe = async (req, res) => {
     if (!existing) {
       await Subscription.create({ user: req.user.id, subscription });
       console.log(`✅ Push Subscription saved for user: ${req.user.id}`);
-    } else {
-      console.log(`ℹ️ Push Subscription already exists for user: ${req.user.id}`);
     }
 
     res.status(201).json({ message: 'Subscribed successfully' });
@@ -34,28 +31,37 @@ const subscribe = async (req, res) => {
   }
 };
 
+// New Unsubscribe Function
+const unsubscribe = async (req, res) => {
+  try {
+    const { endpoint } = req.body;
+    if (!endpoint) return res.status(400).json({ message: 'Endpoint is required' });
+
+    await Subscription.findOneAndDelete({ user: req.user.id, 'subscription.endpoint': endpoint });
+    console.log(`🗑️ Push Subscription removed for user: ${req.user.id}`);
+    
+    res.status(200).json({ message: 'Unsubscribed successfully' });
+  } catch (error) {
+    console.error('Unsubscribe error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const sendPushNotification = async (userId, payload) => {
   try {
-    console.log(`🔔 Attempting to send push to User: ${userId}`);
     const subscriptions = await Subscription.find({ user: userId });
-    
-    if (!subscriptions || subscriptions.length === 0) {
-      console.log(`⚠️ No subscriptions found for User: ${userId}`);
-      return;
-    }
+    if (!subscriptions || subscriptions.length === 0) return;
 
     const pushPayload = JSON.stringify(payload);
     
     const sendPromises = subscriptions.map(async (sub) => {
       try {
-        console.log(`🚀 Sending push to endpoint: ${sub.subscription.endpoint.substring(0, 50)}...`);
         await webpush.sendNotification(sub.subscription, pushPayload);
-        console.log(`✅ Push sent successfully to User: ${userId}`);
       } catch (error) {
-        console.error(`❌ Push send error for User ${userId}:`, error.statusCode, error.body || error.message);
         if (error.statusCode === 410 || error.statusCode === 404) {
-          console.log(`🗑️ Removing expired subscription: ${sub._id}`);
           await Subscription.findByIdAndDelete(sub._id);
+        } else {
+          console.error('Push send error:', error);
         }
       }
     });
@@ -66,4 +72,4 @@ const sendPushNotification = async (userId, payload) => {
   }
 };
 
-module.exports = { subscribe, sendPushNotification };
+module.exports = { subscribe, unsubscribe, sendPushNotification };

@@ -36,11 +36,6 @@
 
     .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
-    .perm-banner { background: var(--accent-light); border: 1px solid #C7D2FE; border-radius: 12px; padding: 14px 16px; display: none; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
-    .perm-banner p { font-size: 0.9rem; font-weight: 500; color: var(--accent); flex: 1; }
-    .perm-btn { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; font-family: inherit; white-space: nowrap; }
-    .perm-btn:hover { background: #4F46E5; }
-
     .create-post-box { background: var(--surface); padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); display: flex; align-items: center; margin-bottom: 24px; cursor: pointer; box-shadow: 0 2px 8px rgba(9,9,11,0.02); transition: border-color 0.2s; }
     .create-post-box:hover { border-color: #D4D4D8; }
     .create-post-box .input-fake { flex: 1; background: var(--bg); padding: 14px 20px; border-radius: 999px; color: var(--text-muted); font-size: 0.95rem; border: 1px solid transparent; font-weight: 500; }
@@ -155,11 +150,6 @@
   </div>
 
   <div class="container">
-    <div class="perm-banner" id="permBanner">
-      <p>Enable push notifications to stay updated!</p>
-      <button class="perm-btn" onclick="requestPushPermission()">Enable</button>
-    </div>
-
     <div class="create-post-box" onclick="window.location.href='/create-post.html'">
       <div class="input-fake">What's on your mind?</div>
     </div>
@@ -209,86 +199,11 @@
     let videoViewTimer = null;
     let socket = null;
 
+    // Service Worker Registration (Keep this for Push to work globally)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed: ', err));
       });
-    }
-
-    const urlBase64ToUint8Array = (base64String) => {
-      const padding = '='.repeat((4 - base64String.length % 4) % 4);
-      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-      const rawData = window.atob(base64);
-      const outputArray = new Uint8Array(rawData.length);
-      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
-      return outputArray;
-    };
-
-    // Robust Push Initialization
-    async function initPushNotifications() {
-      if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        let subscription = await registration.pushManager.getSubscription();
-        
-        if (Notification.permission === 'granted') {
-          if (subscription) {
-            // Already subscribed, ensure it's saved in DB
-            await saveSubscriptionToBackend(subscription);
-            document.getElementById('permBanner').style.display = 'none';
-          } else {
-            // Permission granted but no subscription, try subscribing
-            await subscribeToPush();
-          }
-        } else if (Notification.permission === 'default') {
-          document.getElementById('permBanner').style.display = 'flex';
-        } else {
-          document.getElementById('permBanner').style.display = 'none';
-        }
-      } catch (err) { console.error('Push init error:', err); }
-    }
-
-    async function requestPushPermission() {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          await subscribeToPush();
-        } else {
-          document.getElementById('permBanner').style.display = 'none';
-        }
-      } catch (err) { console.error('Push subscription error:', err); }
-    }
-
-    async function subscribeToPush() {
-      try {
-        const registration = await navigator.serviceWorker.ready;
-        const res = await fetch('/api/push/vapid-public-key');
-        if (!res.ok) throw new Error('Failed to fetch VAPID key');
-        const { key } = await res.json();
-
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(key)
-        });
-
-        await saveSubscriptionToBackend(subscription);
-        document.getElementById('permBanner').style.display = 'none';
-        console.log('✅ Push subscription created and saved.');
-      } catch (err) {
-        console.error('Push subscription error:', err);
-        alert('Failed to enable notifications. Try clearing site data.');
-      }
-    }
-
-    async function saveSubscriptionToBackend(subscription) {
-      try {
-        await fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(subscription)
-        });
-      } catch (err) { console.error('Save subscription error:', err); }
     }
 
     function esc(value) {
@@ -388,7 +303,6 @@
           socket.on('receive_notification', () => { fetchBadges(); });
 
           fetchBadges();
-          initPushNotifications();
         } else { window.location.href = '/login.html'; }
       } catch (err) { window.location.href = '/login.html'; }
     }

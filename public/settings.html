@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Settings - PortFive</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="manifest" href="/manifest.json">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -153,6 +155,23 @@
       </div>
     </div>
 
+    <!-- Notifications (NEW) -->
+    <div class="card">
+      <div class="card-header">Notifications</div>
+      <div class="card-body">
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <h4>Push Notifications</h4>
+            <p>Receive alerts for messages, likes, and calls.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="notifToggle" onchange="toggleNotifications(this.checked)">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- Monetization -->
     <div class="card">
       <div class="card-header">Monetization</div>
@@ -172,7 +191,6 @@
           <div class="amount" id="earningsAmount">$0.00</div>
           <p>Total Impressions: <span id="impressionsCount">0</span>. Revenue share payout will be available soon.</p>
         </div>
-        <!-- New Manage Ads Button -->
         <button class="btn btn-outline btn-full" id="manageAdsBtn" style="margin-top: 15px; display: none;" onclick="window.location.href='/my-ads.html'">Manage Ad Placements</button>
       </div>
     </div>
@@ -226,6 +244,15 @@
     let currentUser = null;
     let verifiedOldPassword = "";
 
+    const urlBase64ToUint8Array = (base64String) => {
+      const padding = '='.repeat((4 - base64String.length % 4) % 4);
+      const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+      const rawData = window.atob(base64);
+      const outputArray = new Uint8Array(rawData.length);
+      for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+      return outputArray;
+    };
+
     function showToast(msg) {
       const toast = document.getElementById('toast');
       toast.innerText = msg;
@@ -269,21 +296,99 @@
         if (currentUser.allowAds) {
           allowAdsToggle.checked = true;
           earningsBox.style.display = 'block';
-          manageAdsBtn.style.display = 'block'; // Show button
+          manageAdsBtn.style.display = 'block'; 
           impressionsCount.innerText = currentUser.adImpressions || 0;
-          const estEarnings = ((currentUser.adImpressions || 0) / 1000) * 0.50;
+          const estEarnings = ((currentUser.adImpressions || 0) / 1000) * 0.075;
           earningsAmount.innerText = `$${estEarnings.toFixed(2)}`;
         } else {
           allowAdsToggle.checked = false;
           earningsBox.style.display = 'none';
-          manageAdsBtn.style.display = 'none'; // Hide button
+          manageAdsBtn.style.display = 'none';
         }
+
+        // Check Push Notification Status
+        await checkNotificationStatus();
 
       } catch (err) {
         window.location.href = '/login.html';
       }
     }
     init();
+
+    // --- Push Notification Logic ---
+    async function checkNotificationStatus() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        document.getElementById('notifToggle').disabled = true;
+        return;
+      }
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      
+      const toggle = document.getElementById('notifToggle');
+      
+      if (subscription && Notification.permission === 'granted') {
+        toggle.checked = true;
+      } else {
+        toggle.checked = false;
+      }
+    }
+
+    async function toggleNotifications(isChecked) {
+      const toggle = document.getElementById('notifToggle');
+      
+      if (isChecked) {
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            showToast('Notification permission denied by browser.');
+            toggle.checked = false;
+            return;
+          }
+
+          const registration = await navigator.serviceWorker.ready;
+          const res = await fetch('/api/push/vapid-public-key');
+          const { key } = await res.json();
+
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(key)
+          });
+
+          await fetch('/api/push/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(subscription)
+          });
+          
+          showToast('Push notifications enabled!');
+        } catch (err) {
+          console.error('Subscription error:', err);
+          showToast('Failed to enable notifications.');
+          toggle.checked = false;
+        }
+      } else {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          const subscription = await registration.pushManager.getSubscription();
+          
+          if (subscription) {
+            await subscription.unsubscribe();
+            
+            await fetch('/api/push/unsubscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ endpoint: subscription.endpoint })
+            });
+          }
+          showToast('Push notifications disabled.');
+        } catch (err) {
+          console.error('Unsubscribe error:', err);
+        }
+      }
+    }
+    // -----------------------------
 
     async function uploadImage(input, type) {
       if (!input.files || !input.files[0]) return;
