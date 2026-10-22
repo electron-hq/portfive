@@ -10,13 +10,15 @@ const connectDB = require('./config/db');
 const http = require('http');
 const { Server } = require('socket.io');
 
-// Import User and Push logic for Call Notifications
 const User = require('./models/User');
 const { sendPushNotification } = require('./controllers/pushController');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: true, credentials: true } });
+
+// FIX: Tell Express to trust the Render proxy
+app.set('trust proxy', 1);
 
 connectDB();
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -61,18 +63,13 @@ io.on('connection', (socket) => {
     socket.userId = userId;
   });
   
-  // Chat Events
   socket.on('send_message', (data) => io.to(data.receiverId).emit('receive_message', data.message));
   socket.on('edit_message', (data) => io.to(data.receiverId).emit('message_edited', { messageId: data.messageId, newText: data.newText }));
   socket.on('delete_message', (data) => io.to(data.receiverId).emit('message_deleted', { messageId: data.messageId }));
   socket.on('send_notification', (data) => io.to(data.recipientId).emit('receive_notification', data.notification));
 
-  // --- WebRTC Signaling Events ---
   socket.on('call_user', async (data) => {
-    // 1. Emit via socket (if user is currently inside the app)
     io.to(data.receiverId).emit('incoming_call', { from: data.from, signal: data.signal, type: data.type });
-    
-    // 2. Trigger Push Notification (if user's app is in background or closed)
     try {
       const sender = await User.findById(data.from).select('fullName');
       if (sender) {
@@ -85,21 +82,10 @@ io.on('connection', (socket) => {
     } catch (err) { console.error('Call push notify error:', err); }
   });
 
-  socket.on('answer_call', (data) => {
-    io.to(data.callerId).emit('call_accepted', { signal: data.signal });
-  });
-
-  socket.on('ice_candidate', (data) => {
-    io.to(data.receiverId).emit('ice_candidate', { candidate: data.candidate });
-  });
-
-  socket.on('reject_call', (data) => {
-    io.to(data.callerId).emit('call_rejected');
-  });
-
-  socket.on('end_call', (data) => {
-    io.to(data.receiverId).emit('call_ended');
-  });
+  socket.on('answer_call', (data) => { io.to(data.callerId).emit('call_accepted', { signal: data.signal }); });
+  socket.on('ice_candidate', (data) => { io.to(data.receiverId).emit('ice_candidate', { candidate: data.candidate }); });
+  socket.on('reject_call', (data) => { io.to(data.callerId).emit('call_rejected'); });
+  socket.on('end_call', (data) => { io.to(data.receiverId).emit('call_ended'); });
 });
 
 const PORT = process.env.PORT || 5000;
