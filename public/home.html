@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Home - PortFive</title>
   
-  <!-- Favicon & PWA Links -->
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -225,12 +224,23 @@
       return outputArray;
     };
 
+    // Robust Push Initialization
     async function initPushNotifications() {
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
       try {
         const registration = await navigator.serviceWorker.ready;
         let subscription = await registration.pushManager.getSubscription();
-        if (!subscription && Notification.permission === 'default') {
+        
+        if (Notification.permission === 'granted') {
+          if (subscription) {
+            // Already subscribed, ensure it's saved in DB
+            await saveSubscriptionToBackend(subscription);
+            document.getElementById('permBanner').style.display = 'none';
+          } else {
+            // Permission granted but no subscription, try subscribing
+            await subscribeToPush();
+          }
+        } else if (Notification.permission === 'default') {
           document.getElementById('permBanner').style.display = 'flex';
         } else {
           document.getElementById('permBanner').style.display = 'none';
@@ -241,21 +251,44 @@
     async function requestPushPermission() {
       try {
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') { document.getElementById('permBanner').style.display = 'none'; return; }
+        if (permission === 'granted') {
+          await subscribeToPush();
+        } else {
+          document.getElementById('permBanner').style.display = 'none';
+        }
+      } catch (err) { console.error('Push subscription error:', err); }
+    }
+
+    async function subscribeToPush() {
+      try {
         const registration = await navigator.serviceWorker.ready;
         const res = await fetch('/api/push/vapid-public-key');
         if (!res.ok) throw new Error('Failed to fetch VAPID key');
         const { key } = await res.json();
+
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: urlBase64ToUint8Array(key)
         });
-        await fetch('/api/push/subscribe', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', body: JSON.stringify(subscription)
-        });
+
+        await saveSubscriptionToBackend(subscription);
         document.getElementById('permBanner').style.display = 'none';
-      } catch (err) { console.error('Push subscription error:', err); }
+        console.log('✅ Push subscription created and saved.');
+      } catch (err) {
+        console.error('Push subscription error:', err);
+        alert('Failed to enable notifications. Try clearing site data.');
+      }
+    }
+
+    async function saveSubscriptionToBackend(subscription) {
+      try {
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(subscription)
+        });
+      } catch (err) { console.error('Save subscription error:', err); }
     }
 
     function esc(value) {
@@ -604,23 +637,11 @@
       e.stopPropagation();
       const reason = prompt('Why are you reporting this post? (e.g., Spam, Nudity, Harassment)');
       if (!reason || !reason.trim()) return;
-
       try {
-        const res = await fetch(`/api/posts/${postId}/report`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ reason: reason.trim() })
-        });
-        if (res.ok) {
-          alert('Post reported successfully. Our moderators will review it.');
-        } else {
-          const data = await res.json();
-          alert(data.message || 'Failed to report post.');
-        }
-      } catch (err) {
-        alert('Error reporting post.');
-      }
+        const res = await fetch(`/api/posts/${postId}/report`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ reason: reason.trim() }) });
+        if (res.ok) alert('Post reported successfully. Our moderators will review it.');
+        else { const data = await res.json(); alert(data.message || 'Failed to report post.'); }
+      } catch (err) { alert('Error reporting post.'); }
     }
 
     function openVideoModal(postId, ytId, authorName, username, profilePic) {
