@@ -18,8 +18,8 @@ self.addEventListener('push', function(event) {
     const data = event.data.json();
     const options = {
       body: data.body,
-      icon: '/icon.svg', // Official PortFive Icon
-      badge: '/icon.svg',
+      icon: '/icon-192.png', // New PNG Icon
+      badge: '/icon-192.png',
       data: { url: data.url || '/home.html' },
       vibrate: [100, 50, 100]
     };
