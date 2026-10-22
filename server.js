@@ -10,6 +10,10 @@ const connectDB = require('./config/db');
 const http = require('http');
 const { Server } = require('socket.io');
 
+// Import User and Push logic for Call Notifications
+const User = require('./models/User');
+const { sendPushNotification } = require('./controllers/pushController');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: true, credentials: true } });
@@ -54,7 +58,7 @@ app.use((req, res) => res.status(404).send('404 Not Found'));
 io.on('connection', (socket) => {
   socket.on('join_room', (userId) => {
     socket.join(userId);
-    socket.userId = userId; // Save for disconnect handling
+    socket.userId = userId;
   });
   
   // Chat Events
@@ -64,8 +68,21 @@ io.on('connection', (socket) => {
   socket.on('send_notification', (data) => io.to(data.recipientId).emit('receive_notification', data.notification));
 
   // --- WebRTC Signaling Events ---
-  socket.on('call_user', (data) => {
+  socket.on('call_user', async (data) => {
+    // 1. Emit via socket (if user is currently inside the app)
     io.to(data.receiverId).emit('incoming_call', { from: data.from, signal: data.signal, type: data.type });
+    
+    // 2. Trigger Push Notification (if user's app is in background or closed)
+    try {
+      const sender = await User.findById(data.from).select('fullName');
+      if (sender) {
+        sendPushNotification(data.receiverId, {
+          title: 'Incoming Call',
+          body: `${sender.fullName} is calling you (${data.type} call)...`,
+          url: `/chat-room.html?id=${data.from}`
+        });
+      }
+    } catch (err) { console.error('Call push notify error:', err); }
   });
 
   socket.on('answer_call', (data) => {
@@ -82,11 +99,6 @@ io.on('connection', (socket) => {
 
   socket.on('end_call', (data) => {
     io.to(data.receiverId).emit('call_ended');
-  });
-
-  socket.on('disconnect', () => {
-    // Optional: Notify others if user disconnects while in call
-    // if (socket.userId) io.emit('user_disconnected', socket.userId);
   });
 });
 
