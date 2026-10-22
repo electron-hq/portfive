@@ -52,16 +52,46 @@
     .author-name { font-size: 0.9rem; font-weight: 600; }
     .post-date { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* Media Styles */
-    .post-media { width: 100%; background: #000; position: relative; cursor: pointer; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 200px; }
-    .post-media img { max-width: 100%; max-height: 70vh; object-fit: contain; display: block; }
+    /* --- NEW MEDIA CONTAINER STYLES (Matching Profile Grid) --- */
+    .media-container {
+      width: 100%;
+      background: #000;
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+    }
+    .media-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+      border-radius: 8px;
+    }
+    .aspect-img { aspect-ratio: 4 / 5; }
+    .aspect-vid { aspect-ratio: 16 / 9; }
     
-    .video-thumb { width: 100%; aspect-ratio: 16 / 9; position: relative; background: #18181B; }
-    .video-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #09090B; box-shadow: 0 4px 16px rgba(0,0,0,0.25); pointer-events: none; }
     .play-icon svg { margin-left: 4px; }
 
-    .pen-cover { width: 100%; height: 180px; background-size: cover; background-position: center; border-bottom: 1px solid var(--line); cursor: pointer; }
+    /* Pen Cover specific */
+    .pen-cover-container {
+      width: 100%;
+      aspect-ratio: 3 / 1;
+      background: #000;
+      padding: 12px;
+      cursor: pointer;
+    }
+    .pen-cover-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
     
     .ad-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); position: relative; }
     .ad-label { position: absolute; top: 4px; right: 16px; font-size: 0.6rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
@@ -116,7 +146,7 @@
 
     .sk { background: linear-gradient(90deg, #EFEFF1 25%, #F6F6F8 50%, #EFEFF1 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite linear; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .sk-card { height: 320px; border-radius: 16px; margin-bottom: 24px; }
+    .sk-card { height: 380px; border-radius: 16px; margin-bottom: 24px; }
 
     .video-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(5px); }
     .video-modal.active { display: flex; }
@@ -144,7 +174,6 @@
     .refresh-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
     .refresh-btn.show { display: flex; }
 
-    /* Infinite scroll sentinel */
     #feedSentinel { height: 10px; }
 
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 68px; z-index: 1000; max-width: 600px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); }
@@ -182,7 +211,6 @@
       <div class="sk sk-card"></div>
     </div>
     
-    <!-- Infinite Scroll Sentinel -->
     <div id="feedSentinel"></div>
 
     <div class="global-empty-state" id="globalEmptyState">
@@ -199,7 +227,6 @@
     </div>
   </div>
 
-  <!-- Floating Refresh Button -->
   <button class="refresh-btn" id="refreshBtn" onclick="refreshFeed()">
     <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
     Refresh Feed
@@ -231,10 +258,9 @@
     let videoViewTimer = null;
     let socket = null;
 
-    // Feed Logic Variables
-    let baseFeed = [];        // Holds the mixed posts (4 pens, 4 images, 2 videos ratio)
-    let currentIndex = 0;     // Pointer for the infinite scroll
-    let isFeedLoading = false; // Prevents multiple fetches at once
+    let baseFeed = [];        
+    let currentIndex = 0;     
+    let isFeedLoading = false; 
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -372,23 +398,15 @@
       } catch (err) { console.error('Error fetching badges:', err); }
     }
 
-    // --- Algorithm: 4 Pens, 4 Images, 2 Videos Ratio ---
     function mixFeed(videos, images, pens) {
       let mixed = [];
       let vIdx = 0, iIdx = 0, pIdx = 0;
       
-      // Keep adding until all arrays are empty
       while (vIdx < videos.length || iIdx < images.length || pIdx < pens.length) {
         let addedInThisCycle = false;
-
-        // Add 4 Pens
         for (let i = 0; i < 4 && pIdx < pens.length; i++) { mixed.push(pens[pIdx++]); addedInThisCycle = true; }
-        // Add 4 Images
         for (let i = 0; i < 4 && iIdx < images.length; i++) { mixed.push(images[iIdx++]); addedInThisCycle = true; }
-        // Add 2 Videos
         for (let i = 0; i < 2 && vIdx < videos.length; i++) { mixed.push(videos[vIdx++]); addedInThisCycle = true; }
-
-        // Safety break if no array was consumed
         if (!addedInThisCycle) break;
       }
       return mixed;
@@ -420,12 +438,11 @@
           return;
         }
 
-        // Apply Algorithm
         baseFeed = mixFeed(videos, images, pens);
         currentIndex = 0;
         
         container.innerHTML = '';
-        loadMoreFeed(); // Load first batch
+        loadMoreFeed(); 
         
       } catch (err) {
         console.error(err);
@@ -447,7 +464,6 @@
       const viewCount = post.views || 0;
       const isSaved = post.isSaved || false;
       
-      // Generate a unique identifier for duplicate posts
       const uniqueId = `${post._id}_${index}`;
 
       let adHtml = '';
@@ -508,7 +524,7 @@
         const ytId = getYouTubeID(post.mediaUrl);
         const thumbUrl = post.thumbnailUrl || (ytId ? 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg' : post.mediaUrl);
         body = `
-          <div class="post-media video-thumb" onclick="openVideoModal('${esc(post._id)}', '${esc(ytId)}', '${esc(authorName)}', '${esc(username)}', '${esc(post.author.profilePic || '')}')">
+          <div class="media-container aspect-vid" onclick="openVideoModal('${esc(post._id)}', '${esc(ytId)}', '${esc(authorName)}', '${esc(username)}', '${esc(post.author.profilePic || '')}')">
             <img src="${esc(thumbUrl)}" alt="" loading="lazy" onerror="this.onerror=null;this.src=VIDEO_PLACEHOLDER;">
             <div class="play-icon">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" stroke="none"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
@@ -524,7 +540,7 @@
       } 
       else if (post.postType === 'image') {
         body = `
-          <div class="post-media" onclick="window.location.href='/post.html?id=${esc(post._id)}'">
+          <div class="media-container aspect-img" onclick="window.location.href='/post.html?id=${esc(post._id)}'">
             <img src="${esc(post.mediaUrl)}" alt="" loading="lazy">
           </div>
           ${adHtml}
@@ -535,7 +551,7 @@
         const needsReadMore = snippet.length > 180; 
         body = `
           <div>
-            ${post.mediaUrl ? `<div class="pen-cover" style="background-image:url('${safeUrl(post.mediaUrl)}')" onclick="window.location.href='/post.html?id=${esc(post._id)}'"></div>` : ''}
+            ${post.mediaUrl ? `<div class="pen-cover-container" onclick="window.location.href='/post.html?id=${esc(post._id)}'"><img src="${safeUrl(post.mediaUrl)}" alt="Cover"></div>` : ''}
             
             ${adHtml}
 
@@ -567,7 +583,6 @@
         footer = `<div class="post-footer">${actionBar}</div>`;
       }
 
-      // IN-FEED AD LOGIC: Every 5th post (index 4, 9, 14...)
       let inFeedAdHtml = '';
       if (index > 0 && index % 5 === 0) {
         inFeedAdHtml = `
@@ -587,10 +602,8 @@
       const container = document.getElementById('feedContainer');
       let htmlToAppend = '';
       
-      // Load 10 posts at a time
       const batchSize = 10;
       for (let i = 0; i < batchSize; i++) {
-        // Infinite Loop Logic: If we reach the end, start over
         if (currentIndex >= baseFeed.length) {
           currentIndex = 0;
         }
@@ -601,12 +614,9 @@
       }
       
       container.insertAdjacentHTML('beforeend', htmlToAppend);
-      
-      // Observe new ads
       document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
     }
 
-    // --- Infinite Scroll Sentinel Observer ---
     const sentinel = document.getElementById('feedSentinel');
     const scrollObserver = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !isFeedLoading) {
@@ -615,10 +625,9 @@
     }, { rootMargin: '200px' });
     scrollObserver.observe(sentinel);
 
-    // --- Floating Refresh Button Logic ---
     window.addEventListener('scroll', () => {
       const btn = document.getElementById('refreshBtn');
-      if (window.scrollY > 1500) { // Show after scrolling down a bit
+      if (window.scrollY > 1500) { 
         btn.classList.add('show');
       } else {
         btn.classList.remove('show');
@@ -630,7 +639,6 @@
       document.getElementById('refreshBtn').classList.remove('show');
       document.getElementById('feedContainer').innerHTML = '<div class="sk sk-card"></div><div class="sk sk-card"></div>';
       
-      // Small delay to make refresh feel real
       setTimeout(() => {
         loadInitialFeed();
       }, 500);
@@ -686,7 +694,6 @@
         const res = await fetch('/api/posts/' + encodeURIComponent(postId), { method: 'DELETE', credentials: 'include' });
         if (res.ok) {
           document.getElementById('post-' + uniqueId).remove();
-          // Optionally remove all instances from DOM if repeated, but removing the specific clicked one is fine.
         }
       } catch (err) { alert('Error deleting post.'); }
     }
