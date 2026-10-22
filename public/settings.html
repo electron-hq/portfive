@@ -6,10 +6,10 @@
   <title>Settings - PortFive</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { 
-      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B; 
-      --text-muted: #71717A; --line: #E4E4E7; 
-      --primary: #18181B; --primary-hover: #27272A; 
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --primary-hover: #27272A;
       --accent: #6366F1; --accent-light: #EEF2FF;
       --red: #EF4444;
     }
@@ -31,15 +31,34 @@
     .card-header { padding: 15px 20px; border-bottom: 1px solid var(--line); font-weight: 700; font-size: 1rem; background: #FAFAFA; }
     .card-body { padding: 20px; }
 
+    /* Image Upload UI */
+    .upload-section { display: flex; flex-direction: column; gap: 20px; }
+    .upload-row { display: flex; align-items: center; gap: 15px; }
+    
+    .upload-preview { position: relative; overflow: hidden; cursor: pointer; background: var(--bg); border: 1px solid var(--line); background-size: cover; background-position: center; }
+    .upload-preview:hover .upload-overlay { opacity: 1; }
+    
+    .cover-preview { width: 100%; height: 120px; border-radius: 8px; }
+    .avatar-preview { width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0; }
+    
+    .upload-overlay { position: absolute; inset: 0; background: rgba(24, 24, 27, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; backdrop-filter: blur(2px); }
+    .upload-overlay svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2; margin-bottom: 4px; }
+    .upload-overlay span { color: white; font-size: 0.75rem; font-weight: 600; }
+    
+    .upload-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+    .upload-info p { font-size: 0.8rem; color: var(--text-muted); }
+
     /* Form Styles */
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text); }
     .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; background: var(--bg); color: var(--text); transition: 0.2s; }
     .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: var(--surface); }
-    
-    .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; display: inline-block; }
+
+    .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; display: inline-block; text-align: center; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
+    .btn-outline:hover { background: var(--bg); }
     .btn-full { width: 100%; }
 
     /* Sliding Security Form */
@@ -48,7 +67,7 @@
     .security-slide { width: 50%; padding: 0 5px; }
     .security-slide:first-child { padding-left: 0; padding-right: 15px; }
     .security-slide:last-child { padding-left: 15px; padding-right: 0; }
-    
+
     .verify-success { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 0.9rem; font-weight: 600; margin-bottom: 15px; padding: 10px; background: var(--accent-light); border-radius: 8px; }
 
     /* Toggle Switch */
@@ -94,9 +113,41 @@
 
   <div class="container">
 
+    <!-- Profile Images -->
+    <div class="card">
+      <div class="card-header">Profile Images</div>
+      <div class="card-body upload-section">
+        
+        <!-- Cover Photo -->
+        <div class="upload-preview cover-preview" id="coverPreview" onclick="document.getElementById('coverInput').click()">
+          <div class="upload-overlay">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            <span>Change Cover</span>
+          </div>
+        </div>
+        <input type="file" id="coverInput" accept="image/*" hidden onchange="uploadImage(this, 'cover')">
+
+        <!-- Profile Picture -->
+        <div class="upload-row">
+          <div class="upload-preview avatar-preview" id="avatarPreview" onclick="document.getElementById('avatarInput').click()">
+            <div class="upload-overlay" style="background: rgba(24, 24, 27, 0.5); backdrop-filter: none;">
+              <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            </div>
+          </div>
+          <input type="file" id="avatarInput" accept="image/*" hidden onchange="uploadImage(this, 'avatar')">
+          
+          <div class="upload-info">
+            <h4>Profile Picture</h4>
+            <p>Click to upload. Recommended: 400x400 px.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- Edit Profile -->
     <div class="card">
-      <div class="card-header">Edit Profile</div>
+      <div class="card-header">Edit Profile Details</div>
       <div class="card-body">
         <div class="form-group">
           <label>Full Name</label>
@@ -114,7 +165,7 @@
           <label>Website URL</label>
           <input type="url" id="webUrl" placeholder="https://example.com">
         </div>
-        <button class="btn btn-primary btn-full" onclick="updateProfile()">Save Profile</button>
+        <button class="btn btn-primary btn-full" onclick="updateProfile()">Save Profile Details</button>
       </div>
     </div>
 
@@ -146,7 +197,7 @@
       <div class="card-body">
         <div class="security-slider">
           <div class="security-track" id="securityTrack">
-            
+
             <!-- Step 1: Verify Old Password -->
             <div class="security-slide">
               <div class="form-group">
@@ -193,7 +244,7 @@
 
   <script>
     let currentUser = null;
-    let verifiedOldPassword = ""; // Temporarily store the verified password
+    let verifiedOldPassword = "";
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
@@ -211,10 +262,22 @@
 
         document.getElementById('fullName').value = currentUser.fullName || '';
         document.getElementById('bio').value = currentUser.bio || '';
-        
+
         if (currentUser.website) {
           document.getElementById('webTitle').value = currentUser.website.title || '';
           document.getElementById('webUrl').value = currentUser.website.url || '';
+        }
+
+        // Load Image Previews
+        if (currentUser.coverPic) {
+          document.getElementById('coverPreview').style.backgroundImage = `url(${currentUser.coverPic})`;
+        }
+        if (currentUser.profilePic) {
+          document.getElementById('avatarPreview').style.backgroundImage = `url(${currentUser.profilePic})`;
+          document.getElementById('avatarPreview').style.border = 'none';
+        } else {
+          document.getElementById('avatarPreview').style.backgroundColor = '#E4E4E7';
+          document.getElementById('avatarPreview').innerHTML += `<span style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:24px; font-weight:700; color:#71717A; z-index:0;">${currentUser.fullName.charAt(0).toUpperCase()}</span>`;
         }
 
         const allowAdsToggle = document.getElementById('allowAdsToggle');
@@ -238,6 +301,52 @@
       }
     }
     init();
+
+    // Image Upload Handler
+    async function uploadImage(input, type) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      
+      // Preview instantly
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        if (type === 'cover') {
+          document.getElementById('coverPreview').style.backgroundImage = `url(${e.target.result})`;
+        } else {
+          const av = document.getElementById('avatarPreview');
+          av.style.backgroundImage = `url(${e.target.result})`;
+          av.style.border = 'none';
+          // Remove initial letter if exists
+          const span = av.querySelector('span');
+          if(span) span.remove();
+        }
+      }
+      reader.readAsDataURL(file);
+
+      // Upload to Backend
+      const formData = new FormData();
+      formData.append('image', file);
+      
+      showToast('Uploading image...');
+      
+      try {
+        // Note: Endpoint needs to be created in userController.js
+        const endpoint = type === 'cover' ? '/api/users/upload-cover' : '/api/users/upload-avatar';
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include'
+        });
+        
+        if (res.ok) {
+          showToast('Image updated successfully!');
+        } else {
+          showToast('Failed to upload image. (Backend route missing)');
+        }
+      } catch (err) {
+        showToast('Server error while uploading.');
+      }
+    }
 
     async function updateProfile() {
       const fullName = document.getElementById('fullName').value.trim();
@@ -272,15 +381,11 @@
           body: JSON.stringify({ oldPassword: oldPass }),
           credentials: 'include'
         });
-        
+
         if (res.ok) {
-          verifiedOldPassword = oldPass; // Save for step 2
+          verifiedOldPassword = oldPass;
           showToast('Identity verified successfully!');
-          
-          // Slide to Step 2
           document.getElementById('securityTrack').style.transform = 'translateX(-50%)';
-          
-          // Clear old input
           document.getElementById('oldPass').value = '';
         } else {
           const data = await res.json();
@@ -308,11 +413,11 @@
           body: JSON.stringify({ oldPassword: verifiedOldPassword, newPassword }),
           credentials: 'include'
         });
-        
+
         const data = await res.json();
         if (res.ok) {
           showToast('Password updated successfully!');
-          resetSecurityForm(); // Slide back and clear
+          resetSecurityForm();
         } else {
           showToast(data.message || 'Failed to update password.');
         }
@@ -323,7 +428,6 @@
       }
     }
 
-    // Reset the slider back to step 1
     function resetSecurityForm() {
       verifiedOldPassword = "";
       document.getElementById('newPass').value = '';
@@ -333,7 +437,6 @@
     async function toggleAds(isChecked) {
       try {
         const res = await fetch('/api/users/toggle-ads', { method: 'PUT', credentials: 'include' });
-        const data = await res.json();
         if (res.ok) {
           showToast(isChecked ? 'Ads enabled on your posts!' : 'Ads disabled.');
           document.getElementById('earningsBox').style.display = isChecked ? 'block' : 'none';
@@ -357,7 +460,7 @@
 
     async function deleteAccount() {
       if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone and all your posts will be lost.')) return;
-      
+
       const confirmText = prompt('Type "DELETE" to confirm account deletion:');
       if (confirmText !== 'DELETE') return showToast('Deletion cancelled.');
 

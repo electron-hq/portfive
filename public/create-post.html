@@ -4,64 +4,81 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Create Post - PortFive</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { 
-      --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; 
-      --text-muted: #64748B; --line: #E2E8F0; --green: #10B981; 
-      --green-dark: #059669; --red: #EF4444;
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --primary-hover: #27272A;
+      --accent: #6366F1; --accent-light: #EEF2FF;
+      --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
     /* Top Navbar */
-    .top-nav { background: var(--surface); border-bottom: 1px solid var(--line); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
-    .close-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; }
+    .top-nav { background: rgba(250, 250, 250, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .close-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 5px; border-radius: 50%; transition: 0.2s; }
+    .close-btn:hover { background: var(--line); }
     .close-btn svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; }
-    .title { font-weight: 700; font-size: 1.1rem; }
-    .btn-publish { background: var(--green); color: white; border: none; padding: 8px 20px; border-radius: 999px; font-weight: 700; font-size: 0.95rem; cursor: pointer; }
+    .title { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.3px; }
+    .btn-publish { background: var(--primary); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
+    .btn-publish:hover { background: var(--primary-hover); }
     .btn-publish:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* Tabs */
-    .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--line); }
+    .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 61px; z-index: 90; }
     .tab { flex: 1; text-align: center; padding: 15px 0; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
-    .tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .tab.active { color: var(--text); border-bottom-color: var(--primary); }
 
     /* Form Container */
     .container { flex: 1; padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; }
-    
+
     .form-group { margin-bottom: 20px; display: none; }
     .form-group.active { display: block; }
 
-    input[type="text"], input[type="url"], textarea { width: 100%; padding: 15px; border: 1px solid var(--line); border-radius: 12px; font-family: inherit; font-size: 1rem; outline: none; background: var(--surface); color: var(--text); }
-    input[type="text"]:focus, input[type="url"]:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
-    
+    input[type="text"], input[type="url"], textarea { width: 100%; padding: 14px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; background: var(--surface); color: var(--text); transition: 0.2s; }
+    input[type="text"]:focus, input[type="url"]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12); }
+    ::placeholder { color: var(--text-muted); }
+
     textarea { resize: vertical; min-height: 250px; line-height: 1.6; }
 
     .file-upload { border: 2px dashed var(--line); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; background: var(--surface); transition: 0.2s; position: relative; overflow: hidden; }
-    .file-upload:hover { border-color: var(--green); background: #F0FDF4; }
-    .file-upload svg { width: 40px; height: 40px; stroke: var(--green); fill: none; margin-bottom: 10px; }
+    .file-upload:hover { border-color: var(--accent); background: var(--accent-light); }
+    .file-upload svg { width: 40px; height: 40px; stroke: var(--text-muted); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
     .file-upload p { color: var(--text-muted); font-size: 0.9rem; }
     .file-upload input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-    
-    .preview-img { width: 100%; border-radius: 12px; margin-top: 15px; display: none; object-fit: cover; }
-    
+
+    .preview-img { width: 100%; border-radius: 12px; margin-top: 15px; display: none; object-fit: cover; border: 1px solid var(--line); }
+
+    /* Video custom thumbnail (optional) */
+    .thumb-section { margin-top: 15px; }
+    .thumb-label { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+    .thumb-label span { font-weight: 500; color: var(--text-muted); font-size: 0.8rem; }
+    .thumb-upload { padding: 20px; }
+    .thumb-upload svg { width: 28px; height: 28px; margin-bottom: 6px; }
+    .thumb-preview-wrap { position: relative; margin-top: 12px; display: none; }
+    .thumb-preview-wrap img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); display: block; background: #000; }
+    .thumb-remove { position: absolute; top: 8px; right: 8px; background: rgba(24, 24, 27, 0.7); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+    .thumb-remove:hover { background: rgba(24, 24, 27, 0.95); }
+    .thumb-remove svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
+
     /* Pen Specific */
     .pen-cover-preview { width: 100%; aspect-ratio: 3 / 1; border-radius: 12px; margin-top: 15px; display: none; background-size: cover; background-position: center; border: 1px solid var(--line); }
     .char-count { text-align: right; font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
 
     /* Video Specific Warning */
     .warning-box { background: #FEF2F2; border: 1px solid #FECACA; padding: 12px; border-radius: 8px; margin-top: 15px; display: flex; gap: 10px; align-items: flex-start; }
-    .warning-box svg { width: 20px; height: 20px; stroke: var(--red); fill: none; flex-shrink: 0; }
+    .warning-box svg { width: 20px; height: 20px; stroke: var(--red); fill: none; stroke-width: 2; flex-shrink: 0; }
     .warning-box p { font-size: 0.8rem; color: #991B1B; line-height: 1.4; }
 
-    .error-msg { color: var(--red); font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
+    .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 15px; text-align: center; display: none; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 10px; }
   </style>
 </head>
 <body>
 
   <div class="top-nav">
-    <button class="close-btn" onclick="window.history.back()">
+    <button class="close-btn" onclick="window.history.back()" aria-label="Close">
       <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
     <div class="title">Create New</div>
@@ -69,37 +86,53 @@
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('image')">Image</div>
-    <div class="tab" onclick="switchTab('video')">Video</div>
-    <div class="tab" onclick="switchTab('pen')">Pen (Article)</div>
+    <div class="tab active" id="tab-image" onclick="switchTab('image')">Image</div>
+    <div class="tab" id="tab-video" onclick="switchTab('video')">Video</div>
+    <div class="tab" id="tab-pen" onclick="switchTab('pen')">Pen (Article)</div>
   </div>
 
   <div class="container">
     <div class="error-msg" id="errorMsg"></div>
 
-    <form id="postForm">
-      
+    <form id="postForm" onsubmit="return false;">
+
       <!-- Image Post -->
       <div class="form-group active" id="group-image">
         <div class="file-upload">
-          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-          <p>Click to upload an image</p>
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <p>Click to upload an image (max 10 MB)</p>
           <input type="file" id="imageFile" accept="image/*" onchange="previewFile(this, 'imagePreview')">
         </div>
-        <img id="imagePreview" class="preview-img">
-        <input type="text" id="imageCaption" placeholder="Write a caption..." style="margin-top: 15px;">
+        <img id="imagePreview" class="preview-img" alt="Preview">
+        <input type="text" id="imageCaption" placeholder="Write a caption..." maxlength="500" style="margin-top: 15px;">
       </div>
 
-      <!-- Video Post (Embed Link) -->
+      <!-- Video Post (YouTube Embed Link) -->
       <div class="form-group" id="group-video">
         <input type="url" id="videoUrl" placeholder="Paste YouTube link here (e.g. https://youtube.com/watch?v=...)" oninput="previewYouTube(this.value)">
-        
+
         <div id="videoPreviewContainer" style="display:none; margin-top: 15px; text-align: center;">
-          <img id="videoThumb" style="width: 100%; max-height: 300px; border-radius: 12px; object-fit: cover; background: #000;">
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">Video Preview</p>
+          <img id="videoThumb" alt="Video preview" style="width: 100%; max-height: 300px; border-radius: 12px; object-fit: cover; background: #000;">
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;" id="videoThumbLabel">Video Preview</p>
         </div>
 
-        <input type="text" id="videoCaption" placeholder="Write a caption..." style="margin-top: 15px;">
+        <!-- Optional custom thumbnail -->
+        <div class="thumb-section">
+          <div class="thumb-label">Add Thumbnail <span>(optional)</span></div>
+          <div class="file-upload thumb-upload" id="thumbUploadBox">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+            <p>Upload a custom thumbnail (16:9 recommended). If skipped, the YouTube thumbnail is used.</p>
+            <input type="file" id="videoThumbFile" accept="image/*" onchange="previewCustomThumb(this)">
+          </div>
+          <div class="thumb-preview-wrap" id="thumbPreviewWrap">
+            <img id="customThumbPreview" alt="Custom thumbnail preview">
+            <button type="button" class="thumb-remove" onclick="removeCustomThumb()" aria-label="Remove thumbnail">
+              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <input type="text" id="videoCaption" placeholder="Write a caption..." maxlength="500" style="margin-top: 15px;">
 
         <div class="warning-box">
           <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
@@ -109,8 +142,8 @@
 
       <!-- Pen (Article) Post -->
       <div class="form-group" id="group-pen">
-        <input type="text" id="penTitle" placeholder="Article Title" style="margin-bottom: 15px; font-weight: 700; font-size: 1.2rem;">
-        
+        <input type="text" id="penTitle" placeholder="Article Title" maxlength="150" style="margin-bottom: 15px; font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 1.2rem;">
+
         <div class="file-upload" style="padding: 20px;">
           <p style="font-size: 0.8rem;">Optional: Add a Cover Image (Recommended 1200x400)</p>
           <input type="file" id="penCoverFile" accept="image/*" onchange="previewPenCover(this)">
@@ -126,6 +159,7 @@
 
   <script>
     let currentTab = 'image';
+    const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
     // Check Auth
     async function checkAuth() {
@@ -142,20 +176,27 @@
       currentTab = tab;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.form-group').forEach(g => g.classList.remove('active'));
-      
-      event.target.classList.add('active');
-      document.getElementById(`group-${tab}`).classList.add('active');
+
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('group-' + tab).classList.add('active');
+      hideError();
     }
 
     // Image Preview
     function previewFile(input, previewId) {
       const preview = document.getElementById(previewId);
       if (input.files && input.files[0]) {
+        if (input.files[0].size > MAX_IMAGE_BYTES) {
+          input.value = '';
+          preview.style.display = 'none';
+          return showError('Image must be under 10 MB.');
+        }
+        hideError();
         const reader = new FileReader();
         reader.onload = function(e) {
           preview.src = e.target.result;
           preview.style.display = 'block';
-        }
+        };
         reader.readAsDataURL(input.files[0]);
       }
     }
@@ -164,31 +205,82 @@
     function previewPenCover(input) {
       const preview = document.getElementById('penCoverPreview');
       if (input.files && input.files[0]) {
+        if (input.files[0].size > MAX_IMAGE_BYTES) {
+          input.value = '';
+          preview.style.display = 'none';
+          return showError('Cover image must be under 10 MB.');
+        }
+        hideError();
         const reader = new FileReader();
         reader.onload = function(e) {
-          preview.style.backgroundImage = `url(${e.target.result})`;
+          preview.style.backgroundImage = 'url("' + e.target.result + '")';
           preview.style.display = 'block';
-        }
+        };
         reader.readAsDataURL(input.files[0]);
       }
     }
 
-    function updateCharCount() {
-      const val = document.getElementById('penContent').value.length;
-      document.getElementById('charCount').innerText = `${val} / 8000`;
+    // Video: custom thumbnail preview
+    function previewCustomThumb(input) {
+      const wrap = document.getElementById('thumbPreviewWrap');
+      const img = document.getElementById('customThumbPreview');
+      const box = document.getElementById('thumbUploadBox');
+      if (input.files && input.files[0]) {
+        if (input.files[0].size > MAX_IMAGE_BYTES) {
+          input.value = '';
+          wrap.style.display = 'none';
+          box.style.display = 'block';
+          return showError('Thumbnail must be under 10 MB.');
+        }
+        hideError();
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          img.src = e.target.result;
+          wrap.style.display = 'block';
+          box.style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
     }
 
-    // YouTube Thumbnail Preview Logic
-    function getYouTubeID(url) {
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
-      return (match && match[2].length === 11) ? match[2] : null;
+    function removeCustomThumb() {
+      document.getElementById('videoThumbFile').value = '';
+      document.getElementById('customThumbPreview').removeAttribute('src');
+      document.getElementById('thumbPreviewWrap').style.display = 'none';
+      document.getElementById('thumbUploadBox').style.display = 'block';
+    }
+
+    function updateCharCount() {
+      const val = document.getElementById('penContent').value.length;
+      document.getElementById('charCount').innerText = val + ' / 8000';
+    }
+
+    // YouTube ID parser (watch, youtu.be, embed, shorts, live)
+    function getYouTubeID(rawUrl) {
+      try {
+        const u = new URL(String(rawUrl || '').trim());
+        if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+        const host = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
+        let id = null;
+        if (host === 'youtu.be') {
+          id = u.pathname.slice(1).split('/')[0];
+        } else if (host === 'youtube.com' || host === 'music.youtube.com') {
+          if (u.pathname === '/watch') id = u.searchParams.get('v');
+          else {
+            const m = u.pathname.match(/^\/(embed|shorts|v|live)\/([^/?#]+)/);
+            if (m) id = m[2];
+          }
+        }
+        return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+      } catch (e) {
+        return null;
+      }
     }
 
     function previewYouTube(url) {
       const container = document.getElementById('videoPreviewContainer');
       const thumb = document.getElementById('videoThumb');
-      
+
       if (!url) {
         container.style.display = 'none';
         return;
@@ -196,18 +288,17 @@
 
       const ytId = getYouTubeID(url);
       if (ytId) {
-        thumb.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+        thumb.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
         container.style.display = 'block';
       } else {
-        // Hide preview if not a valid YouTube link (could be direct MP4)
         container.style.display = 'none';
       }
     }
 
     async function submitPost() {
       const btn = document.getElementById('publishBtn');
-      const errorMsg = document.getElementById('errorMsg');
-      
+      hideError();
+
       const formData = new FormData();
       formData.append('postType', currentTab);
 
@@ -216,26 +307,31 @@
         if (!file) return showError('Please select an image.');
         formData.append('media', file);
         formData.append('caption', document.getElementById('imageCaption').value);
-      } 
+      }
       else if (currentTab === 'video') {
         const videoUrl = document.getElementById('videoUrl').value.trim();
         if (!videoUrl) return showError('Please paste a video link.');
+        if (!getYouTubeID(videoUrl)) return showError('Please paste a valid YouTube link.');
         formData.append('videoUrl', videoUrl);
         formData.append('caption', document.getElementById('videoCaption').value);
-      } 
+
+        const thumbFile = document.getElementById('videoThumbFile').files[0];
+        if (thumbFile) formData.append('media', thumbFile);
+      }
       else if (currentTab === 'pen') {
-        const title = document.getElementById('penTitle').value;
-        const content = document.getElementById('penContent').value;
+        const title = document.getElementById('penTitle').value.trim();
+        const content = document.getElementById('penContent').value.trim();
         if (!title || !content) return showError('Title and Content are required for a Pen.');
-        
+
         formData.append('title', title);
         formData.append('content', content);
-        
+
         const coverFile = document.getElementById('penCoverFile').files[0];
         if (coverFile) formData.append('media', coverFile);
       }
 
-      btn.innerText = 'Publishing...'; btn.disabled = true; errorMsg.style.display = 'none';
+      btn.innerText = 'Publishing...';
+      btn.disabled = true;
 
       try {
         const res = await fetch('/api/posts', {
@@ -243,18 +339,21 @@
           body: formData,
           credentials: 'include'
         });
-        
-        const data = await res.json();
-        
+
+        let data = {};
+        try { data = await res.json(); } catch (e) {}
+
         if (res.ok) {
           window.location.href = '/home.html';
         } else {
           showError(data.message || 'Failed to create post');
-          btn.innerText = 'Publish'; btn.disabled = false;
+          btn.innerText = 'Publish';
+          btn.disabled = false;
         }
       } catch (err) {
         showError('Server error. Please try again.');
-        btn.innerText = 'Publish'; btn.disabled = false;
+        btn.innerText = 'Publish';
+        btn.disabled = false;
       }
     }
 
@@ -263,6 +362,10 @@
       errorMsg.innerText = msg;
       errorMsg.style.display = 'block';
       window.scrollTo(0, 0);
+    }
+
+    function hideError() {
+      document.getElementById('errorMsg').style.display = 'none';
     }
   </script>
 </body>

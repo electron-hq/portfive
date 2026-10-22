@@ -1,58 +1,121 @@
 const Post = require('../models/Post');
-const cloudinary = require('../config/cloudinary');
-const streamifier = require('streamifier');
 
-// Helper: Upload to Cloudinary (For Images & Pen Covers)
-const uploadToCloudinary = (buffer) => {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { folder: 'portfive_posts', resource_type: 'auto' },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      }
-    );
-    streamifier.createReadStream(buffer).pipe(uploadStream);
+const MAX_PEN_CONTENT = 8000;
+const MAX_PEN_TITLE = 150;
+const MAX_CAPTION = 500;
+
+// Helper: upload an image buffer to ImgBB and return its URL
+const uploadBufferToImgBB = async (buffer, filename) => {
+  const apiKey = process.env.IMGBB_API_KEY;
+  if (!apiKey) throw new Error('IMGBB_API_KEY is not set in .env');
+
+  const form = new FormData();
+  form.append('image', buffer.toString('base64'));
+  if (filename) form.append('name', filename);
+
+  const response = await fetch('https://api.imgbb.com/1/upload?key=' + encodeURIComponent(apiKey), {
+    method: 'POST',
+    body: form
   });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error((data.error && data.error.message) || 'ImgBB upload failed');
+  }
+  return data.data.url;
+};
+
+// Helper: extract an 11-character YouTube video ID from a link (or null)
+const getYouTubeID = (rawUrl) => {
+  try {
+    const u = new URL(String(rawUrl || '').trim());
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+    const host = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
+    let id = null;
+    if (host === 'youtu.be') {
+      id = u.pathname.slice(1).split('/')[0];
+    } else if (host === 'youtube.com' || host === 'music.youtube.com') {
+      if (u.pathname === '/watch') id = u.searchParams.get('v');
+      else {
+        const m = u.pathname.match(/^\/(embed|shorts|v|live)\/([^/?#]+)/);
+        if (m) id = m[2];
+      }
+    }
+    return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+  } catch (e) {
+    return null;
+  }
 };
 
 // @desc    Create a new Post
 // @route   POST /api/posts
 const createPost = async (req, res) => {
   try {
-    const { postType, title, content, caption, videoUrl } = req.body;
-    
-    let mediaUrl = videoUrl || "";
-    let mediaType = postType === 'video' ? 'video' : 'image';
-
-    // If a file is uploaded (Images for Image tab, Cover for Pen tab)
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      mediaUrl = result.secure_url;
-      // If it's a pen cover, mediaType should be image
-      if (postType === 'pen') mediaType = 'image';
-    } 
-    else if (postType === 'image' && !req.file) {
-      return res.status(400).json({ message: 'Image file is required' });
+    const postType = req.body.postType;
+    if (!['image', 'video', 'pen'].includes(postType)) {
+      return res.status(400).json({ message: 'Invalid post type' });
     }
-    else if (postType === 'video' && !videoUrl) {
-      return res.status(400).json({ message: 'Video link is required' });
+
+    const caption = String(req.body.caption || '').trim().slice(0, MAX_CAPTION);
+
+    let title = '';
+    let content = '';
+    let mediaUrl = '';
+    let thumbnailUrl = '';
+    let mediaType = 'image';
+
+    if (postType === 'image') {
+      if (!req.file) return res.status(400).json({ message: 'Image file is required' });
+      mediaUrl = await uploadBufferToImgBB(req.file.buffer, 'post-' + req.user.id + '-' + Date.now());
+      mediaType = 'image';
+    }
+    else if (postType === 'video') {
+      const ytId = getYouTubeID(req.body.videoUrl);
+      if (!ytId) return res.status(400).json({ message: 'Please paste a valid YouTube link' });
+      mediaUrl = 'https://www.youtube.com/watch?v=' + ytId;
+      mediaType = 'video';
+
+      // Optional custom thumbnail; falls back to the YouTube thumbnail
+      if (req.file) {
+        thumbnailUrl = await uploadBufferToImgBB(req.file.buffer, 'thumb-' + req.user.id + '-' + Date.now());
+      } else {
+        thumbnailUrl = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
+      }
+    }
+    else if (postType === 'pen') {
+      title = String(req.body.title || '').trim();
+      content = String(req.body.content || '').trim();
+      if (!title || !content) {
+        return res.status(400).json({ message: 'Title and content are required for a Pen' });
+      }
+      if (title.length > MAX_PEN_TITLE) {
+        return res.status(400).json({ message: 'Title must be ' + MAX_PEN_TITLE + ' characters or less' });
+      }
+      if (content.length > MAX_PEN_CONTENT) {
+        return res.status(400).json({ message: 'Content must be ' + MAX_PEN_CONTENT + ' characters or less' });
+      }
+      if (req.file) {
+        mediaUrl = await uploadBufferToImgBB(req.file.buffer, 'pen-' + req.user.id + '-' + Date.now());
+        mediaType = 'image';
+      } else {
+        mediaType = 'none';
+      }
     }
 
     const newPost = await Post.create({
       author: req.user.id,
-      postType: postType || 'image',
-      title: title || "",
-      content: content || "",
+      postType,
+      title,
+      content,
       mediaUrl,
+      thumbnailUrl,
       mediaType,
-      caption: caption || ""
+      caption
     });
 
     res.status(201).json({ message: 'Post created!', post: newPost });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Create post error:', error.message);
+    res.status(500).json({ message: 'Failed to create post. Please try again.' });
   }
 };
 
@@ -60,8 +123,8 @@ const createPost = async (req, res) => {
 // @route   GET /api/posts/top/:type
 const getTopPosts = async (req, res) => {
   try {
-    const { type } = req.params; 
-    
+    const { type } = req.params;
+
     let query = {};
     if (type === 'image') query = { postType: 'image' };
     else if (type === 'video') query = { postType: 'video' };

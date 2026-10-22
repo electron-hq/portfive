@@ -5,6 +5,26 @@ const Message = require('../models/Message');
 const Comment = require('../models/Comment');
 const bcrypt = require('bcryptjs');
 
+// Helper: upload an image buffer to ImgBB and return its URL
+const uploadBufferToImgBB = async (buffer, filename) => {
+  const apiKey = process.env.IMGBB_API_KEY;
+  if (!apiKey) throw new Error('IMGBB_API_KEY is not set in .env');
+
+  const form = new FormData();
+  form.append('image', buffer.toString('base64'));
+  if (filename) form.append('name', filename);
+
+  const response = await fetch('https://api.imgbb.com/1/upload?key=' + encodeURIComponent(apiKey), {
+    method: 'POST',
+    body: form
+  });
+  const data = await response.json();
+  if (!response.ok || !data.success) {
+    throw new Error((data.error && data.error.message) || 'ImgBB upload failed');
+  }
+  return data.data.url;
+};
+
 // @desc    Get User Profile Info
 const getUserProfile = async (req, res) => {
   try {
@@ -90,7 +110,7 @@ const updateProfile = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
-// @desc    Update Avatar/Cover
+// @desc    Update Avatar/Cover (via URL)
 const updatePictures = async (req, res) => {
   try {
     const { type, imageUrl } = req.body;
@@ -100,6 +120,36 @@ const updatePictures = async (req, res) => {
     await user.save();
     res.status(200).json({ message: 'Picture updated', user });
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
+// @desc    Upload Avatar (file upload to ImgBB)
+const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No image file provided' });
+    const imageUrl = await uploadBufferToImgBB(req.file.buffer, 'avatar-' + req.user.id);
+    const user = await User.findById(req.user.id);
+    user.profilePic = imageUrl;
+    await user.save();
+    res.status(200).json({ message: 'Avatar updated', imageUrl });
+  } catch (error) {
+    console.error('Avatar upload error:', error.message);
+    res.status(500).json({ message: 'Upload failed' });
+  }
+};
+
+// @desc    Upload Cover (file upload to ImgBB)
+const uploadCover = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No image file provided' });
+    const imageUrl = await uploadBufferToImgBB(req.file.buffer, 'cover-' + req.user.id);
+    const user = await User.findById(req.user.id);
+    user.coverPic = imageUrl;
+    await user.save();
+    res.status(200).json({ message: 'Cover updated', imageUrl });
+  } catch (error) {
+    console.error('Cover upload error:', error.message);
+    res.status(500).json({ message: 'Upload failed' });
+  }
 };
 
 // @desc    Verify Old Password (Step 1)
@@ -154,7 +204,8 @@ const deleteAccount = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
-module.exports = { 
-  getUserProfile, followUser, unfollowUser, getFriends, getSavedPosts, 
-  updateProfile, updatePictures, verifyIdentity, changePassword, toggleAds, deleteAccount 
+module.exports = {
+  getUserProfile, followUser, unfollowUser, getFriends, getSavedPosts,
+  updateProfile, updatePictures, uploadAvatar, uploadCover,
+  verifyIdentity, changePassword, toggleAds, deleteAccount
 };
