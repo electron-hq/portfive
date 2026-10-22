@@ -68,7 +68,6 @@
 
     .pen-cover { width: 100%; height: 180px; background-size: cover; background-position: center; border-bottom: 1px solid var(--line); cursor: pointer; }
     
-    /* Ad Space Styling */
     .ad-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); position: relative; }
     .ad-label { position: absolute; top: 4px; right: 16px; font-size: 0.6rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
     .ad-container iframe { width: 320px; height: 50px; border: none; overflow: hidden; display: block; }
@@ -431,17 +430,21 @@
             `;
           }
 
-          const menuHTML = isOwner ? `
+          const menuHTML = `
             <div class="menu-wrapper">
               <button class="card-menu-btn" onclick="toggleMenu(event, '${esc(post._id)}')">
                 <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
               </button>
               <div class="dropdown-menu" id="menu-${esc(post._id)}">
-                <button class="dropdown-item" onclick="editPost(event, '${esc(post._id)}')">Edit</button>
-                <button class="dropdown-item danger" onclick="deletePost(event, '${esc(post._id)}')">Delete</button>
+                ${isOwner ? `
+                  <button class="dropdown-item" onclick="editPost(event, '${esc(post._id)}')">Edit</button>
+                  <button class="dropdown-item danger" onclick="deletePost(event, '${esc(post._id)}')">Delete</button>
+                ` : `
+                  <button class="dropdown-item danger" onclick="reportPost(event, '${esc(post._id)}')">Report</button>
+                `}
               </div>
             </div>
-          ` : '';
+          `;
 
           const header = `
             <div class="post-header">
@@ -595,6 +598,29 @@
         const res = await fetch('/api/posts/' + encodeURIComponent(postId), { method: 'DELETE', credentials: 'include' });
         if (res.ok) document.getElementById('post-' + postId).remove();
       } catch (err) { alert('Error deleting post.'); }
+    }
+
+    async function reportPost(e, postId) {
+      e.stopPropagation();
+      const reason = prompt('Why are you reporting this post? (e.g., Spam, Nudity, Harassment)');
+      if (!reason || !reason.trim()) return;
+
+      try {
+        const res = await fetch(`/api/posts/${postId}/report`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ reason: reason.trim() })
+        });
+        if (res.ok) {
+          alert('Post reported successfully. Our moderators will review it.');
+        } else {
+          const data = await res.json();
+          alert(data.message || 'Failed to report post.');
+        }
+      } catch (err) {
+        alert('Error reporting post.');
+      }
     }
 
     function openVideoModal(postId, ytId, authorName, username, profilePic) {

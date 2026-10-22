@@ -2,6 +2,7 @@ const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const Report = require('../models/Report');
 const { sendPushNotification } = require('./pushController');
 
 const MAX_PEN_CONTENT = 8000;
@@ -85,16 +86,10 @@ const reactToPost = async (req, res) => {
       else post.reactions[existing].type = type;
     } else {
       post.reactions.push({ user: req.user.id, type: type || 'love' });
-      
-      // Push Notification for Like
       if (post.author.toString() !== req.user.id) {
         const currentUser = await User.findById(req.user.id);
         await Notification.create({ receiver: post.author, sender: req.user.id, type: 'like', postId: post._id });
-        sendPushNotification(post.author, {
-          title: 'New Love',
-          body: `${currentUser.fullName} loved your post.`,
-          url: `/post.html?id=${post._id}`
-        });
+        sendPushNotification(post.author, { title: 'New Love', body: `${currentUser.fullName} loved your post.`, url: `/post.html?id=${post._id}` });
       }
     }
     await post.save();
@@ -139,7 +134,6 @@ const addComment = async (req, res) => {
 
     const comment = await Comment.create({ postId: req.params.postId, author: req.user.id, content: content.trim() });
     
-    // Push Notification for Comment
     if (post.author.toString() !== req.user.id) {
       const currentUser = await User.findById(req.user.id);
       await Notification.create({ receiver: post.author, sender: req.user.id, type: 'comment', postId: post._id });
@@ -149,7 +143,6 @@ const addComment = async (req, res) => {
         url: `/post.html?id=${post._id}`
       });
     }
-
     const populatedComment = await comment.populate('author', 'fullName username profilePic');
     res.status(201).json(populatedComment);
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
@@ -196,6 +189,39 @@ const toggleSavePost = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
+// New Report Post Function
+const reportPost = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason || !reason.trim()) return res.status(400).json({ message: 'Reason is required' });
+
+    const post = await Post.findById(req.params.postId);
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    // Prevent self-reporting
+    if (post.author.toString() === req.user.id) {
+      return res.status(400).json({ message: 'You cannot report your own post' });
+    }
+
+    // Check if already reported
+    const existingReport = await Report.findOne({ reporter: req.user.id, postId: post._id });
+    if (existingReport) return res.status(400).json({ message: 'You have already reported this post' });
+
+    await Report.create({
+      reporter: req.user.id,
+      postId: post._id,
+      reason: reason.trim()
+    });
+
+    res.status(201).json({ message: 'Post reported successfully. Moderators will review it.' });
+  } catch (error) { 
+    console.error('Report post error:', error);
+    res.status(500).json({ message: 'Server error' }); 
+  }
+};
+
 module.exports = {
-  createPost, getTopPosts, reactToPost, getUserPosts, getSinglePost, getComments, addComment, incrementView, deletePost, updatePost, toggleSavePost
+  createPost, getTopPosts, reactToPost, getUserPosts, getSinglePost, 
+  getComments, addComment, incrementView, deletePost, updatePost, 
+  toggleSavePost, reportPost
 };

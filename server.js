@@ -48,19 +48,46 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', pushRoutes);
 
-// Make the health check super lightweight for Uptime Robot/Cron-job
-app.get('/api/health', (req, res) => {
-  res.status(200).send('OK');
-});
-
+app.get('/api/health', (req, res) => res.status(200).send('OK'));
 app.use((req, res) => res.status(404).send('404 Not Found'));
 
 io.on('connection', (socket) => {
-  socket.on('join_room', (userId) => socket.join(userId));
+  socket.on('join_room', (userId) => {
+    socket.join(userId);
+    socket.userId = userId; // Save for disconnect handling
+  });
+  
+  // Chat Events
   socket.on('send_message', (data) => io.to(data.receiverId).emit('receive_message', data.message));
   socket.on('edit_message', (data) => io.to(data.receiverId).emit('message_edited', { messageId: data.messageId, newText: data.newText }));
   socket.on('delete_message', (data) => io.to(data.receiverId).emit('message_deleted', { messageId: data.messageId }));
   socket.on('send_notification', (data) => io.to(data.recipientId).emit('receive_notification', data.notification));
+
+  // --- WebRTC Signaling Events ---
+  socket.on('call_user', (data) => {
+    io.to(data.receiverId).emit('incoming_call', { from: data.from, signal: data.signal, type: data.type });
+  });
+
+  socket.on('answer_call', (data) => {
+    io.to(data.callerId).emit('call_accepted', { signal: data.signal });
+  });
+
+  socket.on('ice_candidate', (data) => {
+    io.to(data.receiverId).emit('ice_candidate', { candidate: data.candidate });
+  });
+
+  socket.on('reject_call', (data) => {
+    io.to(data.callerId).emit('call_rejected');
+  });
+
+  socket.on('end_call', (data) => {
+    io.to(data.receiverId).emit('call_ended');
+  });
+
+  socket.on('disconnect', () => {
+    // Optional: Notify others if user disconnects while in call
+    // if (socket.userId) io.emit('user_disconnected', socket.userId);
+  });
 });
 
 const PORT = process.env.PORT || 5000;
