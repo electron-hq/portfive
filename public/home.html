@@ -40,19 +40,22 @@
     .create-post-box:hover { border-color: #D4D4D8; }
     .create-post-box .input-fake { flex: 1; background: var(--bg); padding: 14px 20px; border-radius: 999px; color: var(--text-muted); font-size: 0.95rem; border: 1px solid transparent; font-weight: 500; }
 
-    .feed-container { display: flex; flex-direction: column; gap: 24px; }
-    .post-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(9,9,11,0.03); }
+    /* Feed Layout (No Grid, Vertical Stack) */
+    .feed-container { display: flex; flex-direction: column; gap: 20px; }
     
+    .post-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(9,9,11,0.03); display: flex; flex-direction: column; }
+
+    /* Post Header */
     .post-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
     .author-info { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-    .author-info .avatar-container { width: 36px; height: 36px; }
+    .author-info .avatar-container { width: 32px; height: 32px; }
     .avatar-container { border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #E4E4E7; }
     .avatar-container svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
     .author-text { display: flex; flex-direction: column; }
     .author-name { font-size: 0.9rem; font-weight: 600; }
     .post-date { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* --- NEW MEDIA CONTAINER STYLES (Matching Profile Grid) --- */
+    /* Media Styles */
     .media-container {
       width: 100%;
       background: #000;
@@ -62,49 +65,53 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 12px;
     }
     .media-container img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       display: block;
-      border-radius: 8px;
     }
-    .aspect-img { aspect-ratio: 4 / 5; }
     .aspect-vid { aspect-ratio: 16 / 9; }
+    .aspect-img { aspect-ratio: 4 / 5; }
     
     .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; background: rgba(255, 255, 255, 0.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #09090B; box-shadow: 0 4px 16px rgba(0,0,0,0.25); pointer-events: none; }
     .play-icon svg { margin-left: 4px; }
 
-    /* Pen Cover specific */
-    .pen-cover-container {
+    /* Pen Specific Layout (Matching Img 2) */
+    .pen-card-content { display: flex; flex-direction: column; }
+    .pen-text-top { padding: 16px; }
+    .pen-title { font-family: 'Archivo', sans-serif; font-size: 1.3rem; font-weight: 700; line-height: 1.3; margin-bottom: 8px; color: var(--text); }
+    .pen-snippet { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    
+    .pen-cover-block {
       width: 100%;
-      aspect-ratio: 3 / 1;
-      background: #000;
-      padding: 12px;
+      aspect-ratio: 16 / 9;
+      background: #F4F4F5;
+      background-size: cover;
+      background-position: center;
       cursor: pointer;
     }
-    .pen-cover-container img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 8px;
-      display: block;
-    }
     
-    .ad-container { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0; background: var(--surface); border-bottom: 1px solid var(--line); position: relative; }
-    .ad-label { position: absolute; top: 4px; right: 16px; font-size: 0.6rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-    .ad-container iframe { width: 320px; height: 50px; border: none; overflow: hidden; display: block; }
+    .pen-uploader-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+    }
+    .pen-uploader-bar .avatar-container { width: 28px; height: 28px; border: 1px solid rgba(255,255,255,0.3); }
+    .pen-uploader-bar .username { font-size: 0.9rem; font-weight: 600; }
 
-    .pen-content-box { padding: 16px; cursor: default; }
-    .pen-title { font-family: 'Archivo', sans-serif; font-size: 1.25rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px; color: var(--text); }
-    .pen-text-wrapper { font-size: 0.95rem; color: var(--text-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; transition: all 0.3s ease; }
-    .pen-text-wrapper.expanded { display: block; -webkit-line-clamp: unset; }
-    .read-more-btn { background: none; border: none; color: var(--text); font-weight: 600; font-size: 0.9rem; margin-top: 6px; cursor: pointer; padding: 0; font-family: inherit; }
-    .read-more-btn:hover { text-decoration: underline; }
+    /* Ad Container */
+    .ad-block { width: 100%; padding: 12px 0; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 16px; border: 1px solid var(--line); position: relative; margin-bottom: 20px; }
+    .ad-label { position: absolute; top: 4px; right: 12px; font-size: 0.6rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; }
+    .ad-block iframe { width: 320px; height: 50px; border: none; overflow: hidden; }
 
-    .post-footer { padding: 12px 16px; }
+    /* Post Footer & Action Bar */
+    .post-footer { padding: 12px 16px; margin-top: auto; }
     .post-caption { font-size: 0.95rem; line-height: 1.45; color: var(--text); margin-bottom: 12px; }
     .post-caption .username { font-weight: 600; margin-right: 6px; }
 
@@ -130,12 +137,6 @@
     .dropdown-item:hover { background: var(--bg); }
     .dropdown-item.danger { color: var(--red); }
 
-    /* In-Feed Native Ad */
-    .in-feed-ad-card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(9,9,11,0.03); padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
-    .in-feed-ad-card .ad-badge { display: flex; justify-content: flex-end; }
-    .in-feed-ad-card .ad-badge span { font-size: 0.65rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-    .in-feed-ad-card iframe { width: 100%; height: 250px; border: none; border-radius: 8px; overflow: hidden; }
-
     .global-empty-state { display: none; text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .global-empty-state .icon-wrapper { width: 80px; height: 80px; background: var(--surface); color: var(--text); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px; border: 1px solid var(--line); }
     .global-empty-state .icon-wrapper svg { width: 36px; height: 36px; stroke-width: 1.5; }
@@ -146,7 +147,7 @@
 
     .sk { background: linear-gradient(90deg, #EFEFF1 25%, #F6F6F8 50%, #EFEFF1 75%); background-size: 200% 100%; animation: shimmer 1.3s infinite linear; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .sk-card { height: 380px; border-radius: 16px; margin-bottom: 24px; }
+    .sk-card { height: 380px; border-radius: 16px; margin-bottom: 20px; }
 
     .video-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(5px); }
     .video-modal.active { display: flex; }
@@ -161,20 +162,11 @@
     .modal-meta-info .name { font-size: 0.95rem; font-weight: 600; }
     .modal-meta-info .username { font-size: 0.8rem; color: #A1A1AA; }
 
-    /* Refresh Button */
-    .refresh-btn {
-      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-      background: var(--primary); color: white; padding: 10px 20px;
-      border-radius: 30px; font-weight: 600; font-size: 0.9rem; font-family: inherit;
-      display: none; align-items: center; gap: 8px; z-index: 1000;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2); cursor: pointer; border: none;
-      transition: 0.3s;
-    }
-    .refresh-btn:hover { background: var(--primary-hover); }
-    .refresh-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
-    .refresh-btn.show { display: flex; }
-
-    #feedSentinel { height: 10px; }
+    /* End of feed Refresh Button */
+    .end-refresh-container { text-align: center; padding: 30px 20px; margin-bottom: 40px; }
+    .btn-refresh-large { background: var(--primary); color: white; padding: 14px 32px; border-radius: 30px; font-size: 1rem; font-weight: 600; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: 0.3s; }
+    .btn-refresh-large:hover { background: var(--primary-hover); transform: translateY(-2px); }
+    .btn-refresh-large svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
 
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 68px; z-index: 1000; max-width: 600px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); }
     .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.6rem; font-weight: 600; gap: 5px; transition: 0.2s; width: 60px; }
@@ -210,8 +202,6 @@
       <div class="sk sk-card"></div>
       <div class="sk sk-card"></div>
     </div>
-    
-    <div id="feedSentinel"></div>
 
     <div class="global-empty-state" id="globalEmptyState">
       <div class="icon-wrapper">
@@ -225,12 +215,15 @@
       <p>Be the first to share an image, write a pen, or post a video.</p>
       <a href="/create-post.html" class="btn-start">Create a Post</a>
     </div>
-  </div>
 
-  <button class="refresh-btn" id="refreshBtn" onclick="refreshFeed()">
-    <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-    Refresh Feed
-  </button>
+    <!-- Refresh Button at the end of the feed -->
+    <div class="end-refresh-container" id="endRefreshContainer" style="display: none;">
+      <button class="btn-refresh-large" onclick="refreshFeed()">
+        <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        Refresh Feed
+      </button>
+    </div>
+  </div>
 
   <div class="video-modal" id="videoModal">
     <button class="modal-close" onclick="closeVideoModal()">
@@ -257,10 +250,6 @@
     let currentUserId = null;
     let videoViewTimer = null;
     let socket = null;
-
-    let baseFeed = [];        
-    let currentIndex = 0;     
-    let isFeedLoading = false; 
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -398,23 +387,12 @@
       } catch (err) { console.error('Error fetching badges:', err); }
     }
 
-    function mixFeed(videos, images, pens) {
-      let mixed = [];
-      let vIdx = 0, iIdx = 0, pIdx = 0;
-      
-      while (vIdx < videos.length || iIdx < images.length || pIdx < pens.length) {
-        let addedInThisCycle = false;
-        for (let i = 0; i < 4 && pIdx < pens.length; i++) { mixed.push(pens[pIdx++]); addedInThisCycle = true; }
-        for (let i = 0; i < 4 && iIdx < images.length; i++) { mixed.push(images[iIdx++]); addedInThisCycle = true; }
-        for (let i = 0; i < 2 && vIdx < videos.length; i++) { mixed.push(videos[vIdx++]); addedInThisCycle = true; }
-        if (!addedInThisCycle) break;
-      }
-      return mixed;
-    }
-    
-    async function loadInitialFeed() {
-      isFeedLoading = true;
+    async function loadFeed() {
       const container = document.getElementById('feedContainer');
+      const refreshContainer = document.getElementById('endRefreshContainer');
+      container.innerHTML = '<div class="sk sk-card"></div><div class="sk sk-card"></div>';
+      refreshContainer.style.display = 'none';
+
       try {
         const [vidRes, imgRes, penRes] = await Promise.all([
           fetch('/api/posts/top/video', { credentials: 'include' }),
@@ -434,23 +412,23 @@
         if (videos.length === 0 && images.length === 0 && pens.length === 0) {
           container.innerHTML = '';
           document.getElementById('globalEmptyState').style.display = 'block';
-          isFeedLoading = false;
           return;
         }
 
-        baseFeed = mixFeed(videos, images, pens);
-        currentIndex = 0;
+        // Combine and sort by date (Newest first)
+        let allPosts = [...videos, ...images, ...pens];
+        allPosts.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+        container.innerHTML = allPosts.map((post, index) => {
+          return generatePostHTML(post, index);
+        }).join('');
         
-        container.innerHTML = '';
-        
-        // CRITICAL FIX: Set loading false BEFORE calling loadMoreFeed
-        isFeedLoading = false; 
-        loadMoreFeed();
-        
+        document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
+        refreshContainer.style.display = 'block';
+
       } catch (err) {
         console.error(err);
         document.getElementById('globalEmptyState').style.display = 'block';
-        isFeedLoading = false;
       }
     }
 
@@ -468,7 +446,7 @@
       const viewCount = post.views || 0;
       const isSaved = post.isSaved || false;
       
-      const uniqueId = `${post._id}_${index}`;
+      const uniqueId = `post_${index}`;
 
       let adHtml = '';
       if (author.allowAds === true) {
@@ -552,19 +530,22 @@
       } 
       else if (post.postType === 'pen') {
         const snippet = (post.content || '');
-        const needsReadMore = snippet.length > 180; 
+        // Pen Layout matching Mockup 2
         body = `
-          <div>
-            ${post.mediaUrl ? `<div class="pen-cover-container" onclick="window.location.href='/post.html?id=${esc(post._id)}'"><img src="${safeUrl(post.mediaUrl)}" alt="Cover"></div>` : ''}
-            
-            ${adHtml}
-
-            <div class="pen-content-box">
+          <div class="pen-card-content">
+            <div class="pen-text-top">
               <div class="pen-title">${esc(post.title || 'Untitled Article')}</div>
-              <div class="pen-text-wrapper" id="text-${uniqueId}">${esc(snippet)}</div>
-              ${needsReadMore ? `<button class="read-more-btn" id="read-btn-${uniqueId}" onclick="toggleReadMore(event, '${esc(post._id)}', '${uniqueId}')">Read more</button>` : ''}
+              <div class="pen-snippet">${esc(snippet)}</div>
+            </div>
+            
+            ${post.mediaUrl ? `<div class="pen-cover-block" style="background-image:url('${safeUrl(post.mediaUrl)}')" onclick="window.location.href='/post.html?id=${esc(post._id)}'"></div>` : ''}
+            
+            <div class="pen-uploader-bar" onclick="window.location.href='/profile.html?id=${esc(authorId)}'">
+               <div class="avatar-container">${getAvatarSVG(author)}</div>
+               <span class="username">@${esc(username)}</span>
             </div>
           </div>
+          ${adHtml}
         `;
         actionBar += `
           <button class="action-btn" style="pointer-events:none;">
@@ -587,65 +568,12 @@
         footer = `<div class="post-footer">${actionBar}</div>`;
       }
 
-      let inFeedAdHtml = '';
-      if (index > 0 && index % 5 === 0) {
-        inFeedAdHtml = `
-          <div class="in-feed-ad-card">
-            <div class="ad-badge"><span>Sponsored</span></div>
-            <iframe src="/ad-native.html" scrolling="no"></iframe>
-          </div>
-        `;
-      }
-
-      return inFeedAdHtml + `<div class="post-card" id="post-${uniqueId}">${header}${body}${footer}</div>`;
+      return `<div class="post-card" id="post-${uniqueId}">${header}${body}${footer}</div>`;
     }
-
-    function loadMoreFeed() {
-      if (baseFeed.length === 0 || isFeedLoading) return;
-      
-      const container = document.getElementById('feedContainer');
-      let htmlToAppend = '';
-      
-      const batchSize = 10;
-      for (let i = 0; i < batchSize; i++) {
-        if (currentIndex >= baseFeed.length) {
-          currentIndex = 0;
-        }
-        
-        const post = baseFeed[currentIndex];
-        htmlToAppend += generatePostHTML(post, currentIndex);
-        currentIndex++;
-      }
-      
-      container.insertAdjacentHTML('beforeend', htmlToAppend);
-      document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
-    }
-
-    const sentinel = document.getElementById('feedSentinel');
-    const scrollObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && !isFeedLoading) {
-        loadMoreFeed();
-      }
-    }, { rootMargin: '200px' });
-    scrollObserver.observe(sentinel);
-
-    window.addEventListener('scroll', () => {
-      const btn = document.getElementById('refreshBtn');
-      if (window.scrollY > 1500) { 
-        btn.classList.add('show');
-      } else {
-        btn.classList.remove('show');
-      }
-    });
 
     function refreshFeed() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      document.getElementById('refreshBtn').classList.remove('show');
-      document.getElementById('feedContainer').innerHTML = '<div class="sk sk-card"></div><div class="sk sk-card"></div>';
-      
-      setTimeout(() => {
-        loadInitialFeed();
-      }, 500);
+      loadFeed();
     }
 
     async function toggleSave(e, postId, btn) {
@@ -665,19 +593,6 @@
       try {
         await fetch(`/api/posts/${postId}/react`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ type: 'love' }) });
       } catch (err) { console.error(err); }
-    }
-
-    function toggleReadMore(e, postId, uniqueId) {
-      e.stopPropagation();
-      const textEl = document.getElementById('text-' + uniqueId);
-      const btn = document.getElementById('read-btn-' + uniqueId);
-      if (textEl.classList.contains('expanded')) { textEl.classList.remove('expanded'); btn.innerText = 'Read more'; } 
-      else {
-        textEl.classList.add('expanded'); btn.innerText = 'Read less';
-        const today = new Date().toISOString().split('T')[0];
-        const storageKey = `read_${postId}_${today}`;
-        if (!localStorage.getItem(storageKey)) { localStorage.setItem(storageKey, 'true'); fetch(`/api/posts/${postId}/view`, { method: 'POST', credentials: 'include' }).catch(console.error); }
-      }
     }
 
     function toggleMenu(e, uniqueId) {
@@ -737,7 +652,7 @@
     }
 
     init();
-    loadInitialFeed();
+    loadFeed();
   </script>
 </body>
 </html>
