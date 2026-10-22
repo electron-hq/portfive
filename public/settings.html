@@ -16,39 +16,34 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 50px; color: var(--text); }
 
-    /* Top Navbar */
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; align-items: center; gap: 15px; }
     .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 5px; border-radius: 50%; }
     .back-btn:hover { background: var(--line); }
     .back-btn svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; }
     .title { font-size: 1.1rem; font-weight: 700; }
 
-    /* Container */
     .container { max-width: 600px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 
-    /* Settings Card */
     .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
     .card-header { padding: 15px 20px; border-bottom: 1px solid var(--line); font-weight: 700; font-size: 1rem; background: #FAFAFA; }
     .card-body { padding: 20px; }
 
-    /* Image Upload UI */
     .upload-section { display: flex; flex-direction: column; gap: 20px; }
     .upload-row { display: flex; align-items: center; gap: 15px; }
-    
+
     .upload-preview { position: relative; overflow: hidden; cursor: pointer; background: var(--bg); border: 1px solid var(--line); background-size: cover; background-position: center; }
     .upload-preview:hover .upload-overlay { opacity: 1; }
-    
+
     .cover-preview { width: 100%; height: 120px; border-radius: 8px; }
     .avatar-preview { width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0; }
-    
+
     .upload-overlay { position: absolute; inset: 0; background: rgba(24, 24, 27, 0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; backdrop-filter: blur(2px); }
     .upload-overlay svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2; margin-bottom: 4px; }
     .upload-overlay span { color: white; font-size: 0.75rem; font-weight: 600; }
-    
+
     .upload-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
     .upload-info p { font-size: 0.8rem; color: var(--text-muted); }
 
-    /* Form Styles */
     .form-group { margin-bottom: 15px; }
     .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text); }
     .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; background: var(--bg); color: var(--text); transition: 0.2s; }
@@ -61,7 +56,6 @@
     .btn-outline:hover { background: var(--bg); }
     .btn-full { width: 100%; }
 
-    /* Sliding Security Form */
     .security-slider { overflow: hidden; width: 100%; }
     .security-track { display: flex; width: 200%; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     .security-slide { width: 50%; padding: 0 5px; }
@@ -70,7 +64,6 @@
 
     .verify-success { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 0.9rem; font-weight: 600; margin-bottom: 15px; padding: 10px; background: var(--accent-light); border-radius: 8px; }
 
-    /* Toggle Switch */
     .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
     .toggle-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
     .toggle-info p { font-size: 0.8rem; color: var(--text-muted); }
@@ -81,13 +74,11 @@
     input:checked + .slider { background-color: var(--accent); }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    /* Earnings Box */
     .earnings-box { background: var(--accent-light); border: 1px solid #C7D2FE; border-radius: 10px; padding: 15px; margin-top: 15px; display: none; }
     .earnings-box h4 { font-size: 0.9rem; color: #3730A3; margin-bottom: 5px; }
     .earnings-box .amount { font-size: 1.5rem; font-weight: 800; color: #3730A3; }
     .earnings-box p { font-size: 0.75rem; color: #4338CA; margin-top: 5px; }
 
-    /* Danger Zone */
     .danger-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--line); cursor: pointer; }
     .danger-item:last-child { border-bottom: none; }
     .danger-item:hover { background: var(--bg); }
@@ -97,7 +88,6 @@
     .danger-item svg { width: 20px; height: 20px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
     .danger-item.delete svg { stroke: var(--red); }
 
-    /* Toast */
     .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 3000; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   </style>
@@ -112,13 +102,10 @@
   </div>
 
   <div class="container">
-
     <!-- Profile Images -->
     <div class="card">
       <div class="card-header">Profile Images</div>
       <div class="card-body upload-section">
-        
-        <!-- Cover Photo -->
         <div class="upload-preview cover-preview" id="coverPreview" onclick="document.getElementById('coverInput').click()">
           <div class="upload-overlay">
             <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
@@ -127,7 +114,6 @@
         </div>
         <input type="file" id="coverInput" accept="image/*" hidden onchange="uploadImage(this, 'cover')">
 
-        <!-- Profile Picture -->
         <div class="upload-row">
           <div class="upload-preview avatar-preview" id="avatarPreview" onclick="document.getElementById('avatarInput').click()">
             <div class="upload-overlay" style="background: rgba(24, 24, 27, 0.5); backdrop-filter: none;">
@@ -135,13 +121,11 @@
             </div>
           </div>
           <input type="file" id="avatarInput" accept="image/*" hidden onchange="uploadImage(this, 'avatar')">
-          
           <div class="upload-info">
             <h4>Profile Picture</h4>
             <p>Click to upload. Recommended: 400x400 px.</p>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -188,6 +172,8 @@
           <div class="amount" id="earningsAmount">$0.00</div>
           <p>Total Impressions: <span id="impressionsCount">0</span>. Revenue share payout will be available soon.</p>
         </div>
+        <!-- New Manage Ads Button -->
+        <button class="btn btn-outline btn-full" id="manageAdsBtn" style="margin-top: 15px; display: none;" onclick="window.location.href='/my-ads.html'">Manage Ad Placements</button>
       </div>
     </div>
 
@@ -197,8 +183,6 @@
       <div class="card-body">
         <div class="security-slider">
           <div class="security-track" id="securityTrack">
-
-            <!-- Step 1: Verify Old Password -->
             <div class="security-slide">
               <div class="form-group">
                 <label>Old Password</label>
@@ -206,8 +190,6 @@
               </div>
               <button class="btn btn-primary btn-full" onclick="verifyPassword()" id="verifyBtn">Verify</button>
             </div>
-
-            <!-- Step 2: Enter New Password -->
             <div class="security-slide">
               <div class="verify-success">
                 <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
@@ -220,7 +202,6 @@
               <button class="btn btn-primary btn-full" onclick="updatePassword()" id="updateBtn">Update Password</button>
               <button class="btn btn-outline btn-full" style="margin-top: 10px;" onclick="resetSecurityForm()">Cancel</button>
             </div>
-
           </div>
         </div>
       </div>
@@ -237,7 +218,6 @@
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
       </div>
     </div>
-
   </div>
 
   <div class="toast" id="toast">Saved!</div>
@@ -268,10 +248,10 @@
           document.getElementById('webUrl').value = currentUser.website.url || '';
         }
 
-        // Load Image Previews
         if (currentUser.coverPic) {
           document.getElementById('coverPreview').style.backgroundImage = `url(${currentUser.coverPic})`;
         }
+
         if (currentUser.profilePic) {
           document.getElementById('avatarPreview').style.backgroundImage = `url(${currentUser.profilePic})`;
           document.getElementById('avatarPreview').style.border = 'none';
@@ -282,18 +262,21 @@
 
         const allowAdsToggle = document.getElementById('allowAdsToggle');
         const earningsBox = document.getElementById('earningsBox');
+        const manageAdsBtn = document.getElementById('manageAdsBtn');
         const impressionsCount = document.getElementById('impressionsCount');
         const earningsAmount = document.getElementById('earningsAmount');
 
         if (currentUser.allowAds) {
           allowAdsToggle.checked = true;
           earningsBox.style.display = 'block';
+          manageAdsBtn.style.display = 'block'; // Show button
           impressionsCount.innerText = currentUser.adImpressions || 0;
           const estEarnings = ((currentUser.adImpressions || 0) / 1000) * 0.50;
           earningsAmount.innerText = `$${estEarnings.toFixed(2)}`;
         } else {
           allowAdsToggle.checked = false;
           earningsBox.style.display = 'none';
+          manageAdsBtn.style.display = 'none'; // Hide button
         }
 
       } catch (err) {
@@ -302,12 +285,10 @@
     }
     init();
 
-    // Image Upload Handler
     async function uploadImage(input, type) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
       
-      // Preview instantly
       const reader = new FileReader();
       reader.onload = function(e) {
         if (type === 'cover') {
@@ -316,32 +297,24 @@
           const av = document.getElementById('avatarPreview');
           av.style.backgroundImage = `url(${e.target.result})`;
           av.style.border = 'none';
-          // Remove initial letter if exists
           const span = av.querySelector('span');
           if(span) span.remove();
         }
       }
       reader.readAsDataURL(file);
 
-      // Upload to Backend
       const formData = new FormData();
       formData.append('image', file);
-      
+
       showToast('Uploading image...');
-      
+
       try {
-        // Note: Endpoint needs to be created in userController.js
         const endpoint = type === 'cover' ? '/api/users/upload-cover' : '/api/users/upload-avatar';
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
-        
+        const res = await fetch(endpoint, { method: 'POST', body: formData, credentials: 'include' });
         if (res.ok) {
           showToast('Image updated successfully!');
         } else {
-          showToast('Failed to upload image. (Backend route missing)');
+          showToast('Failed to upload image.');
         }
       } catch (err) {
         showToast('Server error while uploading.');
@@ -366,7 +339,6 @@
       } catch (err) { showToast('Server error.'); }
     }
 
-    // Step 1: Verify Password
     async function verifyPassword() {
       const oldPass = document.getElementById('oldPass').value;
       if (!oldPass) return showToast('Please enter your old password.');
@@ -398,7 +370,6 @@
       }
     }
 
-    // Step 2: Update Password
     async function updatePassword() {
       const newPassword = document.getElementById('newPass').value;
       if (!newPassword || newPassword.length < 6) return showToast('New password must be at least 6 characters.');
@@ -440,6 +411,7 @@
         if (res.ok) {
           showToast(isChecked ? 'Ads enabled on your posts!' : 'Ads disabled.');
           document.getElementById('earningsBox').style.display = isChecked ? 'block' : 'none';
+          document.getElementById('manageAdsBtn').style.display = isChecked ? 'block' : 'none';
         } else {
           showToast('Failed to update setting.');
           document.getElementById('allowAdsToggle').checked = !isChecked;

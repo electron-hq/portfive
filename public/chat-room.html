@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chat - PortFive</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#FAFAFA">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --primary-hover: #27272A;
+      --accent: #6366F1; --accent-light: #EEF2FF;
+      --red: #EF4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; height: 100dvh; color: var(--text); overflow: hidden; }
+
+    .top-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 10px 16px; display: flex; align-items: center; gap: 12px; height: 65px; }
+    .back-btn { background: none; border: none; cursor: pointer; color: var(--text); padding: 6px; border-radius: 50%; }
+    .back-btn:hover { background: var(--line); }
+    .back-btn svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    
+    .chat-header-info { display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; color: inherit; }
+    .avatar-container { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #E4E4E7; flex-shrink: 0; }
+    .avatar-container svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
+    .chat-header-name { font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.3px; }
+
+    .chat-body { padding-top: 75px; padding-bottom: 85px; height: 100dvh; overflow-y: auto; padding-left: 16px; padding-right: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--bg); }
+
+    .message-row { display: flex; flex-direction: column; max-width: 85%; margin-top: 4px; position: relative; }
+    .message-row.sent { align-self: flex-end; align-items: flex-end; }
+    .message-row.received { align-self: flex-start; align-items: flex-start; }
+    
+    .message-bubble { padding: 10px 14px; border-radius: 16px; font-size: 0.95rem; line-height: 1.4; word-wrap: break-word; }
+    .message-row.sent .message-bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+    .message-row.received .message-bubble { background: var(--surface); border: 1px solid var(--line); color: var(--text); border-bottom-left-radius: 4px; }
+    
+    /* Link styling inside chat bubbles */
+    .message-bubble a { text-decoration: underline; word-break: break-all; }
+    .message-row.sent .message-bubble a { color: #A5B4FC; }
+    .message-row.received .message-bubble a { color: var(--accent); }
+    
+    .message-image { max-width: 100%; border-radius: 12px; display: block; cursor: pointer; margin-top: 4px; border: 1px solid rgba(0,0,0,0.1); }
+    
+    /* Audio Player Styles */
+    .message-audio { margin-top: 4px; max-width: 250px; height: 40px; outline: none; border-radius: 20px; }
+    
+    .message-time { font-size: 0.65rem; color: var(--text-muted); margin-top: 4px; display: flex; gap: 4px; align-items: center; }
+    .message-row.sent .message-time { color: var(--text-muted); }
+
+    .menu-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; border-radius: 4px; display: flex; align-items: center; justify-content: center; opacity: 0.6; transition: 0.2s; margin-left: 4px; }
+    .menu-btn:hover { opacity: 1; background: var(--line); }
+    .menu-btn svg { width: 14px; height: 14px; fill: currentColor; }
+    
+    .dropdown { position: absolute; bottom: 100%; right: 0; margin-bottom: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; flex-direction: column; min-width: 100px; z-index: 50; overflow: hidden; }
+    .dropdown.show { display: flex; }
+    .dropdown button { background: none; border: none; text-align: left; padding: 8px 12px; font-size: 0.8rem; font-weight: 500; color: var(--text); cursor: pointer; font-family: inherit; width: 100%; }
+    .dropdown button:hover { background: var(--bg); }
+    .dropdown button.danger { color: var(--red); }
+
+    /* Input Area & Recording UI */
+    .input-area { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 12px 16px; display: flex; gap: 10px; align-items: center; z-index: 100; padding-bottom: calc(12px + env(safe-area-inset-bottom)); max-width: 600px; margin: 0 auto; }
+    
+    .icon-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .icon-btn:hover { background: var(--bg); color: var(--text); }
+    .icon-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    
+    .chat-input { flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 12px 18px; font-size: 0.95rem; font-family: inherit; color: var(--text); outline: none; }
+    .chat-input:focus { border-color: var(--primary); }
+    
+    .send-btn { background: var(--primary); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; cursor: pointer; flex-shrink: 0; }
+    .send-btn:hover { background: var(--primary-hover); }
+    .send-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; margin-left: -2px; }
+
+    /* Recording State */
+    .recording-active { display: flex; flex: 1; align-items: center; gap: 10px; color: var(--red); font-weight: 600; font-size: 0.95rem; padding-left: 10px; }
+    .recording-dot { width: 12px; height: 12px; background: var(--red); border-radius: 50%; animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+    
+    .mic-btn.recording { color: var(--red); background: #FEF2F2; }
+    
+    .empty-chat { text-align: center; color: var(--text-muted); margin-top: auto; margin-bottom: auto; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <button class="back-btn" onclick="window.history.back()">
+      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </button>
+    <a href="#" class="chat-header-info" id="headerUserInfo">
+      <div class="avatar-container" id="headerAvatar"></div>
+      <div class="chat-header-name" id="headerName">Loading...</div>
+    </a>
+  </div>
+
+  <div class="chat-body" id="chatBody"></div>
+
+  <div class="input-area" id="inputAreaNormal">
+    <button class="icon-btn" onclick="document.getElementById('imageInput').click()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+    </button>
+    <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="sendImage(this)">
+    
+    <input type="text" id="messageInput" class="chat-input" placeholder="Type a message..." autocomplete="off">
+    
+    <button class="icon-btn mic-btn" id="micBtn" onclick="toggleRecording()">
+      <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+    </button>
+    
+    <button class="send-btn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+
+  <!-- Recording UI (Hidden by default) -->
+  <div class="input-area" id="inputAreaRecording" style="display:none;">
+    <div class="recording-active">
+      <div class="recording-dot"></div>
+      <span id="recordingTimer">0:00</span>
+      <span style="font-weight:400; color:var(--text-muted); font-size:0.85rem;">Recording...</span>
+    </div>
+    <button class="icon-btn" onclick="cancelRecording()" style="color:var(--red);">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <button class="send-btn" onclick="stopRecordingAndSend()">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+    </button>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    let currentUserId = null;
+    let targetUserId = null;
+    let targetUser = null;
+    let socket = null;
+
+    // Audio Recording Variables
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordingInterval = null;
+    let recordingSeconds = 0;
+
+    function esc(value) {
+      return String(value === null || value === undefined ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Function to convert links into clickable anchor tags safely
+    function linkify(text) {
+      const escapedText = esc(text);
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      return escapedText.replace(urlRegex, function(url) {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+      });
+    }
+
+    function safeUrl(url) {
+      return String(url || '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\s/g, '%20');
+    }
+    function getAvatarSVG(user) {
+      if (user && user.profilePic) return `<div style="width:100%; height:100%; background-image:url('${safeUrl(user.profilePic)}'); background-size:cover; background-position:center;"></div>`;
+      const first = user && user.fullName ? Array.from(String(user.fullName).trim())[0] : '';
+      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision"><rect width="100" height="100" fill="#E4E4E7"/><text x="50" y="50" font-size="46" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#09090B" text-anchor="middle" dominant-baseline="central">${esc((first || 'U').toUpperCase())}</text></svg>`;
+    }
+    function formatTime(dateString) {
+      const d = new Date(dateString);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      targetUserId = urlParams.get('id');
+      if (!targetUserId) { alert('User ID missing'); window.location.href = '/chat.html'; return; }
+
+      try {
+        const meRes = await fetch('/api/auth/me', { credentials: 'include' });
+        if (!meRes.ok) throw new Error();
+        const meData = await meRes.json();
+        currentUserId = meData.user.id || meData.user._id;
+
+        const profileRes = await fetch(`/api/users/profile/${targetUserId}`, { credentials: 'include' });
+        if (!profileRes.ok) throw new Error();
+        targetUser = (await profileRes.json()).user;
+
+        document.getElementById('headerAvatar').innerHTML = getAvatarSVG(targetUser);
+        document.getElementById('headerName').innerText = targetUser.fullName;
+        document.getElementById('headerUserInfo').href = `/profile.html?id=${targetUserId}`;
+
+        socket = io();
+        socket.emit('join_room', currentUserId);
+
+        socket.on('receive_message', (msg) => {
+          if (msg.sender._id === targetUserId) appendMessage(msg, false);
+        });
+
+        socket.on('message_edited', (data) => {
+          const row = document.getElementById('msg-' + data.messageId);
+          if (row) {
+            const bubble = row.querySelector('.message-bubble');
+            if (bubble) bubble.innerHTML = linkify(data.newText);
+            const time = row.querySelector('.message-time');
+            if (time && !time.innerText.includes('edited')) time.innerHTML += ' (edited)';
+          }
+        });
+
+        socket.on('message_deleted', (data) => {
+          const row = document.getElementById('msg-' + data.messageId);
+          if (row) row.remove();
+        });
+
+        loadMessages();
+      } catch (err) {
+        console.error(err);
+        alert('Failed to load chat.');
+        window.location.href = '/home.html';
+      }
+    }
+
+    async function loadMessages() {
+      const body = document.getElementById('chatBody');
+      try {
+        const res = await fetch(`/api/chat/messages/${targetUserId}`, { credentials: 'include' });
+        const messages = await res.json();
+
+        if (!messages || messages.length === 0) { body.innerHTML = '<div class="empty-chat">Say hi to start the conversation!</div>'; return; }
+
+        body.innerHTML = '';
+        messages.forEach(msg => appendMessage(msg, msg.sender._id === currentUserId));
+        scrollToBottom();
+      } catch (err) {
+        body.innerHTML = '<div class="empty-chat" style="color:var(--red);">Failed to load messages.</div>';
+      }
+    }
+
+    function appendMessage(msg, isSent) {
+      const body = document.getElementById('chatBody');
+      const empty = body.querySelector('.empty-chat');
+      if (empty) empty.remove();
+
+      const row = document.createElement('div');
+      row.className = `message-row ${isSent ? 'sent' : 'received'}`;
+      row.id = `msg-${msg._id || 'temp'}`;
+
+      let contentHtml = '';
+      // Use linkify for text messages so URLs are clickable
+      if (msg.text) contentHtml += `<div class="message-bubble">${linkify(msg.text)}</div>`;
+      if (msg.imageUrl) contentHtml += `<img src="${esc(msg.imageUrl)}" class="message-image" onclick="window.open('${esc(msg.imageUrl)}', '_blank')">`;
+      
+      // Audio Player HTML
+      if (msg.audioUrl) {
+        contentHtml += `<audio controls src="${esc(msg.audioUrl)}" class="message-audio"></audio>`;
+      }
+
+      let menuHtml = '';
+      if (isSent && msg._id) {
+        menuHtml = `
+          <div style="position:relative; display:flex; align-items:center; gap:4px; margin-top:4px;">
+            <span class="message-time">${formatTime(msg.createdAt)} ${msg.isEdited ? '(edited)' : ''}</span>
+            <button class="menu-btn" onclick="toggleMenu(event, '${msg._id}')">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+            </button>
+            <div class="dropdown" id="dropdown-${msg._id}">
+              ${msg.text ? `<button onclick="editMessage('${msg._id}', '${esc(msg.text).replace(/'/g, "\\'")}')">Edit</button>` : ''}
+              <button class="danger" onclick="deleteMessage('${msg._id}')">Delete</button>
+            </div>
+          </div>
+        `;
+      } else {
+        menuHtml = `<span class="message-time">${formatTime(msg.createdAt)}</span>`;
+      }
+
+      row.innerHTML = `${contentHtml}${menuHtml}`;
+      body.appendChild(row);
+      scrollToBottom();
+    }
+
+    function toggleMenu(e, msgId) {
+      e.stopPropagation();
+      document.querySelectorAll('.dropdown').forEach(el => el.classList.remove('show'));
+      const dd = document.getElementById(`dropdown-${msgId}`);
+      if (dd) dd.classList.toggle('show');
+    }
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.dropdown').forEach(el => el.classList.remove('show'));
+    });
+
+    async function editMessage(msgId, oldText) {
+      const newText = prompt("Edit your message:", oldText);
+      if (!newText || newText.trim() === oldText || !newText.trim()) return;
+
+      try {
+        const res = await fetch(`/api/chat/message/${msgId}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+          body: JSON.stringify({ text: newText.trim() })
+        });
+        if (res.ok) {
+          socket.emit('edit_message', { receiverId: targetUserId, messageId: msgId, newText: newText.trim() });
+          const row = document.getElementById(`msg-${msgId}`);
+          row.querySelector('.message-bubble').innerHTML = linkify(newText.trim());
+          const timeSpan = row.querySelector('.message-time');
+          if (!timeSpan.innerText.includes('edited')) timeSpan.innerHTML += ' (edited)';
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function deleteMessage(msgId) {
+      if (!confirm("Delete this message?")) return;
+      try {
+        const res = await fetch(`/api/chat/message/${msgId}`, { method: 'DELETE', credentials: 'include' });
+        if (res.ok) {
+          socket.emit('delete_message', { receiverId: targetUserId, messageId: msgId });
+          document.getElementById(`msg-${msgId}`).remove();
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    function scrollToBottom() {
+      const body = document.getElementById('chatBody');
+      body.scrollTop = body.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      
+      appendMessage({ sender: { _id: currentUserId }, text, createdAt: new Date().toISOString() }, true);
+
+      try {
+        const res = await fetch('/api/chat/send', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ receiverId: targetUserId, text }) });
+        if (res.ok) {
+          const savedMsg = await res.json();
+          socket.emit('send_message', { receiverId: targetUserId, message: savedMsg });
+          setTimeout(loadMessages, 200);
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function sendImage(input) {
+      if (!input.files || !input.files[0]) return;
+      const formData = new FormData();
+      formData.append('receiverId', targetUserId);
+      formData.append('media', input.files[0]); 
+      input.value = '';
+
+      try {
+        const res = await fetch('/api/chat/send', { method: 'POST', body: formData, credentials: 'include' });
+        if (res.ok) {
+          const savedMsg = await res.json();
+          socket.emit('send_message', { receiverId: targetUserId, message: savedMsg });
+          setTimeout(loadMessages, 300);
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // --- Audio Recording Logic ---
+    async function toggleRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        stopRecordingAndSend();
+      } else {
+        startRecording();
+      }
+    }
+
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        recordingSeconds = 0;
+
+        mediaRecorder.ondataavailable = event => {
+          if (event.data.size > 0) audioChunks.push(event.data);
+        };
+
+        mediaRecorder.start();
+        
+        document.getElementById('inputAreaNormal').style.display = 'none';
+        document.getElementById('inputAreaRecording').style.display = 'flex';
+        document.getElementById('recordingTimer').innerText = '0:00';
+        
+        recordingInterval = setInterval(() => {
+          recordingSeconds++;
+          const mins = Math.floor(recordingSeconds / 60);
+          const secs = recordingSeconds % 60;
+          document.getElementById('recordingTimer').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+          
+          if (recordingSeconds >= 120) stopRecordingAndSend();
+        }, 1000);
+
+      } catch (err) {
+        console.error('Error accessing microphone:', err);
+        alert('Could not access microphone. Please allow microphone permissions.');
+      }
+    }
+
+    function cancelRecording() {
+      if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        clearInterval(recordingInterval);
+        
+        document.getElementById('inputAreaNormal').style.display = 'flex';
+        document.getElementById('inputAreaRecording').style.display = 'none';
+        audioChunks = [];
+      }
+    }
+
+    async function stopRecordingAndSend() {
+      if (!mediaRecorder || mediaRecorder.state !== 'recording') return;
+      
+      clearInterval(recordingInterval);
+      
+      mediaRecorder.onstop = async () => {
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        audioChunks = [];
+        
+        document.getElementById('inputAreaNormal').style.display = 'flex';
+        document.getElementById('inputAreaRecording').style.display = 'none';
+
+        if (audioBlob.size < 1000) {
+            alert('Recording too short.'); return;
+        }
+
+        const formData = new FormData();
+        formData.append('receiverId', targetUserId);
+        formData.append('media', audioBlob, 'voice-message.webm');
+
+        try {
+          const res = await fetch('/api/chat/send', { method: 'POST', body: formData, credentials: 'include' });
+          if (res.ok) {
+            const savedMsg = await res.json();
+            socket.emit('send_message', { receiverId: targetUserId, message: savedMsg });
+            setTimeout(loadMessages, 300);
+          } else {
+            alert('Failed to send voice message.');
+          }
+        } catch (err) { console.error(err); }
+      };
+      
+      mediaRecorder.stop();
+    }
+
+    document.getElementById('messageInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    init();
+  </script>
+</body>
+</html>

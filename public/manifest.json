@@ -1,0 +1,16 @@
+{
+  "name": "PortFive",
+  "short_name": "PortFive",
+  "start_url": "/home.html",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#FAFAFA",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

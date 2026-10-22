@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { protect } = require('../middlewares/authMiddleware');
-const { createPost, getTopPosts, reactToPost, getUserPosts } = require('../controllers/postController');
+const { 
+  createPost, getTopPosts, reactToPost, getUserPosts, getSinglePost, getComments, addComment, incrementView, deletePost, updatePost, toggleSavePost
+} = require('../controllers/postController');
 
-// Multer: keep file in memory, max 10MB, images only
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -14,7 +15,6 @@ const upload = multer({
   }
 });
 
-// Wrapper so multer errors return clean JSON
 const handleUpload = (field) => (req, res, next) => {
   upload.single(field)(req, res, (err) => {
     if (err) {
@@ -27,7 +27,14 @@ const handleUpload = (field) => (req, res, next) => {
 
 router.post('/', protect, handleUpload('media'), createPost);
 router.get('/top/:type', protect, getTopPosts);
-router.post('/:postId/react', protect, reactToPost);
 router.get('/user/:userId', protect, getUserPosts);
+router.get('/:postId', protect, getSinglePost);
+router.put('/:postId', protect, updatePost);
+router.delete('/:postId', protect, deletePost);
+router.post('/:postId/react', protect, reactToPost);
+router.post('/:postId/save', protect, toggleSavePost);
+router.post('/:postId/view', protect, incrementView);
+router.get('/:postId/comments', protect, getComments);
+router.post('/:postId/comments', protect, addComment);
 
 module.exports = router;

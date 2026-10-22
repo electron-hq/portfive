@@ -25,6 +25,8 @@ const UserSchema = new mongoose.Schema({
 
   // Creator Monetization
   allowAds: { type: Boolean, default: false },
+  allowAdsPens: { type: Boolean, default: true },   // NEW: Allow ads on Pen posts
+  allowAdsImages: { type: Boolean, default: true }, // NEW: Allow ads on Image posts
   adImpressions: { type: Number, default: 0 },
   isCreatorVerified: { type: Boolean, default: false }
 }, { timestamps: true });

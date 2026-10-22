@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Profile - PortFive</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
@@ -15,66 +14,64 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 70px; color: var(--text); }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); }
 
     /* Top Navbar */
-    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
     .nav-left { display: flex; align-items: center; gap: 15px; }
-    .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 5px; border-radius: 50%; transition: 0.2s; }
+    .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 6px; border-radius: 50%; transition: 0.2s; }
     .back-btn:hover { background: var(--line); }
-    .back-btn svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; }
-    .logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
-    .logo span { color: var(--accent); }
+    .back-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-title { font-family: 'Archivo', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
 
-    /* Settings Icon */
     .settings-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 50%; transition: 0.2s; }
-    .settings-btn:hover { background: var(--line); }
-    .settings-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; transition: transform 0.3s ease; }
-    .settings-btn:hover svg { transform: rotate(90deg); }
+    .settings-btn:hover { background: var(--line); transform: rotate(45deg); }
+    .settings-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
     /* Profile Header */
     .profile-header { background: var(--surface); border-bottom: 1px solid var(--line); max-width: 600px; margin: 0 auto; }
-    .cover-pic { width: 100%; height: 160px; background: #E4E4E7; background-size: cover; background-position: center; position: relative; }
-    .cover-pic::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.05), transparent); pointer-events: none; }
+    .cover-pic { width: 100%; height: 180px; background: #E4E4E7; background-size: cover; background-position: center; position: relative; }
+    .cover-pic::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.1), transparent); pointer-events: none; }
 
     /* Camera Edit Buttons */
-    .edit-btn { position: absolute; background: rgba(24, 24, 27, 0.6); border: none; border-radius: 50%; display: none; justify-content: center; align-items: center; cursor: pointer; z-index: 5; transition: 0.2s; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-    .edit-btn:hover { background: rgba(24, 24, 27, 0.9); transform: scale(1.05); }
+    .edit-btn { position: absolute; background: rgba(24, 24, 27, 0.7); border: none; border-radius: 50%; display: none; justify-content: center; align-items: center; cursor: pointer; z-index: 5; transition: 0.2s; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .edit-btn:hover { background: rgba(24, 24, 27, 0.95); transform: scale(1.05); }
     .edit-btn svg { width: 16px; height: 16px; stroke: white; fill: none; stroke-width: 2; }
 
     .cover-edit-btn { top: 15px; right: 15px; padding: 8px; }
     .avatar-edit-btn { bottom: 0; right: 0; padding: 7px; border: 2px solid var(--surface); background: var(--primary); }
 
     .profile-info-container { padding: 0 20px 20px 20px; position: relative; }
-    .avatar-wrapper { position: absolute; top: -50px; left: 20px; z-index: 2; }
+    .avatar-wrapper { position: absolute; top: -55px; left: 20px; z-index: 2; }
 
-    /* Avatar: outer ring (overflow visible for the camera button) + inner circular clip */
-    .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: var(--surface); border: 4px solid var(--surface); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position: relative; }
+    /* Avatar */
+    .profile-avatar { width: 110px; height: 110px; border-radius: 50%; background: var(--surface); border: 4px solid var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; }
     .avatar-inner { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #E4E4E7; }
     .avatar-inner svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
 
     .profile-actions { display: flex; justify-content: flex-end; padding-top: 15px; margin-bottom: 15px; gap: 10px; }
 
-    .btn { padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; border: none; transition: 0.2s; }
+    .btn { padding: 9px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; transition: 0.2s; font-family: inherit; }
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
     .btn-outline:hover { background: var(--bg); border-color: #D4D4D8; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
 
-    .profile-details h1 { font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; letter-spacing: -0.5px; }
-    .profile-username { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 12px; display: block; }
-    .profile-bio { font-size: 1rem; margin-bottom: 15px; line-height: 1.5; color: var(--text); }
+    .profile-details h1 { font-family: 'Archivo', sans-serif; font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; letter-spacing: -0.5px; }
+    .profile-username { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 14px; display: block; font-weight: 500; }
+    .profile-bio { font-size: 0.95rem; margin-bottom: 16px; line-height: 1.5; color: var(--text); }
 
-    .profile-website { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 600; font-size: 0.9rem; text-decoration: none; margin-bottom: 15px; }
+    .profile-website { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 600; font-size: 0.9rem; text-decoration: none; margin-bottom: 16px; }
     .profile-website:hover { text-decoration: underline; }
     .profile-website svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
 
-    .profile-stats { display: flex; gap: 20px; font-size: 0.95rem; color: var(--text-muted); }
-    .profile-stats span { font-weight: 700; color: var(--text); cursor: pointer; }
+    .profile-stats { display: flex; gap: 24px; font-size: 0.95rem; color: var(--text-muted); }
+    .profile-stats div { cursor: pointer; }
+    .profile-stats span { font-weight: 700; color: var(--text); font-size: 1.05rem; margin-right: 4px; }
 
     .badge-icon { width: 20px; height: 20px; fill: var(--accent); }
 
-    /* Tabs */
+    /* Main Tabs */
     .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--line); max-width: 600px; margin: 0 auto; position: sticky; top: 60px; z-index: 90; }
     .tab { flex: 1; text-align: center; padding: 15px; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
     .tab.active { color: var(--text); border-bottom-color: var(--primary); }
@@ -84,43 +81,52 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Post Grid */
-    .post-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .grid-item { aspect-ratio: 1; background: #F4F4F5; border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid var(--line); }
-    .grid-item img { width: 100%; height: 100%; object-fit: cover; }
-    .grid-item .video-icon { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border-radius: 4px; padding: 4px; display: flex; }
-    .grid-item .video-icon svg { width: 14px; height: 14px; stroke: white; fill: none; }
+    /* Sub-Tabs (Shared for Posts and Saved) */
+    .sub-tabs { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .sub-tabs::-webkit-scrollbar { display: none; }
+    .sub-tab { padding: 8px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap; transition: 0.2s; font-family: inherit; }
+    .sub-tab:hover { border-color: #D4D4D8; }
+    .sub-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* Pen List (Full Width) */
+    /* Post Grid (2 Columns) */
+    .post-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .grid-item { aspect-ratio: 4 / 5; background: #000; border-radius: 10px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid var(--line); display: flex; justify-content: center; align-items: center; }
+    .grid-item img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+    .grid-item .video-icon { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border-radius: 4px; padding: 5px; display: flex; z-index: 2; }
+    .grid-item .video-icon svg { width: 14px; height: 14px; stroke: white; fill: white; }
+
+    /* Pen List */
     .pen-list { display: flex; flex-direction: column; gap: 15px; }
-    .pen-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; cursor: pointer; transition: 0.2s; }
-    .pen-card:hover { border-color: #D4D4D8; }
-    .pen-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
-    .pen-card p { font-size: 0.95rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; line-height: 1.6; }
-    .pen-card .meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .pen-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(9,9,11,0.02); display: flex; flex-direction: column; }
+    .pen-card:hover { border-color: #D4D4D8; box-shadow: 0 4px 12px rgba(9,9,11,0.05); }
+    .pen-cover-img { width: 100%; aspect-ratio: 3 / 1; object-fit: cover; display: block; background: #E4E4E7; border-bottom: 1px solid var(--line); }
+    .pen-info { padding: 16px 20px; }
+    .pen-card h3 { font-family: 'Archivo', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+    .pen-card p { font-size: 0.9rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; line-height: 1.6; }
+    .pen-card .meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 500; }
 
     /* Friends List */
-    .friends-list { display: flex; flex-direction: column; gap: 10px; }
+    .friends-list { display: flex; flex-direction: column; gap: 12px; }
     .friend-card { background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid var(--line); display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
     .friend-card:hover { border-color: #D4D4D8; }
     .friend-avatar { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #E4E4E7; }
     .friend-avatar svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
-    .friend-info h4 { font-size: 1rem; display: flex; align-items: center; gap: 5px; }
+    .friend-info h4 { font-size: 1rem; display: flex; align-items: center; gap: 5px; font-weight: 600; }
     .friend-info p { color: var(--text-muted); font-size: 0.85rem; }
 
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
-    .empty-state svg { width: 48px; height: 48px; stroke: var(--line); margin-bottom: 15px; }
+    .empty-state svg { width: 48px; height: 48px; stroke: var(--line); margin-bottom: 15px; stroke-width: 1.5; }
     .empty-state p { font-size: 0.95rem; }
 
     /* Bottom Nav */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 65px; z-index: 1000; max-width: 600px; margin: 0 auto; }
-    .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.58rem; font-weight: 600; gap: 4px; transition: 0.2s; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 68px; z-index: 1000; max-width: 600px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.6rem; font-weight: 600; gap: 5px; transition: 0.2s; width: 60px; }
     .nav-item.active { color: var(--text); }
-    .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
-    .nav-item.profile-nav .profile-pic { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 2px solid transparent; box-sizing: content-box; }
+    .nav-item svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-item.profile-nav .profile-pic { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; justify-content: center; align-items: center; background: #E4E4E7; margin-top: 1px; margin-bottom: 1px; border: 2px solid transparent; box-sizing: content-box; }
     .nav-item.profile-nav .profile-pic > * { width: 100%; height: 100%; }
     .nav-item.profile-nav .profile-pic svg { display: block; border-radius: 50%; stroke: none; }
-    .nav-item.profile-nav.active .profile-pic { border-color: var(--primary); }
+    .nav-item.profile-nav.active .profile-pic { border-color: var(--text); }
   </style>
 </head>
 <body>
@@ -130,7 +136,7 @@
       <button class="back-btn" onclick="window.history.back()">
         <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
       </button>
-      <div class="logo">Pro<span>file</span></div>
+      <div class="nav-title">Profile</div>
     </div>
     <a href="/settings.html" class="settings-btn" title="Settings">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
@@ -166,7 +172,8 @@
         </a>
 
         <div class="profile-stats">
-          <div><span id="statFriends" onclick="switchTab('friends')">0</span> Friends</div>
+          <div onclick="switchTab('posts')"><span id="statPosts">0</span> Posts</div>
+          <div onclick="switchTab('friends')"><span id="statFriends">0</span> Friends</div>
           <div><span id="statFollowing">0</span> Following</div>
         </div>
       </div>
@@ -180,77 +187,86 @@
   </div>
 
   <div class="container">
-    <div class="tab-content active" id="content-posts"></div>
+    
+    <!-- Posts Tab -->
+    <div class="tab-content active" id="content-posts">
+      <!-- Sub-tabs for Posts content -->
+      <div class="sub-tabs" id="postsSubTabs" style="display:none;">
+        <button class="sub-tab active" onclick="switchPostsTab('image', this)">Images</button>
+        <button class="sub-tab" onclick="switchPostsTab('video', this)">Videos</button>
+        <button class="sub-tab" onclick="switchPostsTab('pen', this)">Pens</button>
+      </div>
+      <!-- Content area for filtered Posts -->
+      <div id="postsContentArea"></div>
+    </div>
+
+    <!-- Friends Tab -->
     <div class="tab-content" id="content-friends"></div>
-    <div class="tab-content" id="content-saved"></div>
+    
+    <!-- Saved Tab -->
+    <div class="tab-content" id="content-saved">
+      <!-- Sub-tabs for Saved content -->
+      <div class="sub-tabs" id="savedSubTabs" style="display:none;">
+        <button class="sub-tab active" onclick="switchSavedTab('image', this)">Images</button>
+        <button class="sub-tab" onclick="switchSavedTab('video', this)">Videos</button>
+        <button class="sub-tab" onclick="switchSavedTab('pen', this)">Pens</button>
+      </div>
+      <!-- Content area for filtered Saved posts -->
+      <div id="savedContentArea"></div>
+    </div>
+
   </div>
 
   <div class="bottom-nav">
-    <a href="/jobs.html" class="nav-item">
-      <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>Jobs
-    </a>
-    <a href="/pens.html" class="nav-item">
-      <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Pens
-    </a>
-    <a href="/home.html" class="nav-item">
-      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Home
-    </a>
-    <a href="/images.html" class="nav-item">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>Images
-    </a>
-    <a href="/profile.html" class="nav-item profile-nav active">
-      <div class="profile-pic" id="navProfilePicContainer"></div>
-    </a>
+    <a href="/jobs.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>Jobs</a>
+    <a href="/pens.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Pens</a>
+    <a href="/home.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>Home</a>
+    <a href="/images.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>Images</a>
+    <a href="/profile.html" class="nav-item profile-nav active"><div class="profile-pic" id="navProfilePicContainer"></div></a>
   </div>
 
   <script>
     let currentUser = null;
     let targetUserId = null;
     let profileData = null;
+    
+    // Store posts separately for Posts and Saved
+    let allProfilePosts = [];
+    let allSavedPosts = [];
 
     const urlParams = new URLSearchParams(window.location.search);
     targetUserId = urlParams.get('id');
 
-    // Escape text before inserting into innerHTML (prevents XSS)
     function esc(value) {
       return String(value === null || value === undefined ? '' : value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
-
-    // Make a URL safe for CSS url('...') and HTML attributes
     function safeUrl(url) {
-      return String(url || '')
-        .replace(/'/g, '%27')
-        .replace(/"/g, '%22')
-        .replace(/\(/g, '%28')
-        .replace(/\)/g, '%29')
-        .replace(/\s/g, '%20')
-        .replace(/</g, '%3C')
-        .replace(/>/g, '%3E');
+      return String(url || '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\s/g, '%20').replace(/</g, '%3C').replace(/>/g, '%3E');
     }
-
-    // Allow only http/https links for the website button
     function isSafeHttpUrl(url) {
       return /^https?:\/\//i.test(String(url || '').trim());
     }
-
-    // Avatar: photo (circular via parent clip) or perfect vector initial placeholder
     function getAvatarSVG(user) {
       if (user.profilePic) {
         return `<div style="width:100%; height:100%; background-image:url('${safeUrl(user.profilePic)}'); background-size:cover; background-position:center;"></div>`;
       }
       const first = user.fullName ? Array.from(String(user.fullName).trim())[0] : '';
       const initial = esc((first || 'U').toUpperCase());
-      return `
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" role="img" aria-label="Avatar">
-          <rect width="100" height="100" fill="#E4E4E7"/>
-          <text x="50" y="50" font-size="46" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#09090B" text-anchor="middle" dominant-baseline="central">${initial}</text>
-        </svg>
-      `;
+      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" role="img" aria-label="Avatar"><rect width="100" height="100" fill="#E4E4E7"/><text x="50" y="50" font-size="46" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#09090B" text-anchor="middle" dominant-baseline="central">${initial}</text></svg>`;
+    }
+    function getYouTubeID(rawUrl) {
+      try {
+        const u = new URL(String(rawUrl || '').trim());
+        const host = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
+        let id = null;
+        if (host === 'youtu.be') id = u.pathname.slice(1).split('/')[0];
+        else if (host === 'youtube.com' || host === 'music.youtube.com') {
+          if (u.pathname === '/watch') id = u.searchParams.get('v');
+          else { const m = u.pathname.match(/^\/(embed|shorts|v|live)\/([^/?#]+)/); if (m) id = m[2]; }
+        }
+        return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
+      } catch (e) { return null; }
     }
 
     async function init() {
@@ -259,15 +275,18 @@
         if (!res.ok) throw new Error();
         const data = await res.json();
         currentUser = data.user;
-
         if (!targetUserId) targetUserId = currentUser.id;
 
-        document.getElementById('navProfilePicContainer').innerHTML = getAvatarSVG(currentUser);
-
+        const navPic = document.getElementById('navProfilePicContainer');
+        if (currentUser.profilePic) {
+          navPic.style.backgroundImage = `url('${safeUrl(currentUser.profilePic)}')`;
+          navPic.style.backgroundSize = 'cover';
+          navPic.style.backgroundPosition = 'center';
+        } else {
+          navPic.innerHTML = getAvatarSVG(currentUser);
+        }
         await loadProfile();
-      } catch (err) {
-        window.location.href = '/login.html';
-      }
+      } catch (err) { window.location.href = '/login.html'; }
     }
 
     async function loadProfile() {
@@ -275,11 +294,9 @@
         const res = await fetch(`/api/users/profile/${targetUserId}`, { credentials: 'include' });
         if (!res.ok) throw new Error();
         profileData = await res.json();
-
         renderProfile();
         loadPosts();
         loadFriends();
-
         if (currentUser.id === targetUserId) {
           document.getElementById('tab-saved').style.display = 'block';
           loadSavedPosts();
@@ -307,8 +324,6 @@
 
       document.getElementById('statFriends').innerText = profileData.followersCount;
       document.getElementById('statFollowing').innerText = profileData.followingCount;
-
-      // Avatar (inner circular clip layer; camera button is a separate sibling)
       document.getElementById('profileAvatar').innerHTML = getAvatarSVG(u);
 
       if (u.coverPic) {
@@ -336,7 +351,6 @@
     async function toggleFollow() {
       const isFollowing = profileData.isFollowing;
       const endpoint = isFollowing ? '/api/users/unfollow/' : '/api/users/follow/';
-
       try {
         const res = await fetch(`${endpoint}${targetUserId}`, { method: 'POST', credentials: 'include' });
         if (res.ok) {
@@ -351,58 +365,89 @@
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
       document.getElementById(`tab-${tab}`).classList.add('active');
       document.getElementById(`content-${tab}`).classList.add('active');
     }
 
+    // --- Posts Logic with Sub-tabs ---
+
     async function loadPosts() {
-      const container = document.getElementById('content-posts');
+      const subTabs = document.getElementById('postsSubTabs');
+      const contentArea = document.getElementById('postsContentArea');
+      
       try {
         const res = await fetch(`/api/posts/user/${targetUserId}`, { credentials: 'include' });
-        const posts = await res.json();
+        allProfilePosts = await res.json();
+        
+        document.getElementById('statPosts').innerText = allProfilePosts.length || 0;
 
-        if (posts.length === 0) {
-          container.innerHTML = `<div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-            <p>No posts yet.</p>
-          </div>`;
+        if (allProfilePosts.length === 0) {
+          subTabs.style.display = 'none';
+          contentArea.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg><p>No posts yet.</p></div>`;
           return;
         }
 
-        const mediaPosts = posts.filter(p => p.postType === 'image' || p.postType === 'video');
-        const penPosts = posts.filter(p => p.postType === 'pen');
+        subTabs.style.display = 'flex';
+        
+        // Default to showing images first
+        document.querySelectorAll('#postsSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#postsSubTabs .sub-tab').classList.add('active');
+        renderPostsContent('image');
 
-        let html = '';
+      } catch (err) {
+        contentArea.innerHTML = `<p style="text-align:center; color:var(--red);">Failed to load posts.</p>`;
+      }
+    }
 
-        if (penPosts.length > 0) {
-          html += `<div class="pen-list">`;
-          html += penPosts.map(p => `
-            <div class="pen-card" onclick="window.location.href='/post.html?id=${esc(p._id)}'">
+    function switchPostsTab(type, btn) {
+      document.querySelectorAll('#postsSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderPostsContent(type);
+    }
+
+    function renderPostsContent(type) {
+      const container = document.getElementById('postsContentArea');
+      
+      let filteredPosts = [];
+      if (type === 'image') filteredPosts = allProfilePosts.filter(p => p.postType === 'image');
+      else if (type === 'video') filteredPosts = allProfilePosts.filter(p => p.postType === 'video');
+      else if (type === 'pen') filteredPosts = allProfilePosts.filter(p => p.postType === 'pen');
+
+      if (filteredPosts.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><p>No ${type}s found.</p></div>`;
+        return;
+      }
+
+      if (type === 'pen') {
+        // Render Pen List
+        container.innerHTML = `<div class="pen-list">` + filteredPosts.map(p => `
+          <div class="pen-card" onclick="window.location.href='/post.html?id=${esc(p._id)}'">
+            ${p.mediaUrl ? `<img src="${esc(p.mediaUrl)}" class="pen-cover-img" alt="Cover">` : ''}
+            <div class="pen-info">
               <h3>${esc(p.title)}</h3>
               <p>${esc(p.content)}</p>
               <div class="meta">Read Article</div>
             </div>
-          `).join('');
-          html += `</div>`;
-        }
-
-        if (mediaPosts.length > 0) {
-          html += `<div class="post-grid" style="margin-top: ${penPosts.length > 0 ? '20px' : '0'};">`;
-          html += mediaPosts.map(p => `
-            <div class="grid-item" onclick="window.location.href='/post.html?id=${esc(p._id)}'">
-              <img src="${esc(p.mediaUrl)}" onerror="this.style.display='none'">
-              ${p.postType === 'video' ? `<div class="video-icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>` : ''}
-            </div>
-          `).join('');
-          html += `</div>`;
-        }
-
-        container.innerHTML = html;
-      } catch (err) {
-        container.innerHTML = `<p style="text-align:center; color:var(--red);">Failed to load posts.</p>`;
+          </div>
+        `).join('') + `</div>`;
+      } else {
+        // Render Media Grid
+        container.innerHTML = `<div class="post-grid">` + filteredPosts.map(p => {
+          let displayUrl = p.mediaUrl;
+          if (p.postType === 'video') {
+            const ytId = getYouTubeID(p.mediaUrl);
+            displayUrl = p.thumbnailUrl || (ytId ? 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg' : p.mediaUrl);
+          }
+          return `
+          <div class="grid-item" onclick="window.location.href='/post.html?id=${esc(p._id)}'">
+            <img src="${esc(displayUrl)}" onerror="this.style.display='none'">
+            ${p.postType === 'video' ? `<div class="video-icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>` : ''}
+          </div>
+        `}).join('') + `</div>`;
       }
     }
+
+    // --- Friends Logic ---
 
     async function loadFriends() {
       const container = document.getElementById('content-friends');
@@ -411,10 +456,7 @@
         const friends = await res.json();
 
         if (friends.length === 0) {
-          container.innerHTML = `<div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            <p>No friends yet.</p>
-          </div>`;
+          container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><p>No friends yet.</p></div>`;
           return;
         }
 
@@ -430,32 +472,77 @@
       } catch (err) {}
     }
 
+    // --- Saved Posts Logic with Sub-tabs ---
+
     async function loadSavedPosts() {
-      const container = document.getElementById('content-saved');
+      const subTabs = document.getElementById('savedSubTabs');
+      const contentArea = document.getElementById('savedContentArea');
+      
       try {
         const res = await fetch(`/api/users/saved/${targetUserId}`, { credentials: 'include' });
-        const posts = await res.json();
+        allSavedPosts = await res.json();
 
-        if (!posts || posts.length === 0) {
-          container.innerHTML = `<div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-            <p>No saved posts.</p>
-          </div>`;
+        if (!allSavedPosts || allSavedPosts.length === 0) {
+          subTabs.style.display = 'none';
+          contentArea.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg><p>No saved posts.</p></div>`;
           return;
         }
 
-        const mediaPosts = posts.filter(p => p.postType === 'image' || p.postType === 'video');
+        subTabs.style.display = 'flex';
+        
+        document.querySelectorAll('#savedSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#savedSubTabs .sub-tab').classList.add('active');
+        renderSavedContent('image');
 
-        if (mediaPosts.length > 0) {
-          container.innerHTML = `<div class="post-grid">` + mediaPosts.map(p => `
-            <div class="grid-item" onclick="window.location.href='/post.html?id=${esc(p._id)}'">
-              <img src="${esc(p.mediaUrl)}" onerror="this.style.display='none'">
+      } catch (err) {
+        contentArea.innerHTML = `<p style="text-align:center; color:var(--red);">Failed to load saved posts.</p>`;
+      }
+    }
+
+    function switchSavedTab(type, btn) {
+      document.querySelectorAll('#savedSubTabs .sub-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      renderSavedContent(type);
+    }
+
+    function renderSavedContent(type) {
+      const container = document.getElementById('savedContentArea');
+      
+      let filteredPosts = [];
+      if (type === 'image') filteredPosts = allSavedPosts.filter(p => p.postType === 'image');
+      else if (type === 'video') filteredPosts = allSavedPosts.filter(p => p.postType === 'video');
+      else if (type === 'pen') filteredPosts = allSavedPosts.filter(p => p.postType === 'pen');
+
+      if (filteredPosts.length === 0) {
+        container.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><p>No saved ${type}s found.</p></div>`;
+        return;
+      }
+
+      if (type === 'pen') {
+        container.innerHTML = `<div class="pen-list">` + filteredPosts.map(p => `
+          <div class="pen-card" onclick="window.location.href='/post.html?id=${esc(p._id)}'">
+            ${p.mediaUrl ? `<img src="${esc(p.mediaUrl)}" class="pen-cover-img" alt="Cover">` : ''}
+            <div class="pen-info">
+              <h3>${esc(p.title)}</h3>
+              <p>${esc(p.content)}</p>
+              <div class="meta">Read Article</div>
             </div>
-          `).join('') + `</div>`;
-        } else {
-          container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">No saved images/videos.</p>';
-        }
-      } catch (err) {}
+          </div>
+        `).join('') + `</div>`;
+      } else {
+        container.innerHTML = `<div class="post-grid">` + filteredPosts.map(p => {
+          let displayUrl = p.mediaUrl;
+          if (p.postType === 'video') {
+            const ytId = getYouTubeID(p.mediaUrl);
+            displayUrl = p.thumbnailUrl || (ytId ? 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg' : p.mediaUrl);
+          }
+          return `
+          <div class="grid-item" onclick="window.location.href='/post.html?id=${esc(p._id)}'">
+            <img src="${esc(displayUrl)}" onerror="this.style.display='none'">
+            ${p.postType === 'video' ? `<div class="video-icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg></div>` : ''}
+          </div>
+        `}).join('') + `</div>`;
+      }
     }
 
     init();

@@ -14,222 +14,208 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); padding-bottom: 40px; }
 
-    /* Top Navbar */
-    .top-nav { background: rgba(250, 250, 250, 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-    .close-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 5px; border-radius: 50%; transition: 0.2s; }
-    .close-btn:hover { background: var(--line); }
-    .close-btn svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; }
-    .title { font-family: 'Archivo', sans-serif; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.3px; }
-    .btn-publish { background: var(--primary); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: 0.2s; font-family: inherit; }
-    .btn-publish:hover { background: var(--primary-hover); }
-    .btn-publish:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* Top Nav */
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 6px; border-radius: 50%; transition: 0.2s; }
+    .back-btn:hover { background: var(--line); }
+    .back-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-title { font-family: 'Archivo', sans-serif; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; }
+
+    /* Container */
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    
+    /* Error Box */
+    .error-msg { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 20px; display: none; }
 
     /* Tabs */
-    .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 61px; z-index: 90; }
-    .tab { flex: 1; text-align: center; padding: 15px 0; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
-    .tab.active { color: var(--text); border-bottom-color: var(--primary); }
+    .tabs { display: flex; background: var(--line); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
+    .tab { flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.2s; }
+    .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-    /* Form Container */
-    .container { flex: 1; padding: 20px; max-width: 600px; margin: 0 auto; width: 100%; }
+    /* Form Elements */
+    .form-group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+    .form-label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text); }
+    .form-control { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; font-size: 0.95rem; font-family: inherit; color: var(--text); outline: none; transition: 0.2s; }
+    .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { resize: vertical; min-height: 120px; }
+    
+    /* File Upload Box */
+    .upload-box { border: 2px dashed var(--line); border-radius: 10px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.2s; background: var(--bg); }
+    .upload-box:hover { border-color: var(--primary); background: var(--surface); }
+    .upload-box svg { width: 32px; height: 32px; stroke: var(--text-muted); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
+    .upload-box p { font-size: 0.9rem; color: var(--text-muted); }
+    .preview-wrap { display: none; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+    .preview-wrap img { width: 100%; height: auto; display: block; }
+    .remove-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(4px); }
+    .remove-btn:hover { background: rgba(0,0,0,0.9); }
 
-    .form-group { margin-bottom: 20px; display: none; }
-    .form-group.active { display: block; }
+    /* Preview Containers */
+    .video-preview { display: none; margin-top: 16px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+    .video-preview img { width: 100%; display: block; }
 
-    input[type="text"], input[type="url"], textarea { width: 100%; padding: 14px 15px; border: 1px solid var(--line); border-radius: 10px; font-family: inherit; font-size: 1rem; outline: none; background: var(--surface); color: var(--text); transition: 0.2s; }
-    input[type="text"]:focus, input[type="url"]:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12); }
-    ::placeholder { color: var(--text-muted); }
+    /* Char Count */
+    .char-count { font-size: 0.8rem; color: var(--text-muted); text-align: right; margin-top: 6px; display: block; }
 
-    textarea { resize: vertical; min-height: 250px; line-height: 1.6; }
+    /* Publish Button */
+    .btn-publish { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 20px; font-family: 'Archivo', sans-serif; }
+    .btn-publish:hover { background: var(--primary-hover); }
+    .btn-publish:disabled { opacity: 0.6; cursor: default; }
 
-    .file-upload { border: 2px dashed var(--line); border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; background: var(--surface); transition: 0.2s; position: relative; overflow: hidden; }
-    .file-upload:hover { border-color: var(--accent); background: var(--accent-light); }
-    .file-upload svg { width: 40px; height: 40px; stroke: var(--text-muted); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
-    .file-upload p { color: var(--text-muted); font-size: 0.9rem; }
-    .file-upload input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-
-    .preview-img { width: 100%; border-radius: 12px; margin-top: 15px; display: none; object-fit: cover; border: 1px solid var(--line); }
-
-    /* Video custom thumbnail (optional) */
-    .thumb-section { margin-top: 15px; }
-    .thumb-label { font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-    .thumb-label span { font-weight: 500; color: var(--text-muted); font-size: 0.8rem; }
-    .thumb-upload { padding: 20px; }
-    .thumb-upload svg { width: 28px; height: 28px; margin-bottom: 6px; }
-    .thumb-preview-wrap { position: relative; margin-top: 12px; display: none; }
-    .thumb-preview-wrap img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); display: block; background: #000; }
-    .thumb-remove { position: absolute; top: 8px; right: 8px; background: rgba(24, 24, 27, 0.7); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-    .thumb-remove:hover { background: rgba(24, 24, 27, 0.95); }
-    .thumb-remove svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
-
-    /* Pen Specific */
-    .pen-cover-preview { width: 100%; aspect-ratio: 3 / 1; border-radius: 12px; margin-top: 15px; display: none; background-size: cover; background-position: center; border: 1px solid var(--line); }
-    .char-count { text-align: right; font-size: 0.75rem; color: var(--text-muted); margin-top: 5px; }
-
-    /* Video Specific Warning */
-    .warning-box { background: #FEF2F2; border: 1px solid #FECACA; padding: 12px; border-radius: 8px; margin-top: 15px; display: flex; gap: 10px; align-items: flex-start; }
-    .warning-box svg { width: 20px; height: 20px; stroke: var(--red); fill: none; stroke-width: 2; flex-shrink: 0; }
-    .warning-box p { font-size: 0.8rem; color: #991B1B; line-height: 1.4; }
-
-    .error-msg { color: var(--red); font-size: 0.85rem; margin-bottom: 15px; text-align: center; display: none; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; padding: 10px; }
+    /* Form visibility */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
   </style>
 </head>
 <body>
 
   <div class="top-nav">
-    <button class="close-btn" onclick="window.history.back()" aria-label="Close">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    <button class="back-btn" onclick="window.history.back()">
+      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
     </button>
-    <div class="title">Create New</div>
-    <button class="btn-publish" id="publishBtn" onclick="submitPost()">Publish</button>
-  </div>
-
-  <div class="tabs">
-    <div class="tab active" id="tab-image" onclick="switchTab('image')">Image</div>
-    <div class="tab" id="tab-video" onclick="switchTab('video')">Video</div>
-    <div class="tab" id="tab-pen" onclick="switchTab('pen')">Pen (Article)</div>
+    <div class="nav-title">Create Post</div>
+    <div style="width: 34px;"></div>
   </div>
 
   <div class="container">
     <div class="error-msg" id="errorMsg"></div>
 
-    <form id="postForm" onsubmit="return false;">
+    <div class="tabs">
+      <div class="tab active" id="tab-image" onclick="switchTab('image')">Image</div>
+      <div class="tab" id="tab-video" onclick="switchTab('video')">Video</div>
+      <div class="tab" id="tab-pen" onclick="switchTab('pen')">Pen</div>
+    </div>
 
-      <!-- Image Post -->
-      <div class="form-group active" id="group-image">
-        <div class="file-upload">
-          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-          <p>Click to upload an image (max 10 MB)</p>
-          <input type="file" id="imageFile" accept="image/*" onchange="previewFile(this, 'imagePreview')">
+    <!-- Image Form -->
+    <div class="tab-content active" id="form-image">
+      <div class="form-group">
+        <label class="form-label">Upload Image</label>
+        <div class="upload-box" id="imageUploadBox" onclick="document.getElementById('imageFile').click()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <p>Click to select an image</p>
         </div>
-        <img id="imagePreview" class="preview-img" alt="Preview">
-        <input type="text" id="imageCaption" placeholder="Write a caption..." maxlength="500" style="margin-top: 15px;">
+        <div class="preview-wrap" id="imagePreviewWrap">
+          <img id="imagePreview" alt="Preview">
+          <button class="remove-btn" onclick="removeImage()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <input type="file" id="imageFile" accept="image/*" style="display:none;" onchange="previewImage(this)">
       </div>
+      <div class="form-group">
+        <label class="form-label">Caption</label>
+        <textarea class="form-control" id="imageCaption" placeholder="Write a caption..." rows="3"></textarea>
+      </div>
+    </div>
 
-      <!-- Video Post (YouTube Embed Link) -->
-      <div class="form-group" id="group-video">
-        <input type="url" id="videoUrl" placeholder="Paste YouTube link here (e.g. https://youtube.com/watch?v=...)" oninput="previewYouTube(this.value)">
-
-        <div id="videoPreviewContainer" style="display:none; margin-top: 15px; text-align: center;">
-          <img id="videoThumb" alt="Video preview" style="width: 100%; max-height: 300px; border-radius: 12px; object-fit: cover; background: #000;">
-          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;" id="videoThumbLabel">Video Preview</p>
-        </div>
-
-        <!-- Optional custom thumbnail -->
-        <div class="thumb-section">
-          <div class="thumb-label">Add Thumbnail <span>(optional)</span></div>
-          <div class="file-upload thumb-upload" id="thumbUploadBox">
-            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-            <p>Upload a custom thumbnail (16:9 recommended). If skipped, the YouTube thumbnail is used.</p>
-            <input type="file" id="videoThumbFile" accept="image/*" onchange="previewCustomThumb(this)">
-          </div>
-          <div class="thumb-preview-wrap" id="thumbPreviewWrap">
-            <img id="customThumbPreview" alt="Custom thumbnail preview">
-            <button type="button" class="thumb-remove" onclick="removeCustomThumb()" aria-label="Remove thumbnail">
-              <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-          </div>
-        </div>
-
-        <input type="text" id="videoCaption" placeholder="Write a caption..." maxlength="500" style="margin-top: 15px;">
-
-        <div class="warning-box">
-          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-          <p><strong>Copyright Notice:</strong> You must be the original creator of this video or have explicit permission. PortFive is not responsible for any copyright infringements. Embedding YouTube links is subject to YouTube's Terms of Service.</p>
+    <!-- Video Form -->
+    <div class="tab-content" id="form-video">
+      <div class="form-group">
+        <label class="form-label">YouTube Video Link</label>
+        <input type="url" class="form-control" id="videoUrl" placeholder="https://youtube.com/watch?v=..." oninput="previewYouTube(this.value)">
+        <div class="video-preview" id="videoPreviewContainer">
+          <img id="videoThumb" alt="YouTube Thumbnail">
         </div>
       </div>
-
-      <!-- Pen (Article) Post -->
-      <div class="form-group" id="group-pen">
-        <input type="text" id="penTitle" placeholder="Article Title" maxlength="150" style="margin-bottom: 15px; font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 1.2rem;">
-
-        <div class="file-upload" style="padding: 20px;">
-          <p style="font-size: 0.8rem;">Optional: Add a Cover Image (Recommended 1200x400)</p>
-          <input type="file" id="penCoverFile" accept="image/*" onchange="previewPenCover(this)">
+      <div class="form-group">
+        <label class="form-label">Custom Thumbnail (Optional)</label>
+        <div class="upload-box" id="thumbUploadBox" onclick="document.getElementById('videoThumbFile').click()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <p>Click to select a thumbnail</p>
         </div>
-        <div id="penCoverPreview" class="pen-cover-preview"></div>
-
-        <textarea id="penContent" placeholder="Write your article here... (Max 8000 characters)" maxlength="8000" oninput="updateCharCount()" style="margin-top: 15px;"></textarea>
-        <div class="char-count" id="charCount">0 / 8000</div>
+        <div class="preview-wrap" id="thumbPreviewWrap">
+          <img id="customThumbPreview" alt="Preview">
+          <button class="remove-btn" onclick="removeCustomThumb()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <input type="file" id="videoThumbFile" accept="image/*" style="display:none;" onchange="previewCustomThumb(this)">
       </div>
+      <div class="form-group">
+        <label class="form-label">Caption</label>
+        <textarea class="form-control" id="videoCaption" placeholder="Write a caption..." rows="3"></textarea>
+      </div>
+    </div>
 
-    </form>
+    <!-- Pen Form -->
+    <div class="tab-content" id="form-pen">
+      <div class="form-group">
+        <label class="form-label">Title</label>
+        <input type="text" class="form-control" id="penTitle" placeholder="Enter article title" maxlength="150">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Content</label>
+        <textarea class="form-control" id="penContent" placeholder="Write your article here..." rows="8" maxlength="8000" oninput="updateCharCount()"></textarea>
+        <span class="char-count" id="charCount">0 / 8000</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cover Image (3:1 Ratio)</label>
+        <div class="upload-box" id="penCoverBox" onclick="document.getElementById('penCoverFile').click()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+          <p>Click to select a 3:1 cover image</p>
+        </div>
+        <div class="preview-wrap" id="penCoverPreviewWrap">
+          <img id="penCoverPreview" alt="Preview">
+          <button class="remove-btn" onclick="removePenCover()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+        <input type="file" id="penCoverFile" accept="image/*" style="display:none;" onchange="previewPenCover(this)">
+      </div>
+    </div>
+
+    <button class="btn-publish" id="publishBtn" onclick="submitPost()">Publish Post</button>
   </div>
 
   <script>
+    const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
     let currentTab = 'image';
-    const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
-
-    // Check Auth
-    async function checkAuth() {
-      try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (!res.ok) window.location.href = '/login.html';
-      } catch (err) {
-        window.location.href = '/login.html';
-      }
-    }
-    checkAuth();
 
     function switchTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.form-group').forEach(g => g.classList.remove('active'));
-
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
       document.getElementById('tab-' + tab).classList.add('active');
-      document.getElementById('group-' + tab).classList.add('active');
+      document.getElementById('form-' + tab).classList.add('active');
       hideError();
     }
 
-    // Image Preview
-    function previewFile(input, previewId) {
-      const preview = document.getElementById(previewId);
+    function previewImage(input) {
+      const wrap = document.getElementById('imagePreviewWrap');
+      const img = document.getElementById('imagePreview');
+      const box = document.getElementById('imageUploadBox');
       if (input.files && input.files[0]) {
         if (input.files[0].size > MAX_IMAGE_BYTES) {
-          input.value = '';
-          preview.style.display = 'none';
+          input.value = ''; wrap.style.display = 'none'; box.style.display = 'block';
           return showError('Image must be under 10 MB.');
         }
         hideError();
         const reader = new FileReader();
         reader.onload = function(e) {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
+          img.src = e.target.result;
+          wrap.style.display = 'block';
+          box.style.display = 'none';
         };
         reader.readAsDataURL(input.files[0]);
       }
     }
 
-    // Pen Cover Preview
-    function previewPenCover(input) {
-      const preview = document.getElementById('penCoverPreview');
-      if (input.files && input.files[0]) {
-        if (input.files[0].size > MAX_IMAGE_BYTES) {
-          input.value = '';
-          preview.style.display = 'none';
-          return showError('Cover image must be under 10 MB.');
-        }
-        hideError();
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          preview.style.backgroundImage = 'url("' + e.target.result + '")';
-          preview.style.display = 'block';
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
+    function removeImage() {
+      document.getElementById('imageFile').value = '';
+      document.getElementById('imagePreview').removeAttribute('src');
+      document.getElementById('imagePreviewWrap').style.display = 'none';
+      document.getElementById('imageUploadBox').style.display = 'block';
     }
 
-    // Video: custom thumbnail preview
     function previewCustomThumb(input) {
       const wrap = document.getElementById('thumbPreviewWrap');
       const img = document.getElementById('customThumbPreview');
       const box = document.getElementById('thumbUploadBox');
       if (input.files && input.files[0]) {
         if (input.files[0].size > MAX_IMAGE_BYTES) {
-          input.value = '';
-          wrap.style.display = 'none';
-          box.style.display = 'block';
+          input.value = ''; wrap.style.display = 'none'; box.style.display = 'block';
           return showError('Thumbnail must be under 10 MB.');
         }
         hideError();
@@ -250,31 +236,65 @@
       document.getElementById('thumbUploadBox').style.display = 'block';
     }
 
+    // --- Pen Cover Ratio Check (3:1) ---
+    function previewPenCover(input) {
+      const wrap = document.getElementById('penCoverPreviewWrap');
+      const imgPreview = document.getElementById('penCoverPreview');
+      const box = document.getElementById('penCoverBox');
+      
+      if (input.files && input.files[0]) {
+        if (input.files[0].size > MAX_IMAGE_BYTES) {
+          input.value = ''; wrap.style.display = 'none'; box.style.display = 'block';
+          return showError('Cover image must be under 10 MB.');
+        }
+
+        const file = input.files[0];
+        const imgObj = new Image();
+        imgObj.src = URL.createObjectURL(file);
+
+        imgObj.onload = function() {
+          // Check if the aspect ratio is roughly 3:1 (allowing small margin for error)
+          const ratio = this.width / this.height;
+          if (Math.abs(ratio - 3) > 0.05) {
+            input.value = '';
+            wrap.style.display = 'none';
+            box.style.display = 'block';
+            return showError(`Cover must have a 3:1 aspect ratio (e.g., 1200x400). Your image is ${this.width}x${this.height}.`);
+          }
+          
+          hideError();
+          imgPreview.src = imgObj.src;
+          wrap.style.display = 'block';
+          box.style.display = 'none';
+        };
+      }
+    }
+
+    function removePenCover() {
+      document.getElementById('penCoverFile').value = '';
+      document.getElementById('penCoverPreview').removeAttribute('src');
+      document.getElementById('penCoverPreviewWrap').style.display = 'none';
+      document.getElementById('penCoverBox').style.display = 'block';
+    }
+
     function updateCharCount() {
       const val = document.getElementById('penContent').value.length;
       document.getElementById('charCount').innerText = val + ' / 8000';
     }
 
-    // YouTube ID parser (watch, youtu.be, embed, shorts, live)
     function getYouTubeID(rawUrl) {
       try {
         const u = new URL(String(rawUrl || '').trim());
         if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
         const host = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
         let id = null;
-        if (host === 'youtu.be') {
-          id = u.pathname.slice(1).split('/')[0];
-        } else if (host === 'youtube.com' || host === 'music.youtube.com') {
+        if (host === 'youtu.be') { id = u.pathname.slice(1).split('/')[0]; } 
+        else if (host === 'youtube.com' || host === 'music.youtube.com') {
           if (u.pathname === '/watch') id = u.searchParams.get('v');
-          else {
-            const m = u.pathname.match(/^\/(embed|shorts|v|live)\/([^/?#]+)/);
-            if (m) id = m[2];
-          }
+          else { const m = u.pathname.match(/^\/(embed|shorts|v|live)\/([^/?#]+)/); if (m) id = m[2]; }
         }
         return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
-      } catch (e) {
-        return null;
-      }
+      } catch (e) { return null; }
     }
 
     function previewYouTube(url) {
@@ -327,7 +347,26 @@
         formData.append('content', content);
 
         const coverFile = document.getElementById('penCoverFile').files[0];
-        if (coverFile) formData.append('media', coverFile);
+        if (coverFile) {
+          // Final validation before submit
+          const imgObj = new Image();
+          imgObj.src = URL.createObjectURL(coverFile);
+          await new Promise((resolve, reject) => {
+            imgObj.onload = () => {
+              const ratio = imgObj.width / imgObj.height;
+              if (Math.abs(ratio - 3) > 0.05) {
+                reject(`Cover must have a 3:1 aspect ratio. Your image is ${imgObj.width}x${imgObj.height}.`);
+              } else resolve();
+            };
+            imgObj.onerror = () => reject('Invalid image');
+          }).catch(err => {
+            showError(err);
+            return; 
+          });
+          if (document.getElementById('errorMsg').style.display === 'block') return;
+
+          formData.append('media', coverFile);
+        }
       }
 
       btn.innerText = 'Publishing...';
@@ -347,12 +386,12 @@
           window.location.href = '/home.html';
         } else {
           showError(data.message || 'Failed to create post');
-          btn.innerText = 'Publish';
+          btn.innerText = 'Publish Post';
           btn.disabled = false;
         }
       } catch (err) {
         showError('Server error. Please try again.');
-        btn.innerText = 'Publish';
+        btn.innerText = 'Publish Post';
         btn.disabled = false;
       }
     }
