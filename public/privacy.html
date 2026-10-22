@@ -4,116 +4,86 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Privacy Policy - PortFive</title>
-  <meta name="description" content="Learn how PortFive collects, uses, and protects your personal data.">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="manifest" href="/manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    :root { 
-      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B; 
-      --text-muted: #71717A; --line: #E4E4E7; 
-      --primary: #18181B; --accent: #6366F1; 
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --accent: #6366F1;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; display: flex; flex-direction: column; min-height: 100vh; }
-
-    .navbar { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .back-link { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: 0.9rem; padding: 8px 12px; border-radius: 8px; transition: 0.2s; }
-    .back-link:hover { background: var(--line); }
-    .back-link svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
-    .logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.7; }
+    
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 15px 20px; display: flex; align-items: center; gap: 15px; }
+    .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 5px; border-radius: 50%; }
+    .back-btn:hover { background: var(--line); }
+    .back-btn svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; }
+    .logo { font-family: 'Archivo', sans-serif; font-size: 1.3rem; font-weight: 800; text-decoration: none; color: var(--text); }
     .logo span { color: var(--accent); }
 
-    .container { max-width: 800px; margin: 0 auto; padding: 60px 20px; flex: 1; width: 100%; }
-    .header-title { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
-    .last-updated { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
-
-    .policy-content h2 { font-size: 1.4rem; font-weight: 700; margin: 35px 0 15px 0; color: var(--text); }
-    .policy-content h3 { font-size: 1.1rem; font-weight: 600; margin: 25px 0 10px 0; color: var(--text); }
-    .policy-content p { margin-bottom: 15px; font-size: 1rem; color: var(--text-muted); }
-    .policy-content ul { margin-left: 20px; margin-bottom: 20px; color: var(--text-muted); font-size: 1rem; }
-    .policy-content li { margin-bottom: 8px; }
-    .policy-content strong { color: var(--text); }
-
-    .footer { border-top: 1px solid var(--line); background: var(--surface); padding: 40px 20px; margin-top: auto; }
-    .footer-content { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 15px; text-align: center; }
-    .footer-logo { font-weight: 800; font-size: 1.2rem; color: var(--text); }
-    .footer-logo span { color: var(--accent); }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.2s; }
-    .footer-links a:hover { color: var(--text); }
-    .copyright { font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; }
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    h1 { font-family: 'Archivo', sans-serif; font-size: 2.2rem; font-weight: 700; margin-bottom: 10px; letter-spacing: -0.5px; }
+    .last-updated { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 30px; }
+    h2 { font-family: 'Archivo', sans-serif; font-size: 1.4rem; font-weight: 700; margin-top: 30px; margin-bottom: 15px; }
+    p { margin-bottom: 15px; color: var(--text-muted); font-size: 1rem; }
+    ul { margin-bottom: 15px; padding-left: 20px; color: var(--text-muted); }
+    li { margin-bottom: 8px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    
+    .footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--line); margin-top: 40px; color: var(--text-muted); font-size: 0.85rem; }
   </style>
 </head>
 <body>
 
-  <nav class="navbar">
-    <a href="/" class="back-link">
-      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-      Home
-    </a>
-    <div class="logo">Port<span>Five</span></div>
-  </nav>
-
-  <div class="container">
-    <h1 class="header-title">Privacy Policy</h1>
-    <p class="last-updated">Last Updated: October 22, 2026</p>
-
-    <div class="policy-content">
-      <p>At PortFive, accessible from portfive.com, one of our main priorities is the privacy of our visitors and users. This Privacy Policy document contains types of information that is collected and recorded by PortFive and how we use it.</p>
-
-      <h2>1. Information We Collect</h2>
-      <p>When you register for an account, we collect the following personal information:</p>
-      <ul>
-        <li><strong>Account Data:</strong> Your full name, username, and securely hashed password.</li>
-        <li><strong>Content Data:</strong> Images, videos (YouTube links), articles (Pens), comments, and messages you share on the platform.</li>
-        <li><strong>Profile Data:</strong> Profile pictures, cover photos, bio, and website links you choose to add.</li>
-      </ul>
-
-      <h2>2. How We Use Your Information</h2>
-      <p>We use the information we collect in various ways, including to:</p>
-      <ul>
-        <li>Provide, operate, and maintain our platform.</li>
-        <li>Improve, personalize, and expand our platform.</li>
-        <li>Understand and analyze how you use our platform.</li>
-        <li>Develop new products, services, features, and functionality.</li>
-        <li>Communicate with you for customer service, updates, and marketing purposes (if opted-in).</li>
-        <li>Track ad impressions for creator monetization (if you have "Allow Ads" enabled).</li>
-      </ul>
-
-      <h2>3. Third-Party Services</h2>
-      <p>PortFive utilizes third-party services to ensure a fast and reliable experience. These third parties may process your data according to their own privacy policies:</p>
-      <ul>
-        <li><strong>MongoDB Atlas:</strong> For secure database hosting.</li>
-        <li><strong>Cloudinary / ImgBB:</strong> For hosting and serving images and media.</li>
-        <li><strong>Cloudflare Turnstile:</strong> For CAPTCHA verification to prevent spam and bots.</li>
-        <li><strong>Adsterra:</strong> For displaying advertisements (only if a creator enables the "Allow Ads" feature). Adsterra may use cookies to serve relevant ads.</li>
-      </ul>
-
-      <h2>4. Cookies and Web Beacons</h2>
-      <p>Like any other website, PortFive uses "cookies". These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. We use HttpOnly cookies to securely store your authentication token (JWT). You can choose to disable cookies through your individual browser options, but this will log you out of your PortFive account.</p>
-
-      <h2>5. Data Deletion</h2>
-      <p>You have the right to request the deletion of your personal data. You can do this directly from your Profile Settings by clicking "Delete Account". This will permanently remove your account, posts, messages, and associated data from our active databases.</p>
-
-      <h2>6. Contact Us</h2>
-      <p>If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us at <strong>electron.team@proton.me</strong>.</p>
-    </div>
+  <div class="top-nav">
+    <button class="back-btn" onclick="window.history.back()">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+    </button>
+    <a href="/" class="logo">Port<span>Five</span></a>
   </div>
 
-  <footer class="footer">
-    <div class="footer-content">
-      <div class="footer-logo">Port<span>Five</span></div>
-      <div class="footer-links">
-        <a href="/">Home</a>
-        <a href="/docs.html">Documentation</a>
-        <a href="/privacy.html">Privacy Policy</a>
-        <a href="/terms.html">Terms of Service</a>
-        <a href="/cookies.html">Cookie Policy</a>
-      </div>
-      <div class="copyright">
-        &copy; 2026 PortFive by Electron. All rights reserved.
-      </div>
-    </div>
-  </footer>
+  <div class="container">
+    <h1>Privacy Policy</h1>
+    <div class="last-updated">Last updated: October 22, 2026</div>
+
+    <p>Welcome to PortFive. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website and tell you about your privacy rights.</p>
+
+    <h2>1. Information We Collect</h2>
+    <p>We may collect, use, store and transfer different kinds of personal data about you which we have grouped together follows:</p>
+    <ul>
+      <li><strong>Identity Data:</strong> includes first name, last name, username or similar identifier.</li>
+      <li><strong>Contact Data:</strong> includes email address.</li>
+      <li><strong>Content Data:</strong> includes photos, images, videos, articles (Pens), and messages you share on the platform.</li>
+      <li><strong>Technical Data:</strong> includes internet protocol (IP) address, your login data, browser type and version.</li>
+    </ul>
+
+    <h2>2. How We Use Your Data</h2>
+    <p>We will only use your personal data when the law allows us to. Most commonly, we will use your personal data in the following circumstances:</p>
+    <ul>
+      <li>To register you as a new user.</li>
+      <li>To manage your account and provide our services (chat, posting, jobs).</li>
+      <li>To enable you to participate in interactive features of our service.</li>
+      <li>To improve our website, products, and services.</li>
+    </ul>
+
+    <h2>3. Third-Party Advertising and Cookies</h2>
+    <p>We use third-party advertising companies (such as Adsterra) to serve ads when you visit our website. These companies may use information (not including your name, address, email address, or telephone number) about your visits to this and other websites in order to provide advertisements about goods and services of interest to you.</p>
+    <p>Third-party ad servers or ad networks use technology to send the advertisements directly to your browser. They automatically receive your IP address when this occurs. They may also use other technologies (such as cookies, JavaScript, or Web Beacons) to measure the effectiveness of their advertisements.</p>
+    <p>You can choose to disable or selectively turn off our cookies or third-party cookies in your browser settings.</p>
+
+    <h2>4. Data Security</h2>
+    <p>We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used, or accessed in an unauthorized way, altered, or disclosed. Images are hosted securely via ImgBB, audio via Cloudinary, and data is stored securely on MongoDB.</p>
+
+    <h2>5. Contact Us</h2>
+    <p>If you have any questions about this privacy policy, please contact us at <strong>team.electron.innology@gmail.com</strong>.</p>
+  </div>
+
+  <div class="footer">
+    &copy; 2026 PortFive by Electron. All rights reserved.
+  </div>
 
 </body>
 </html>
