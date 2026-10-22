@@ -4,12 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - PortFive</title>
+  
+  <!-- Favicon & PWA -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="manifest" href="/manifest.json">
+
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
-    :root { 
-      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B; 
-      --text-muted: #71717A; --line: #E4E4E7; 
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
       --primary: #18181B; --primary-hover: #27272A; --accent: #6366F1;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,10 +28,13 @@
     input:focus { border-color: var(--primary); background: var(--surface); }
     .btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 1rem; cursor: pointer; margin-top: 10px; transition: 0.2s; }
     .btn:hover { background: var(--primary-hover); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .error { color: #EF4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
     .links { text-align: center; margin-top: 20px; font-size: 0.9rem; color: var(--text-muted); }
     .links a { color: var(--text); text-decoration: none; font-weight: 600; }
     .links a:hover { color: var(--accent); }
+    /* Turnstile Container Margin */
+    .cf-turnstile { margin-top: 15px; margin-bottom: 5px; }
   </style>
 </head>
 <body>
@@ -42,9 +50,9 @@
         <label>Password</label>
         <input type="password" id="password" placeholder="••••••••" required>
       </div>
-      
-      <div class="cf-turnstile" data-sitekey="0x4AAAAAAFfS2ppXHpN_9kZg" data-theme="light"></div>
-      <input type="hidden" id="captchaToken" value="dummy_token_for_dev">
+
+      <!-- Turnstile Widget with Callback -->
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAFfS2ppXHpN_9kZg" data-theme="light" data-callback="onCaptchaSuccess"></div>
 
       <button type="submit" class="btn" id="submitBtn">Log In</button>
       <div class="error" id="errorMsg"></div>
@@ -56,14 +64,25 @@
   </div>
 
   <script>
+    let turnstileToken = null;
+
+    function onCaptchaSuccess(token) {
+      turnstileToken = token;
+    }
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('submitBtn');
       const errorMsg = document.getElementById('errorMsg');
-      
+
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-      const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 'dummy_token';
+      
+      if (!turnstileToken) {
+        errorMsg.innerText = 'Please complete the CAPTCHA verification.';
+        errorMsg.style.display = 'block';
+        return;
+      }
 
       btn.innerText = 'Logging in...'; btn.disabled = true; errorMsg.style.display = 'none';
 
@@ -71,16 +90,19 @@
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, captchaToken })
+          body: JSON.stringify({ username, password, captchaToken: turnstileToken })
         });
         const data = await res.json();
 
         if (res.ok) {
-          window.location.href = '/home.html'; 
+          window.location.href = '/home.html';
         } else {
           errorMsg.innerText = data.message;
           errorMsg.style.display = 'block';
           btn.innerText = 'Log In'; btn.disabled = false;
+          // Reset Turnstile on failure
+          if (typeof turnstile !== 'undefined') turnstile.reset();
+          turnstileToken = null;
         }
       } catch (err) {
         errorMsg.innerText = 'Server error';

@@ -4,32 +4,57 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
 const verifyCaptcha = async (token) => {
-  if (!process.env.TURNSTILE_SECRET_KEY || process.env.NODE_ENV === 'development') return true;
+  // If secret key is missing, bypass in dev mode but warn
+  if (!process.env.TURNSTILE_SECRET_KEY) {
+    console.warn('⚠️ TURNSTILE_SECRET_KEY is missing in .env');
+    return true;
+  }
+
+  if (!token) {
+    console.warn('⚠️ No captcha token provided by frontend');
+    return false;
+  }
+
   try {
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `secret=${process.env.TURNSTILE_SECRET_KEY}&response=${token}`
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        secret: process.env.TURNSTILE_SECRET_KEY,
+        response: token
+      })
     });
     const data = await response.json();
+    
+    if (!data.success) {
+      console.error('❌ Turnstile verification failed:', data);
+    }
+    
     return data.success;
-  } catch (err) { return false; }
+  } catch (err) {
+    console.error('❌ Turnstile fetch error:', err.message);
+    return false;
+  }
 };
 
 const generateTokenAndSetCookie = (res, userId) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '7d' });
-  res.cookie('portfive_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
+  res.cookie('portfive_token', token, { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: 'strict', 
+    maxAge: 7 * 24 * 60 * 60 * 1000 
+  });
 };
 
 const checkUsername = async (req, res) => {
   try {
     const { username } = req.params;
-    if (!username || username.length < 3) {
-      return res.status(400).json({ available: false, message: 'Username must be at least 3 characters' });
-    }
+    if (!username || username.length < 3) return res.status(400).json({ available: false, message: 'Username must be at least 3 characters' });
+    
     const existingUser = await User.findOne({ username: username.toLowerCase() });
-    if (existingUser) {
-      return res.status(200).json({ available: false, message: 'Username is already taken' });
-    }
+    if (existingUser) return res.status(200).json({ available: false, message: 'Username is already taken' });
+    
     return res.status(200).json({ available: true, message: 'Username is available' });
   } catch (error) {
     return res.status(500).json({ available: false, message: 'Server error' });
@@ -39,8 +64,10 @@ const checkUsername = async (req, res) => {
 const registerUser = async (req, res) => {
   try {
     const { fullName, username, password, captchaToken } = req.body;
+    
     const isCaptchaValid = await verifyCaptcha(captchaToken);
-    if (!isCaptchaValid) return res.status(400).json({ message: 'Invalid Captcha' });
+    if (!isCaptchaValid) return res.status(400).json({ message: 'Captcha verification failed. Please try again.' });
+
     if (!fullName || !username || !password) return res.status(400).json({ message: 'Please provide all fields' });
 
     const userExists = await User.findOne({ username: username.toLowerCase() });
@@ -57,17 +84,31 @@ const registerUser = async (req, res) => {
       hashedRecoveryCodes.push({ codeHash: await bcrypt.hash(code, salt) });
     }
 
-    const user = await User.create({ fullName, username: username.toLowerCase(), password: hashedPassword, recoveryCodes: hashedRecoveryCodes });
+    const user = await User.create({ 
+      fullName, 
+      username: username.toLowerCase(), 
+      password: hashedPassword, 
+      recoveryCodes: hashedRecoveryCodes 
+    });
+
     generateTokenAndSetCookie(res, user._id);
-    res.status(201).json({ message: 'Registration successful!', user: { id: user._id, fullName: user.fullName, username: user.username }, recoveryCodes: plainRecoveryCodes });
-  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+    res.status(201).json({ 
+      message: 'Registration successful!', 
+      user: { id: user._id, fullName: user.fullName, username: user.username }, 
+      recoveryCodes: plainRecoveryCodes 
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 const loginUser = async (req, res) => {
   try {
     const { username, password, captchaToken } = req.body;
+    
     const isCaptchaValid = await verifyCaptcha(captchaToken);
-    if (!isCaptchaValid) return res.status(400).json({ message: 'Invalid Captcha' });
+    if (!isCaptchaValid) return res.status(400).json({ message: 'Captcha verification failed. Please try again.' });
 
     const user = await User.findOne({ username: username.toLowerCase() });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
@@ -76,45 +117,73 @@ const loginUser = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     generateTokenAndSetCookie(res, user._id);
-    res.status(200).json({ message: 'Login successful', user: { id: user._id, fullName: user.fullName, username: user.username, profilePic: user.profilePic } });
-  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+    res.status(200).json({ 
+      message: 'Login successful', 
+      user: { id: user._id, fullName: user.fullName, username: user.username, profilePic: user.profilePic } 
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.status(200).json({ user: {
-      id: user._id, fullName: user.fullName, username: user.username,
-      profilePic: user.profilePic, coverPic: user.coverPic, bio: user.bio,
-      website: user.website, badge: user.badge, allowAds: user.allowAds, adImpressions: user.adImpressions
-    } });
-  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+    
+    res.status(200).json({ 
+      user: { 
+        id: user._id, 
+        fullName: user.fullName, 
+        username: user.username,
+        profilePic: user.profilePic, 
+        coverPic: user.coverPic, 
+        bio: user.bio,
+        website: user.website, 
+        badge: user.badge, 
+        allowAds: user.allowAds, 
+        allowAdsPens: user.allowAdsPens,     // Added this
+        allowAdsImages: user.allowAdsImages, // Added this
+        adImpressions: user.adImpressions
+      } 
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 const recoverPassword = async (req, res) => {
   try {
     const { username, recoveryCode, newPassword } = req.body;
     if (!username || !recoveryCode || !newPassword) return res.status(400).json({ message: 'Please provide all fields' });
+    
     const user = await User.findOne({ username: username.toLowerCase() });
     if (!user) return res.status(400).json({ message: 'User not found' });
 
     let isCodeValid = false;
     let codeIndexToMarkUsed = -1;
+    
     for (let i = 0; i < user.recoveryCodes.length; i++) {
       if (!user.recoveryCodes[i].isUsed) {
         if (await bcrypt.compare(recoveryCode, user.recoveryCodes[i].codeHash)) {
-          isCodeValid = true; codeIndexToMarkUsed = i; break;
+          isCodeValid = true; 
+          codeIndexToMarkUsed = i; 
+          break;
         }
       }
     }
+    
     if (!isCodeValid) return res.status(400).json({ message: 'Invalid or used code' });
 
     user.recoveryCodes[codeIndexToMarkUsed].isUsed = true;
     user.password = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
     await user.save();
+    
     res.status(200).json({ message: 'Password recovered successfully.' });
-  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
 const logoutUser = (req, res) => {

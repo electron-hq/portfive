@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register - PortFive</title>
+  
+  <!-- Favicon & PWA -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="manifest" href="/manifest.json">
+
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
@@ -19,7 +24,7 @@
     input:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1); }
     .input-error { border-color: var(--red) !important; }
     .input-success { border-color: var(--green) !important; }
-    
+
     .status-msg { font-size: 0.75rem; margin-top: 5px; font-weight: 500; display: none; }
     .status-error { color: var(--red); display: block; }
     .status-success { color: var(--green); display: block; }
@@ -29,13 +34,15 @@
     .btn:hover { background: var(--green-dark); }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .error { color: var(--red); font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
-    
+
     /* Success Modal */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
     .modal { background: white; width: 100%; max-width: 400px; padding: 25px; border-radius: 16px; text-align: center; }
     .modal h2 { color: var(--green); margin-bottom: 10px; }
     .modal p { font-size: 0.9rem; color: #64748B; margin-bottom: 15px; }
     .code-list { background: #F1F5F9; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 1.1rem; font-weight: bold; color: var(--text); margin-bottom: 20px; letter-spacing: 1px; }
+    
+    .cf-turnstile { margin-top: 15px; margin-bottom: 5px; }
   </style>
 </head>
 <body>
@@ -56,17 +63,15 @@
         <label>Password</label>
         <input type="password" id="password" placeholder="••••••••" required>
       </div>
-      
-      <!-- Turnstile Widget with Real Site Key -->
-      <div class="cf-turnstile" data-sitekey="0x4AAAAAAFfS2ppXHpN_9kZg" data-theme="light"></div>
-      <input type="hidden" id="captchaToken" value="dummy_token_for_dev">
+
+      <!-- Turnstile Widget with Callback -->
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAAFfS2ppXHpN_9kZg" data-theme="light" data-callback="onCaptchaSuccess"></div>
 
       <button type="submit" class="btn" id="submitBtn" disabled>Create Account</button>
       <div class="error" id="errorMsg"></div>
     </form>
   </div>
 
-  <!-- Modal to show and download codes -->
   <div class="modal-overlay" id="successModal">
     <div class="modal">
       <h2>Account Created!</h2>
@@ -80,20 +85,23 @@
   <script>
     let generatedCodes = [];
     let userPassword = "";
-    
-    // Username Validation & Live Checker Logic
+    let turnstileToken = null;
+
+    function onCaptchaSuccess(token) {
+      turnstileToken = token;
+    }
+
     const usernameInput = document.getElementById('username');
     const usernameStatus = document.getElementById('usernameStatus');
     const submitBtn = document.getElementById('submitBtn');
-    
+
     let checkTimeout;
     let isUsernameAvailable = false;
 
     usernameInput.addEventListener('input', (e) => {
-      // Force lowercase
       e.target.value = e.target.value.toLowerCase();
       const username = e.target.value.trim();
-      
+
       clearTimeout(checkTimeout);
       usernameStatus.className = 'status-msg';
       usernameInput.classList.remove('input-error', 'input-success');
@@ -105,7 +113,6 @@
         return;
       }
 
-      // Regex: lowercase letters, numbers, underscore only
       const regex = /^[a-z0-9_]+$/;
       if (!regex.test(username)) {
         usernameStatus.textContent = 'Only lowercase letters, numbers, and underscore (_) are allowed.';
@@ -121,22 +128,20 @@
         return;
       }
 
-      // Show checking status
       usernameStatus.textContent = 'Checking availability...';
       usernameStatus.classList.add('status-checking');
 
-      // Debounce API call to prevent spamming
       checkTimeout = setTimeout(async () => {
         try {
           const res = await fetch(`/api/auth/check-username/${username}`);
           const data = await res.json();
-          
+
           if (data.available) {
             usernameStatus.textContent = 'Username is available!';
             usernameStatus.className = 'status-msg status-success';
             usernameInput.classList.add('input-success');
             isUsernameAvailable = true;
-            submitBtn.disabled = false; // Enable submit
+            submitBtn.disabled = false;
           } else {
             usernameStatus.textContent = 'Username is already taken.';
             usernameStatus.className = 'status-msg status-error';
@@ -149,26 +154,28 @@
           usernameStatus.className = 'status-msg status-error';
           usernameInput.classList.add('input-error');
         }
-      }, 500); // Wait 500ms after typing stops
+      }, 500);
     });
 
-    // Form Submit Logic
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       if (!isUsernameAvailable) {
         showError('Please enter a valid and available username.');
         return;
       }
 
+      if (!turnstileToken) {
+        showError('Please complete the CAPTCHA verification.');
+        return;
+      }
+
       const btn = document.getElementById('submitBtn');
       const errorMsg = document.getElementById('errorMsg');
-      
+
       const fullName = document.getElementById('fullName').value;
       const username = usernameInput.value;
       userPassword = document.getElementById('password').value;
-      
-      const captchaToken = document.querySelector('[name="cf-turnstile-response"]')?.value || 'dummy_token';
 
       btn.innerText = 'Creating...'; btn.disabled = true; errorMsg.style.display = 'none';
 
@@ -176,7 +183,7 @@
         const res = await fetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ fullName, username, password: userPassword, captchaToken })
+          body: JSON.stringify({ fullName, username, password: userPassword, captchaToken: turnstileToken })
         });
         const data = await res.json();
 
@@ -187,6 +194,8 @@
         } else {
           showError(data.message);
           btn.innerText = 'Create Account'; btn.disabled = false;
+          if (typeof turnstile !== 'undefined') turnstile.reset();
+          turnstileToken = null;
         }
       } catch (err) {
         showError('Server error');
@@ -203,7 +212,7 @@
     function downloadCodes() {
       const username = usernameInput.value;
       const content = `PortFive Account Recovery\n\nUsername: ${username}\nPassword: ${userPassword}\n\nRecovery Codes (Use one if you forget your password):\n1. ${generatedCodes[0]}\n2. ${generatedCodes[1]}\n3. ${generatedCodes[2]}\n\nKeep this file safe!`;
-      
+
       const blob = new Blob([content], { type: 'text/plain' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
