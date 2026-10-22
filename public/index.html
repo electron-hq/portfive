@@ -3,53 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PortFive - The Visual Canvas of Opportunity</title>
-  <meta name="description" content="PortFive is a social media platform for sharing images, discovering job opportunities, reading articles, and chatting with others.">
+  <title>PortFive - The Visual Canvas of Opportunity | Social Media & Job Board</title>
+  <meta name="description" content="PortFive is a premium visual canvas for creators and professionals. Share images, read in-depth articles, discover job opportunities, and connect via real-time chat.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
     :root { 
       --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B; 
       --text-muted: #71717A; --line: #E4E4E7; 
       --primary: #18181B; --primary-hover: #27272A; 
-      --accent: #6366F1; 
+      --accent: #6366F1; --accent-light: #EEF2FF;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.6; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.6; overflow-x: hidden; display: flex; flex-direction: column; min-height: 100vh; }
 
-    /* Navbar */
     .navbar { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-    .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
+    .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; text-decoration: none; color: var(--text); }
     .logo span { color: var(--accent); }
-    .nav-buttons { display: flex; gap: 10px; }
-    .btn { padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-decoration: none; cursor: pointer; transition: 0.2s; border: none; }
+    
+    .nav-right { display: flex; align-items: center; gap: 15px; }
+    .nav-buttons { display: none; gap: 10px; }
+    .btn { padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; text-decoration: none; cursor: pointer; transition: 0.2s; border: none; display: inline-block; }
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
     .btn-outline:hover { background: var(--surface); border-color: #D4D4D8; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 
-    /* Hero Section */
-    .hero { padding: 80px 20px; text-align: center; max-width: 800px; margin: 0 auto; }
+    .menu-btn { background: none; border: none; cursor: pointer; padding: 5px; color: var(--text); display: flex; align-items: center; justify-content: center; }
+    .menu-btn svg { width: 28px; height: 28px; stroke-width: 2; stroke: currentColor; fill: none; }
+
+    .side-menu { position: fixed; top: 0; right: -300px; width: 280px; height: 100vh; background: var(--surface); z-index: 1000; box-shadow: -5px 0 25px rgba(0,0,0,0.1); transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; }
+    .side-menu.open { right: 0; }
+    .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--line); }
+    .menu-header span { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+    .close-btn { background: none; border: none; cursor: pointer; color: var(--text-muted); }
+    .close-btn svg { width: 24px; height: 24px; stroke-width: 2; stroke: currentColor; fill: none; }
+    .menu-links { display: flex; flex-direction: column; padding: 10px 0; }
+    .menu-links a { text-decoration: none; color: var(--text); font-size: 1rem; font-weight: 500; padding: 15px 20px; transition: background 0.2s; border-left: 3px solid transparent; }
+    .menu-links a:hover { background: var(--bg); border-left-color: var(--accent); }
+    .menu-footer { margin-top: auto; padding: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+    .menu-footer .btn { width: 100%; text-align: center; padding: 12px; }
+
+    .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(9, 9, 11, 0.5); backdrop-filter: blur(2px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .menu-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .hero { padding: 80px 20px; text-align: center; max-width: 800px; margin: 0 auto; flex: 1; }
     .hero h1 { font-size: 3.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 20px; letter-spacing: -1.5px; }
     .hero h1 span { color: var(--text-muted); }
     .hero p { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; }
     .hero-buttons { display: flex; justify-content: center; gap: 15px; }
     .hero-buttons .btn { padding: 14px 32px; font-size: 1rem; border-radius: 10px; }
 
-    /* Features Section */
-    .features { padding: 60px 20px; max-width: 1000px; margin: 0 auto; }
-    .section-title { text-align: center; font-size: 2rem; font-weight: 700; margin-bottom: 40px; letter-spacing: -0.5px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-    .card { background: var(--surface); padding: 30px; border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: transform 0.2s; }
-    .card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05); }
+    .section { padding: 60px 20px; max-width: 1000px; margin: 0 auto; border-top: 1px solid var(--line); }
+    .section-title { font-size: 2rem; font-weight: 700; margin-bottom: 40px; letter-spacing: -0.5px; text-align: center; }
     
-    .card-icon { width: 44px; height: 44px; background: var(--bg); color: var(--text); border-radius: 8px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; border: 1px solid var(--line); }
-    .card-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
-    .card h3 { font-size: 1.15rem; margin-bottom: 10px; color: var(--text); font-weight: 700; }
-    .card p { color: var(--text-muted); font-size: 0.95rem; }
+    .bento-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    .bento-card { background: var(--surface); padding: 30px; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .bento-card h3 { font-size: 1.2rem; margin-bottom: 12px; color: var(--text); display: flex; align-items: center; gap: 10px; }
+    .bento-card h3 svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 2; }
+    .bento-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
 
-    /* Footer */
-    footer { text-align: center; padding: 40px 20px; border-top: 1px solid var(--line); color: var(--text-muted); font-size: 0.9rem; margin-top: 40px; }
+    .docs-cta { background: var(--accent-light); border: 1px solid #C7D2FE; border-radius: 16px; padding: 40px 20px; text-align: center; margin-top: 30px; }
+    .docs-cta h2 { font-size: 1.5rem; color: #3730A3; margin-bottom: 10px; }
+    .docs-cta p { color: #4338CA; font-size: 0.95rem; margin-bottom: 20px; }
+    .docs-cta .btn { background: var(--accent); color: white; padding: 12px 30px; }
+    .docs-cta .btn:hover { background: #4F46E5; }
 
+    .contact-form { max-width: 500px; margin: 0 auto; background: var(--surface); padding: 30px; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px 15px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; background: var(--bg); transition: 0.2s; }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: var(--surface); }
+    .form-group textarea { resize: vertical; min-height: 120px; }
+    .form-submit-btn { width: 100%; padding: 14px; font-size: 1rem; border-radius: 8px; }
+
+    .footer { background: var(--surface); border-top: 1px solid var(--line); padding: 40px 20px; margin-top: auto; }
+    .footer-content { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 15px; text-align: center; }
+    .footer-logo { font-size: 1.2rem; font-weight: 800; color: var(--text); }
+    .footer-logo span { color: var(--accent); }
+    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: 0.2s; }
+    .footer-links a:hover { color: var(--text); }
+    .copyright { color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; }
+
+    @media (min-width: 768px) {
+      .nav-buttons { display: flex; }
+      .bento-grid { grid-template-columns: 1fr 1fr; }
+    }
     @media (max-width: 600px) {
       .hero h1 { font-size: 2.5rem; }
       .hero-buttons { flex-direction: column; }
@@ -60,12 +101,36 @@
 <body>
 
   <nav class="navbar">
-    <div class="logo">Port<span>Five</span></div>
-    <div class="nav-buttons">
+    <a href="/" class="logo">Port<span>Five</span></a>
+    <div class="nav-right">
+      <div class="nav-buttons">
+        <a href="/login.html" class="btn btn-outline">Log In</a>
+        <a href="/register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="menu-btn" onclick="openMenu()">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+  </nav>
+
+  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+  <div class="side-menu" id="sideMenu">
+    <div class="menu-header">
+      <span>Menu</span>
+      <button class="close-btn" onclick="closeMenu()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="menu-links">
+      <a href="/docs.html" onclick="closeMenu()">Documentation</a>
+      <a href="#contacts" onclick="closeMenu()">Contacts</a>
+      <a href="#features" onclick="closeMenu()">Features</a>
+    </div>
+    <div class="menu-footer">
       <a href="/login.html" class="btn btn-outline">Log In</a>
       <a href="/register.html" class="btn btn-primary">Sign Up</a>
     </div>
-  </nav>
+  </div>
 
   <section class="hero">
     <h1>Where Art Meets<br><span>Opportunity.</span></h1>
@@ -76,35 +141,79 @@
     </div>
   </section>
 
-  <section class="features">
+  <section class="section" id="features">
     <h2 class="section-title">The PortFive Experience</h2>
-    <div class="grid">
-      <div class="card">
-        <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
-        <h3>Visual Canvas</h3>
-        <p>Immerse yourself in a 1-by-1 full-screen image scroller. Discover beautiful photography from worldwide creators.</p>
+    <div class="bento-grid">
+      <div class="bento-card">
+        <h3><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg> Visual Canvas</h3>
+        <p>Immerse yourself in a 1-by-1 full-screen image scroller. Discover photography, digital art, and design inspirations from creators worldwide.</p>
       </div>
-      <div class="card">
-        <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg></div>
-        <h3>In-Depth Pens</h3>
-        <p>Read and write long-form articles. Share your knowledge with a community that values deep reading.</p>
+      <div class="bento-card">
+        <h3><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg> In-Depth Pens</h3>
+        <p>Share long-form articles, tutorials, and insights with a community that values deep reading over clickbait. Your thoughts deserve a dedicated space.</p>
       </div>
-      <div class="card">
-        <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></div>
-        <h3>Professional Jobs</h3>
-        <p>Bridge the gap between creativity and profession. Find job opportunities or hire top-tier talent directly.</p>
+      <div class="bento-card">
+        <h3><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg> Professional Jobs</h3>
+        <p>Find freelance gigs, full-time roles, or hire top-tier talent for your next big project. Bridge the gap between creativity and profession.</p>
       </div>
-      <div class="card">
-        <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
-        <h3>Real-Time Chat</h3>
-        <p>Connect instantly with other users. Collaborate, network, and build meaningful professional relationships.</p>
+      <div class="bento-card">
+        <h3><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Real-Time Chat</h3>
+        <p>Connect instantly with other users. Collaborate, network, and build meaningful professional relationships securely.</p>
       </div>
+    </div>
+    <div class="docs-cta">
+      <h2>Want to know more?</h2>
+      <p>Read our complete documentation to learn about image sizes, ad monetization rules, and how to get the most out of PortFive.</p>
+      <a href="/docs.html" class="btn">Read Documentation</a>
     </div>
   </section>
 
-  <footer>
-    &copy; 2026 PortFive by Electron
+  <section class="section" id="contacts">
+    <h2 class="section-title">Contact Us</h2>
+    <form class="contact-form" id="contactForm">
+      <div class="form-group"><label>Full Name</label><input type="text" id="contactName" placeholder="John Doe" required></div>
+      <div class="form-group"><label>Your Email</label><input type="email" id="contactEmail" placeholder="john@example.com" required></div>
+      <div class="form-group"><label>Subject</label><input type="text" id="contactSubject" placeholder="How can we help?" required></div>
+      <div class="form-group"><label>Message</label><textarea id="contactMessage" placeholder="Write your message here..." required></textarea></div>
+      <button type="submit" class="btn btn-primary form-submit-btn">Send Message</button>
+    </form>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-logo">Port<span>Five</span></div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/docs.html">Documentation</a>
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms of Service</a>
+        <a href="/cookies.html">Cookie Policy</a>
+      </div>
+      <div class="copyright">
+        &copy; 2026 PortFive by Electron. All rights reserved.
+      </div>
+    </div>
   </footer>
 
+  <script>
+    const sideMenu = document.getElementById('sideMenu');
+    const menuOverlay = document.getElementById('menuOverlay');
+
+    function openMenu() { sideMenu.classList.add('open'); menuOverlay.classList.add('open'); }
+    function closeMenu() { sideMenu.classList.remove('open'); menuOverlay.classList.remove('open'); }
+
+    document.getElementById('contactForm').addEventListener('submit', function(e) {
+      e.preventDefault(); 
+      const name = document.getElementById('contactName').value;
+      const email = document.getElementById('contactEmail').value;
+      const subject = document.getElementById('contactSubject').value;
+      const message = document.getElementById('contactMessage').value;
+      const targetEmail = 'electron.team@proton.me';
+      const mailtoSubject = encodeURIComponent(`PortFive Contact: ${subject}`);
+      const mailtoBody = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+      window.location.href = `mailto:${targetEmail}?subject=${mailtoSubject}&body=${mailtoBody}`;
+      this.reset();
+    });
+  </script>
 </body>
 </html>
