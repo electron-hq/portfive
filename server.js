@@ -38,7 +38,7 @@ const userRoutes = require('./routes/userRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
-const pushRoutes = require('./routes/pushRoutes'); // Push Routes
+const pushRoutes = require('./routes/pushRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/posts', postRoutes);
@@ -48,7 +48,11 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/push', pushRoutes);
 
-app.get('/api/health', (req, res) => res.status(200).json({ status: 'active' }));
+// Make the health check super lightweight for Uptime Robot/Cron-job
+app.get('/api/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.use((req, res) => res.status(404).send('404 Not Found'));
 
 io.on('connection', (socket) => {
