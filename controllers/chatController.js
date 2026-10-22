@@ -29,9 +29,23 @@ const uploadAudioToCloudinary = (buffer) => {
   });
 };
 
+// Helper to check if users are mutual followers
+const areMutualFollowers = async (userId1, userId2) => {
+  if (userId1.toString() === userId2.toString()) return true; // self chat (not needed but safe)
+  const user1 = await User.findById(userId1).select('following');
+  const user2 = await User.findById(userId2).select('following');
+  if (!user1 || !user2) return false;
+  return user1.following.includes(userId2) && user2.following.includes(userId1);
+};
+
 const sendMessage = async (req, res) => {
   try {
     const { receiverId, text } = req.body;
+    
+    if (!await areMutualFollowers(req.user.id, receiverId)) {
+      return res.status(403).json({ message: 'You must mutually follow each other to chat.' });
+    }
+
     let imageUrl = '', audioUrl = '';
     if (req.file) {
       if (req.file.mimetype.startsWith('image/')) imageUrl = await uploadBufferToImgBB(req.file.buffer, 'chat-' + req.user.id + '-' + Date.now());
@@ -70,6 +84,11 @@ const getConversations = async (req, res) => {
 const getMessages = async (req, res) => {
   try {
     const userId = req.user.id, targetId = req.params.userId;
+
+    if (!await areMutualFollowers(userId, targetId)) {
+      return res.status(403).json({ message: 'You must mutually follow each other to view chats.' });
+    }
+
     await Message.updateMany({ sender: targetId, receiver: userId, isRead: false }, { $set: { isRead: true } });
     const messages = await Message.find({ $or: [{ sender: userId, receiver: targetId }, { sender: targetId, receiver: userId }] })
       .sort({ createdAt: 1 }).populate('sender', 'fullName username profilePic').populate('receiver', 'fullName username profilePic').lean();
@@ -108,7 +127,6 @@ const deleteMessage = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
-// New Function for Unread Message Badge
 const getUnreadCount = async (req, res) => {
   try {
     const count = await Message.countDocuments({ receiver: req.user.id, isRead: false });

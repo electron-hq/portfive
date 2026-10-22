@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - PortFive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --primary-hover: #27272A;
+      --accent: #6366F1; --accent-light: #EEF2FF;
+      --red: #EF4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); padding-bottom: 40px; }
+    
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; align-items: center; gap: 15px; }
+    .nav-title { font-family: 'Archivo', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--red); }
+    
+    .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+    
+    .report-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    
+    .report-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .reason-badge { background: #FEF2F2; color: var(--red); padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: 1px solid #FECACA; }
+    .reporter-info { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+    .reporter-info img { width: 24px; height: 24px; border-radius: 50%; }
+    
+    .post-preview { background: var(--bg); padding: 15px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 15px; }
+    .post-author { font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .post-author img { width: 28px; height: 28px; border-radius: 50%; }
+    .post-content { font-size: 0.95rem; line-height: 1.5; color: var(--text); margin-bottom: 10px; }
+    .post-media { max-width: 100%; max-height: 300px; border-radius: 8px; object-fit: contain; background: #000; }
+    
+    .actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; }
+    .btn-outline { background: transparent; border: 1px solid var(--line); color: var(--text); }
+    .btn-outline:hover { background: var(--bg); }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-danger:hover { background: #DC2626; }
+    
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty-state h2 { font-family: 'Archivo', sans-serif; color: var(--text); margin-bottom: 10px; }
+    
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 3000; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <div class="nav-title">Admin Moderation Panel</div>
+  </div>
+
+  <div class="container" id="adminContainer">
+    <div style="text-align:center; padding:40px; color:var(--text-muted);">Loading reports...</div>
+  </div>
+
+  <div class="toast" id="toast">Action completed</div>
+
+  <script>
+    function esc(value) {
+      return String(value === null || value === undefined ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function safeUrl(url) {
+      return String(url || '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\s/g, '%20');
+    }
+    function getAvatarSVG(user) {
+      if (user && user.profilePic) return `<div style="width:100%; height:100%; background-image:url('${safeUrl(user.profilePic)}'); background-size:cover; background-position:center; border-radius:50%;"></div>`;
+      const first = user && user.fullName ? Array.from(String(user.fullName).trim())[0] : '';
+      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision" style="border-radius:50%;"><rect width="100" height="100" fill="#E4E4E7"/><text x="50" y="50" font-size="46" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#09090B" text-anchor="middle" dominant-baseline="central">${esc((first || 'U').toUpperCase())}</text></svg>`;
+    }
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    async function loadReports() {
+      const container = document.getElementById('adminContainer');
+      try {
+        const res = await fetch('/api/posts/admin/reports', { credentials: 'include' });
+        
+        if (res.status === 403) {
+          container.innerHTML = `<div class="empty-state"><h2>Access Denied</h2><p>You do not have administrator privileges.</p></div>`;
+          return;
+        }
+        if (!res.ok) throw new Error();
+        
+        const reports = await res.json();
+        
+        if (reports.length === 0) {
+          container.innerHTML = `<div class="empty-state"><h2>All Clear!</h2><p>No pending reports to review.</p></div>`;
+          return;
+        }
+
+        container.innerHTML = reports.map(r => {
+          const post = r.postId;
+          const reporter = r.reporter;
+          const author = post.author;
+          
+          let mediaHtml = '';
+          if (post.postType === 'image' && post.mediaUrl) {
+             mediaHtml = `<img src="${safeUrl(post.mediaUrl)}" class="post-media" alt="Reported Image">`;
+          } else if (post.postType === 'pen') {
+             mediaHtml = `<p style="font-size:0.85rem; color:var(--text-muted); margin-top:10px;">[Article] ${esc(post.content.substring(0, 100))}...</p>`;
+          }
+
+          return `
+            <div class="report-card">
+              <div class="report-header">
+                <div class="reason-badge">Reported for: ${esc(r.reason)}</div>
+                <div class="reporter-info">
+                  Reported by ${esc(reporter.fullName)} @${esc(reporter.username)}
+                </div>
+              </div>
+              
+              <div class="post-preview">
+                <div class="post-author">
+                  <div style="width:28px; height:28px;">${getAvatarSVG(author)}</div>
+                  ${esc(author.fullName)} @${esc(author.username)}
+                </div>
+                ${post.caption ? `<div class="post-content">${esc(post.caption)}</div>` : ''}
+                ${mediaHtml}
+              </div>
+              
+              <div class="actions">
+                <button class="btn btn-outline" onclick="dismissReport('${r._id}')">Dismiss</button>
+                <button class="btn btn-danger" onclick="deletePost('${r._id}')">Delete Post</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; color:var(--red); padding:40px;">Failed to load reports. Make sure you are an admin.</div>';
+      }
+    }
+
+    async function dismissReport(reportId) {
+      if (!confirm("Are you sure you want to dismiss this report? The post will remain live.")) return;
+      try {
+        const res = await fetch(`/api/posts/admin/reports/${reportId}/dismiss`, { method: 'PUT', credentials: 'include' });
+        if (res.ok) {
+          showToast('Report dismissed');
+          loadReports();
+        } else { showToast('Failed to dismiss'); }
+      } catch (err) { showToast('Server error'); }
+    }
+
+    async function deletePost(reportId) {
+      if (!confirm("Are you sure you want to delete this post permanently? All reports for this post will be resolved.")) return;
+      try {
+        const res = await fetch(`/api/posts/admin/reports/${reportId}`, { method: 'DELETE', credentials: 'include' });
+        if (res.ok) {
+          showToast('Post deleted');
+          loadReports();
+        } else { showToast('Failed to delete post'); }
+      } catch (err) { showToast('Server error'); }
+    }
+
+    loadReports();
+  </script>
+</body>
+</html>

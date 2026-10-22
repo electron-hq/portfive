@@ -3,6 +3,7 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const Report = require('../models/Report');
+const ViewLog = require('../models/ViewLog');
 const { sendPushNotification } = require('./pushController');
 
 const MAX_PEN_CONTENT = 8000;
@@ -37,6 +38,7 @@ const createPost = async (req, res) => {
   try {
     const postType = req.body.postType;
     const caption = String(req.body.caption || '').trim().slice(0, MAX_CAPTION);
+    const showAds = req.body.showAds === 'true' || req.body.showAds === true;
     let title = '', content = '', mediaUrl = '', thumbnailUrl = '', mediaType = 'image';
 
     if (postType === 'image') {
@@ -49,11 +51,19 @@ const createPost = async (req, res) => {
     } else if (postType === 'pen') {
       title = String(req.body.title || '').trim();
       content = String(req.body.content || '').trim();
-      if (req.file) mediaUrl = await uploadBufferToImgBB(req.file.buffer, 'pen-' + req.user.id);
-      else mediaType = 'none';
+      const coverType = req.body.coverType || 'none';
+
+      if (coverType === 'image' && req.file) {
+        mediaUrl = await uploadBufferToImgBB(req.file.buffer, 'pen-' + req.user.id);
+        mediaType = 'image';
+      } else if (coverType === 'ad') {
+        mediaType = 'ad';
+      } else {
+        mediaType = 'none';
+      }
     }
 
-    const newPost = await Post.create({ author: req.user.id, postType, title, content, mediaUrl, thumbnailUrl, mediaType, caption });
+    const newPost = await Post.create({ author: req.user.id, postType, title, content, mediaUrl, thumbnailUrl, mediaType, caption, showAds });
     res.status(201).json({ message: 'Post created!', post: newPost });
   } catch (error) { res.status(500).json({ message: 'Failed to create post.' }); }
 };
@@ -63,7 +73,7 @@ const getTopPosts = async (req, res) => {
     const { type } = req.params;
     let query = { postType: type };
     const limit = type === 'image' ? 50 : 10;
-    const posts = await Post.find(query).populate('author', 'fullName username profilePic allowAds adImpressions').sort({ createdAt: -1 }).limit(limit).lean();
+    const posts = await Post.find(query).populate('author', 'fullName username profilePic').sort({ createdAt: -1 }).limit(limit).lean();
     const user = await User.findById(req.user.id).select('savedPosts');
     const savedIds = user.savedPosts ? user.savedPosts.map(id => id.toString()) : [];
     res.status(200).json(posts.map(post => ({
@@ -106,8 +116,7 @@ const getUserPosts = async (req, res) => {
 
 const getSinglePost = async (req, res) => {
   try {
-    // Added allowAds to populate
-    const post = await Post.findById(req.params.postId).populate('author', 'fullName username profilePic allowAds').lean();
+    const post = await Post.findById(req.params.postId).populate('author', 'fullName username profilePic').lean();
     if (!post) return res.status(404).json({ message: 'Post not found' });
     const commentsCount = await Comment.countDocuments({ postId: post._id });
     const user = await User.findById(req.user.id).select('savedPosts');
@@ -134,7 +143,7 @@ const addComment = async (req, res) => {
     if (!post) return res.status(404).json({ message: 'Post not found' });
 
     const comment = await Comment.create({ postId: req.params.postId, author: req.user.id, content: content.trim() });
-    
+
     if (post.author.toString() !== req.user.id) {
       const currentUser = await User.findById(req.user.id);
       await Notification.create({ receiver: post.author, sender: req.user.id, type: 'comment', postId: post._id });
@@ -151,7 +160,26 @@ const addComment = async (req, res) => {
 
 const incrementView = async (req, res) => {
   try {
-    await Post.findByIdAndUpdate(req.params.postId, { $inc: { views: 1 } });
+    const postId = req.params.postId;
+    const userId = req.user.id;
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      await ViewLog.create({ post: postId, user: userId, type: 'view', dateString: today });
+      await Post.findByIdAndUpdate(postId, { $inc: { views: 1 } });
+    } catch (err) { if (err.code !== 11000) throw err; }
+    res.status(200).json({ success: true });
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
+const incrementRead = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const userId = req.user.id;
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      await ViewLog.create({ post: postId, user: userId, type: 'read', dateString: today });
+      await Post.findByIdAndUpdate(postId, { $inc: { readsCount: 1 } });
+    } catch (err) { if (err.code !== 11000) throw err; }
     res.status(200).json({ success: true });
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
@@ -173,6 +201,7 @@ const updatePost = async (req, res) => {
     if (req.body.caption !== undefined) post.caption = String(req.body.caption).trim().slice(0, MAX_CAPTION);
     if (req.body.title !== undefined) post.title = String(req.body.title).trim();
     if (req.body.content !== undefined) post.content = String(req.body.content).trim();
+    if (req.body.showAds !== undefined) post.showAds = req.body.showAds === 'true' || req.body.showAds === true;
     await post.save();
     res.status(200).json({ message: 'Post updated', post });
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
@@ -194,24 +223,60 @@ const reportPost = async (req, res) => {
   try {
     const { reason } = req.body;
     if (!reason || !reason.trim()) return res.status(400).json({ message: 'Reason is required' });
-
     const post = await Post.findById(req.params.postId);
     if (!post) return res.status(404).json({ message: 'Post not found' });
-
-    if (post.author.toString() === req.user.id) {
-      return res.status(400).json({ message: 'You cannot report your own post' });
-    }
-
+    if (post.author.toString() === req.user.id) return res.status(400).json({ message: 'You cannot report your own post' });
     const existingReport = await Report.findOne({ reporter: req.user.id, postId: post._id });
     if (existingReport) return res.status(400).json({ message: 'You have already reported this post' });
-
     await Report.create({ reporter: req.user.id, postId: post._id, reason: reason.trim() });
     res.status(201).json({ message: 'Post reported successfully. Moderators will review it.' });
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
+// --- NEW ADMIN MODERATION FUNCTIONS ---
+
+const getReports = async (req, res) => {
+  try {
+    const reports = await Report.find({ status: 'pending' })
+      .populate('reporter', 'fullName username profilePic')
+      .populate({ path: 'postId', populate: { path: 'author', select: 'fullName username profilePic' } })
+      .sort({ createdAt: -1 })
+      .lean();
+    // Filter out reports where the post has already been deleted
+    const validReports = reports.filter(r => r.postId !== null);
+    res.status(200).json(validReports);
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
+const deleteReportedPost = async (req, res) => {
+  try {
+    const report = await Report.findById(req.params.reportId);
+    if (!report) return res.status(404).json({ message: 'Report not found' });
+    
+    // Delete the post
+    await Post.findByIdAndDelete(report.postId);
+    await Comment.deleteMany({ postId: report.postId });
+    
+    // Resolve all reports associated with this post
+    await Report.updateMany({ postId: report.postId }, { status: 'resolved' });
+    
+    res.status(200).json({ message: 'Post deleted and reports resolved.' });
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
+const dismissReport = async (req, res) => {
+  try {
+    const report = await Report.findById(req.params.reportId);
+    if (!report) return res.status(404).json({ message: 'Report not found' });
+    
+    report.status = 'resolved';
+    await report.save();
+    res.status(200).json({ message: 'Report dismissed.' });
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
 module.exports = {
-  createPost, getTopPosts, reactToPost, getUserPosts, getSinglePost, 
-  getComments, addComment, incrementView, deletePost, updatePost, 
-  toggleSavePost, reportPost
+  createPost, getTopPosts, reactToPost, getUserPosts, getSinglePost,
+  getComments, addComment, incrementView, incrementRead, deletePost, updatePost,
+  toggleSavePost, reportPost, getReports, deleteReportedPost, dismissReport
 };

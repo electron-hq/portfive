@@ -22,11 +22,15 @@ const UserSchema = new mongoose.Schema({
     codeHash: { type: String, required: true },
     isUsed: { type: Boolean, default: false }
   }],
+  tokenVersion: { type: Number, default: 0 }, // For session invalidation
+  
+  // Admin & Moderation
+  isAdmin: { type: Boolean, default: false }, // NEW: Admin flag
 
   // Creator Monetization
   allowAds: { type: Boolean, default: false },
-  allowAdsPens: { type: Boolean, default: true },   // NEW: Allow ads on Pen posts
-  allowAdsImages: { type: Boolean, default: true }, // NEW: Allow ads on Image posts
+  allowAdsPens: { type: Boolean, default: true },
+  allowAdsImages: { type: Boolean, default: true },
   adImpressions: { type: Number, default: 0 },
   isCreatorVerified: { type: Boolean, default: false }
 }, { timestamps: true });

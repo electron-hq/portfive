@@ -12,18 +12,19 @@ const { Server } = require('socket.io');
 
 const User = require('./models/User');
 const { sendPushNotification } = require('./controllers/pushController');
+const { clearAuthCookie } = require('./utils/token');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: true, credentials: true } });
 
-// FIX: Tell Express to trust the Render proxy
+// Tell Express to trust the Render proxy for rate limiting
 app.set('trust proxy', 1);
 
 connectDB();
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '1mb' })); // Increased slightly for large text posts
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -32,7 +33,15 @@ app.use('/api/', globalLimiter);
 
 app.get('/', (req, res) => {
   const token = req.cookies.portfive_token;
-  if (token) { try { jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret'); return res.redirect('/home.html'); } catch (err) { res.clearCookie('portfive_token'); } }
+  if (token) { 
+    try { 
+      // SECURITY FIX: Removed fallback secret
+      jwt.verify(token, process.env.JWT_SECRET); 
+      return res.redirect('/home.html'); 
+    } catch (err) { 
+      clearAuthCookie(res); 
+    } 
+  }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -62,7 +71,7 @@ io.on('connection', (socket) => {
     socket.join(userId);
     socket.userId = userId;
   });
-  
+
   socket.on('send_message', (data) => io.to(data.receiverId).emit('receive_message', data.message));
   socket.on('edit_message', (data) => io.to(data.receiverId).emit('message_edited', { messageId: data.messageId, newText: data.newText }));
   socket.on('delete_message', (data) => io.to(data.receiverId).emit('message_deleted', { messageId: data.messageId }));

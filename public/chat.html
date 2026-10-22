@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chats - PortFive</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#FAFAFA">
@@ -16,7 +16,7 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); -webkit-font-smoothing: antialiased; }
 
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
     .nav-title { font-family: 'Archivo', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
@@ -26,26 +26,33 @@
 
     .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
+    /* Search Bar */
+    .search-wrap { position: relative; margin-bottom: 20px; }
+    .search-input { width: 100%; padding: 14px 16px 14px 44px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; font-size: 0.95rem; font-family: inherit; color: var(--text); outline: none; transition: border-color 0.2s; }
+    .search-input:focus { border-color: var(--primary); }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
+
+    /* Chat List */
     .chat-list { display: flex; flex-direction: column; gap: 4px; }
-    .chat-item { display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: var(--surface); border-radius: 12px; cursor: pointer; transition: background 0.2s; }
-    .chat-item:hover { background: #F4F4F5; }
+    .chat-item { display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: var(--surface); border-radius: 12px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; }
+    .chat-item:hover { background: #F4F4F5; border-color: var(--line); }
     
     .avatar-container { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #E4E4E7; position: relative; }
     .avatar-container svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
-    
+
     .chat-info { flex: 1; min-width: 0; }
     .chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .chat-name { font-weight: 600; font-size: 1rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .chat-time { font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0; margin-left: 8px; }
     .chat-preview { display: flex; justify-content: space-between; align-items: center; }
     .chat-last-msg { font-size: 0.9rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    
-    .unread-badge { background: var(--accent); color: white; font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; display: flex; justify-content: center; align-items: center; border-radius: 50%; flex-shrink: 0; margin-left: 8px; }
+
+    .unread-badge { background: var(--accent); color: white; font-size: 0.7rem; font-weight: 700; min-width: 20px; height: 20px; padding: 0 6px; display: flex; justify-content: center; align-items: center; border-radius: 10px; flex-shrink: 0; margin-left: 8px; }
 
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .empty-state svg { width: 60px; height: 60px; stroke: var(--line); margin-bottom: 15px; stroke-width: 1.5; }
     .empty-state p { font-size: 1rem; }
-
+    
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 68px; z-index: 1000; max-width: 600px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); }
     .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.6rem; font-weight: 600; gap: 5px; transition: 0.2s; width: 60px; }
     .nav-item svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -64,6 +71,12 @@
   </div>
 
   <div class="container">
+    <!-- Search Bar -->
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search chats by name or username..." autocomplete="off">
+    </div>
+
     <div class="chat-list" id="chatList">
       <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">Loading chats...</div>
     </div>
@@ -78,6 +91,8 @@
   </div>
 
   <script>
+    let allChats = []; // Store fetched chats for client-side filtering
+
     function esc(value) {
       return String(value === null || value === undefined ? '' : value)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -130,41 +145,66 @@
       const container = document.getElementById('chatList');
       try {
         const res = await fetch('/api/chat/conversations', { credentials: 'include' });
-        const convos = await res.json();
+        allChats = await res.json();
+        
+        // Render initial chats
+        renderChats(allChats);
 
-        if (!convos || convos.length === 0) {
-          container.innerHTML = `<div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            <p>No messages yet.</p>
-            <p style="font-size:0.85rem; margin-top:8px;">Go to someone's profile to start chatting.</p>
-          </div>`;
-          return;
-        }
-
-        container.innerHTML = convos.map(c => {
-          const u = c.user;
-          const time = timeAgo(c.timestamp);
-          return `
-            <div class="chat-item" onclick="window.location.href='/chat-room.html?id=${esc(u._id)}'">
-              <div class="avatar-container">${getAvatarSVG(u)}</div>
-              <div class="chat-info">
-                <div class="chat-header">
-                  <span class="chat-name">${esc(u.fullName)}</span>
-                  <span class="chat-time">${esc(time)}</span>
-                </div>
-                <div class="chat-preview">
-                  <span class="chat-last-msg">${esc(c.lastMessage)}</span>
-                  ${c.unreadCount > 0 ? `<span class="unread-badge">${c.unreadCount}</span>` : ''}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
       } catch (err) {
         console.error(err);
         container.innerHTML = '<div style="text-align:center; color:var(--red); padding:20px;">Failed to load chats.</div>';
       }
     }
+
+    // Function to render chats based on the array passed (either full list or filtered list)
+    function renderChats(chatsToRender) {
+      const container = document.getElementById('chatList');
+
+      if (!chatsToRender || chatsToRender.length === 0) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <p>No chats found.</p>
+          <p style="font-size:0.85rem; margin-top:8px;">Go to someone's profile to start chatting.</p>
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = chatsToRender.map(c => {
+        const u = c.user;
+        const time = timeAgo(c.timestamp);
+        return `
+          <div class="chat-item" onclick="window.location.href='/chat-room.html?id=${esc(u._id)}'">
+            <div class="avatar-container">${getAvatarSVG(u)}</div>
+            <div class="chat-info">
+              <div class="chat-header">
+                <span class="chat-name">${esc(u.fullName)}</span>
+                <span class="chat-time">${esc(time)}</span>
+              </div>
+              <div class="chat-preview">
+                <span class="chat-last-msg">${esc(c.lastMessage)}</span>
+                ${c.unreadCount > 0 ? `<span class="unread-badge">${c.unreadCount}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      
+      if (!query) {
+        renderChats(allChats);
+      } else {
+        const filtered = allChats.filter(c => {
+          const nameMatch = c.user.fullName && c.user.fullName.toLowerCase().includes(query);
+          const usernameMatch = c.user.username && c.user.username.toLowerCase().includes(query);
+          return nameMatch || usernameMatch;
+        });
+        renderChats(filtered);
+      }
+    });
 
     init();
   </script>

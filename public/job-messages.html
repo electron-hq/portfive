@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Messages - PortFive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --accent: #6366F1; --red: #EF4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); padding-bottom: 40px; }
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; align-items: center; gap: 15px; }
+    .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 6px; border-radius: 50%; }
+    .back-btn:hover { background: var(--line); }
+    .back-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; }
+    .nav-title { font-family: 'Archivo', sans-serif; font-size: 1.2rem; font-weight: 700; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    
+    .msg-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+    .msg-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .job-title { font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+    .msg-date { font-size: 0.75rem; color: var(--text-muted); }
+    .applicant-info { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .applicant-avatar { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; background: #E4E4E7; }
+    .applicant-name { font-weight: 600; font-size: 0.95rem; }
+    .msg-content { background: var(--bg); padding: 12px; border-radius: 8px; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap; border: 1px solid var(--line); word-wrap: break-word; }
+    
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+    .empty-state svg { width: 48px; height: 48px; stroke: var(--line); margin-bottom: 15px; stroke-width: 1.5; }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <button class="back-btn" onclick="window.location.href='/jobs.html'">
+      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </button>
+    <div class="nav-title">Job Messages</div>
+  </div>
+
+  <div class="container" id="messagesContainer">
+    <div style="text-align:center; padding: 20px;">Loading...</div>
+  </div>
+
+  <script>
+    function esc(value) {
+      return String(value === null || value === undefined ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function safeUrl(url) {
+      return String(url || '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\s/g, '%20');
+    }
+    function getAvatarSVG(user) {
+      if (user && user.profilePic) return `<div style="width:100%; height:100%; background-image:url('${safeUrl(user.profilePic)}'); background-size:cover; background-position:center;"></div>`;
+      const first = user && user.fullName ? Array.from(String(user.fullName).trim())[0] : '';
+      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision"><rect width="100" height="100" fill="#E4E4E7"/><text x="50" y="50" font-size="46" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#09090B" text-anchor="middle" dominant-baseline="central">${esc((first || 'U').toUpperCase())}</text></svg>`;
+    }
+    function formatDate(dateString) {
+      const d = new Date(dateString);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    async function loadMessages() {
+      const container = document.getElementById('messagesContainer');
+      try {
+        const res = await fetch('/api/jobs/applications/received', { credentials: 'include' });
+        if (!res.ok) {
+          if (res.status === 401) window.location.href = '/login.html';
+          throw new Error();
+        }
+        const messages = await res.json();
+
+        if (!messages || messages.length === 0) {
+          container.innerHTML = `<div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <p>No messages received yet.</p>
+          </div>`;
+          return;
+        }
+
+        container.innerHTML = messages.map(m => {
+          const applicant = m.applicant || {};
+          const job = m.jobId || {};
+          return `
+            <div class="msg-card">
+              <div class="msg-header">
+                <div class="job-title">Re: ${esc(job.title)}</div>
+                <div class="msg-date">${formatDate(m.createdAt)}</div>
+              </div>
+              <div class="applicant-info" onclick="window.location.href='/profile.html?id=${applicant._id}'" style="cursor:pointer;">
+                <div class="applicant-avatar">${getAvatarSVG(applicant)}</div>
+                <div class="applicant-name">${esc(applicant.fullName)} (@${esc(applicant.username)})</div>
+              </div>
+              <div class="msg-content">${esc(m.message)}</div>
+            </div>
+          `;
+        }).join('');
+
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; color:var(--red);">Failed to load messages.</div>';
+      }
+    }
+    loadMessages();
+  </script>
+</body>
+</html>

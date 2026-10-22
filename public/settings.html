@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings - PortFive</title>
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="manifest" href="/manifest.json">
@@ -16,7 +16,7 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 50px; color: var(--text); }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 50px; color: var(--text); -webkit-font-smoothing: antialiased; }
 
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; align-items: center; gap: 15px; }
     .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 5px; border-radius: 50%; }
@@ -26,7 +26,7 @@
 
     .container { max-width: 600px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 
-    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
     .card-header { padding: 15px 20px; border-bottom: 1px solid var(--line); font-weight: 700; font-size: 1rem; background: #FAFAFA; }
     .card-body { padding: 20px; }
 
@@ -34,8 +34,7 @@
     .upload-row { display: flex; align-items: center; gap: 15px; }
 
     .upload-preview { position: relative; overflow: hidden; cursor: pointer; background: var(--bg); border: 1px solid var(--line); background-size: cover; background-position: center; }
-    .upload-preview:hover .upload-overlay { opacity: 1; }
-
+    
     .cover-preview { width: 100%; height: 120px; border-radius: 8px; }
     .avatar-preview { width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0; }
 
@@ -43,32 +42,38 @@
     .upload-overlay svg { width: 24px; height: 24px; stroke: white; fill: none; stroke-width: 2; margin-bottom: 4px; }
     .upload-overlay span { color: white; font-size: 0.75rem; font-weight: 600; }
 
+    @media (hover: hover) {
+      .upload-preview:hover .upload-overlay { opacity: 1; }
+    }
+    @media (hover: none) {
+      .upload-overlay { opacity: 1; background: rgba(0, 0, 0, 0.3); }
+    }
+
     .upload-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
     .upload-info p { font-size: 0.8rem; color: var(--text-muted); }
 
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text); }
+    .form-group { margin-bottom: 15px; position: relative; }
+    .form-group label { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: var(--text); }
     .form-group input, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font-family: inherit; font-size: 0.95rem; outline: none; background: var(--bg); color: var(--text); transition: 0.2s; }
     .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: var(--surface); }
+    
+    .pass-wrapper { position: relative; }
+    .pass-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; }
+    .pass-toggle svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
 
     .btn { padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: 0.2s; display: inline-block; text-align: center; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
     .btn-outline:hover { background: var(--bg); }
     .btn-full { width: 100%; }
 
-    .security-slider { overflow: hidden; width: 100%; }
-    .security-track { display: flex; width: 200%; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-    .security-slide { width: 50%; padding: 0 5px; }
-    .security-slide:first-child { padding-left: 0; padding-right: 15px; }
-    .security-slide:last-child { padding-left: 15px; padding-right: 0; }
-
-    .verify-success { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 0.9rem; font-weight: 600; margin-bottom: 15px; padding: 10px; background: var(--accent-light); border-radius: 8px; }
-
-    .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+    /* Notification Toggle Switch */
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; }
     .toggle-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
     .toggle-info p { font-size: 0.8rem; color: var(--text-muted); }
+    
     .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 34px; }
@@ -76,11 +81,15 @@
     input:checked + .slider { background-color: var(--accent); }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    .earnings-box { background: var(--accent-light); border: 1px solid #C7D2FE; border-radius: 10px; padding: 15px; margin-top: 15px; display: none; }
-    .earnings-box h4 { font-size: 0.9rem; color: #3730A3; margin-bottom: 5px; }
-    .earnings-box .amount { font-size: 1.5rem; font-weight: 800; color: #3730A3; }
-    .earnings-box p { font-size: 0.75rem; color: #4338CA; margin-top: 5px; }
+    /* Security Slider */
+    .security-track { display: block; }
+    .security-slide { display: none; }
+    .security-track:not(.verified) .security-slide:first-child,
+    .security-track.verified .security-slide:last-child { display: block; }
 
+    .verify-success { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 0.9rem; font-weight: 600; margin-bottom: 15px; padding: 10px; background: var(--accent-light); border-radius: 8px; }
+
+    /* Danger Zone */
     .danger-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--line); cursor: pointer; }
     .danger-item:last-child { border-bottom: none; }
     .danger-item:hover { background: var(--bg); }
@@ -90,8 +99,27 @@
     .danger-item svg { width: 20px; height: 20px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
     .danger-item.delete svg { stroke: var(--red); }
 
-    .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 3000; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 3000; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Modals */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: flex-end; justify-content: center; padding: 0; }
+    @media(min-width: 600px) { .modal-overlay { align-items: center; padding: 20px; } }
+    .modal-overlay.active { display: flex; }
+    
+    .modal-box { background: var(--surface); width: 100%; max-width: 400px; border-radius: 20px 20px 0 0; padding: 24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); text-align: center; animation: slideUp 0.3s ease-out; }
+    @media(min-width: 600px) { .modal-box { border-radius: 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: scaleIn 0.2s ease-out; } }
+    
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .modal-box h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+    .modal-box p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions .btn { flex: 1; }
+    .modal-actions .btn-danger { background: var(--red); color: white; }
+    .modal-actions .btn-danger:hover { background: #DC2626; }
+    .modal-actions .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -103,7 +131,8 @@
     <div class="title">Settings</div>
   </div>
 
-  <div class="container">
+  <div class="container" id="settingsContainer" style="display: none;">
+    
     <!-- Profile Images -->
     <div class="card">
       <div class="card-header">Profile Images</div>
@@ -137,25 +166,25 @@
       <div class="card-body">
         <div class="form-group">
           <label>Full Name</label>
-          <input type="text" id="fullName" placeholder="Your Name">
+          <input type="text" id="fullName" maxlength="50" placeholder="Your Name">
         </div>
         <div class="form-group">
-          <label>Bio (Max 100 chars)</label>
-          <textarea id="bio" rows="2" maxlength="100" placeholder="Tell us about yourself"></textarea>
+          <label>Bio <span id="bioCounter" style="font-weight:400; color:var(--text-muted);">0/100</span></label>
+          <textarea id="bio" rows="2" maxlength="100" placeholder="Tell us about yourself" oninput="document.getElementById('bioCounter').innerText = this.value.length + '/100'"></textarea>
         </div>
         <div class="form-group">
           <label>Website Title</label>
-          <input type="text" id="webTitle" placeholder="My Portfolio">
+          <input type="text" id="webTitle" maxlength="30" placeholder="My Portfolio">
         </div>
         <div class="form-group">
-          <label>Website URL</label>
+          <label>Website URL (http/https only)</label>
           <input type="url" id="webUrl" placeholder="https://example.com">
         </div>
-        <button class="btn btn-primary btn-full" onclick="updateProfile()">Save Profile Details</button>
+        <button class="btn btn-primary btn-full" id="saveProfileBtn" onclick="updateProfile()" disabled>Save Profile Details</button>
       </div>
     </div>
 
-    <!-- Notifications (NEW) -->
+    <!-- Notifications -->
     <div class="card">
       <div class="card-header">Notifications</div>
       <div class="card-body">
@@ -172,54 +201,59 @@
       </div>
     </div>
 
-    <!-- Monetization -->
+    <!-- My Ad Views -->
     <div class="card">
-      <div class="card-header">Monetization</div>
+      <div class="card-header">My Ad Views</div>
       <div class="card-body">
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <h4>Allow Ads on Profile</h4>
-            <p>Show ads on your image posts to earn revenue.</p>
-          </div>
-          <label class="switch">
-            <input type="checkbox" id="allowAdsToggle" onchange="toggleAds(this.checked)">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="earnings-box" id="earningsBox">
-          <h4>Estimated Earnings</h4>
-          <div class="amount" id="earningsAmount">$0.00</div>
-          <p>Total Impressions: <span id="impressionsCount">0</span>. Revenue share payout will be available soon.</p>
-        </div>
-        <button class="btn btn-outline btn-full" id="manageAdsBtn" style="margin-top: 15px; display: none;" onclick="window.location.href='/my-ads.html'">Manage Ad Placements</button>
+        <p style="font-size: 0.95rem; margin-bottom: 15px; color: var(--text-muted);">
+          Total Ad Views: <strong id="impressionsCount" style="color: var(--text); font-size: 1.1rem;">0</strong>
+        </p>
+        <button class="btn btn-outline btn-full" onclick="window.location.href='/my-ads.html'">View My Ads Dashboard</button>
       </div>
     </div>
 
-    <!-- Security (2-Step Slider) -->
+    <!-- Security -->
     <div class="card">
       <div class="card-header">Security</div>
       <div class="card-body">
-        <div class="security-slider">
-          <div class="security-track" id="securityTrack">
-            <div class="security-slide">
-              <div class="form-group">
-                <label>Old Password</label>
+        <div class="security-track" id="securityTrack">
+          <div class="security-slide">
+            <div class="form-group">
+              <label>Old Password</label>
+              <div class="pass-wrapper">
                 <input type="password" id="oldPass" placeholder="Enter current password">
+                <button type="button" class="pass-toggle" aria-label="Show password" onclick="togglePassVisibility('oldPass', this)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
               </div>
-              <button class="btn btn-primary btn-full" onclick="verifyPassword()" id="verifyBtn">Verify</button>
             </div>
-            <div class="security-slide">
-              <div class="verify-success">
-                <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                Identity Verified
-              </div>
-              <div class="form-group">
-                <label>New Password</label>
+            <button class="btn btn-primary btn-full" onclick="verifyPassword()" id="verifyBtn">Verify</button>
+          </div>
+          <div class="security-slide">
+            <div class="verify-success">
+              <svg viewBox="0 0 24 24" style="width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Identity Verified
+            </div>
+            <div class="form-group">
+              <label>New Password (Min 8 chars)</label>
+              <div class="pass-wrapper">
                 <input type="password" id="newPass" placeholder="Enter new password">
+                <button type="button" class="pass-toggle" aria-label="Show password" onclick="togglePassVisibility('newPass', this)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
               </div>
-              <button class="btn btn-primary btn-full" onclick="updatePassword()" id="updateBtn">Update Password</button>
-              <button class="btn btn-outline btn-full" style="margin-top: 10px;" onclick="resetSecurityForm()">Cancel</button>
             </div>
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <div class="pass-wrapper">
+                <input type="password" id="confirmPass" placeholder="Confirm new password">
+                <button type="button" class="pass-toggle" aria-label="Show password" onclick="togglePassVisibility('confirmPass', this)">
+                  <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="updatePassword()" id="updateBtn">Update Password</button>
+            <button class="btn btn-outline btn-full" style="margin-top: 10px;" onclick="resetSecurityForm()">Cancel</button>
           </div>
         </div>
       </div>
@@ -227,13 +261,46 @@
 
     <!-- Account Actions -->
     <div class="card">
-      <div class="danger-item logout" onclick="logout()">
+      <div class="danger-item logout" onclick="showModal('logoutModal')">
         <span>Logout</span>
         <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
       </div>
-      <div class="danger-item delete" onclick="deleteAccount()">
+      <div class="danger-item delete" onclick="showDeleteModal()">
         <span>Delete Account Permanently</span>
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="errorContainer" style="display: none; text-align: center; padding-top: 50px;">
+    <h2 style="margin-bottom: 10px;">Failed to load settings</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Please check your connection and try again.</p>
+    <button class="btn btn-primary" onclick="init()">Retry</button>
+  </div>
+
+  <!-- Custom Modals -->
+  <div class="modal-overlay" id="logoutModal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <h3>Logout</h3>
+      <p>Are you sure you want to log out of PortFive?</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="hideModal('logoutModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <h3 style="color: var(--red);">Delete Account</h3>
+      <p>This action cannot be undone. All your data will be permanently deleted. Type <strong>DELETE</strong> and your password to confirm.</p>
+      
+      <input type="text" id="deleteConfirmInput" style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; text-align: center; font-weight: 700;" placeholder="DELETE" oninput="checkDeleteInputs()">
+      <input type="password" id="deletePassword" style="width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 20px; text-align: center;" placeholder="Enter your password" oninput="checkDeleteInputs()">
+      
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="hideModal('deleteModal')">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn" onclick="deleteAccount()" disabled>Delete</button>
       </div>
     </div>
   </div>
@@ -243,6 +310,7 @@
   <script>
     let currentUser = null;
     let verifiedOldPassword = "";
+    let initialProfileData = {};
 
     const urlBase64ToUint8Array = (base64String) => {
       const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -260,20 +328,43 @@
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
+    function togglePassVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+      } else {
+        input.type = 'password';
+        btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      }
+    }
+
     async function init() {
+      document.getElementById('errorContainer').style.display = 'none';
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (!res.ok) throw new Error();
+        if (!res.ok) {
+          if (res.status === 401) window.location.href = '/login.html';
+          throw new Error('Failed to load');
+        }
         const data = await res.json();
         currentUser = data.user;
 
         document.getElementById('fullName').value = currentUser.fullName || '';
         document.getElementById('bio').value = currentUser.bio || '';
+        document.getElementById('bioCounter').innerText = (currentUser.bio || '').length + '/100';
 
         if (currentUser.website) {
           document.getElementById('webTitle').value = currentUser.website.title || '';
           document.getElementById('webUrl').value = currentUser.website.url || '';
         }
+
+        initialProfileData = {
+          fullName: document.getElementById('fullName').value,
+          bio: document.getElementById('bio').value,
+          webTitle: document.getElementById('webTitle').value,
+          webUrl: document.getElementById('webUrl').value
+        };
 
         if (currentUser.coverPic) {
           document.getElementById('coverPreview').style.backgroundImage = `url(${currentUser.coverPic})`;
@@ -287,55 +378,46 @@
           document.getElementById('avatarPreview').innerHTML += `<span style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-size:24px; font-weight:700; color:#71717A; z-index:0;">${currentUser.fullName.charAt(0).toUpperCase()}</span>`;
         }
 
-        const allowAdsToggle = document.getElementById('allowAdsToggle');
-        const earningsBox = document.getElementById('earningsBox');
-        const manageAdsBtn = document.getElementById('manageAdsBtn');
-        const impressionsCount = document.getElementById('impressionsCount');
-        const earningsAmount = document.getElementById('earningsAmount');
+        // Set Ad Views Count
+        document.getElementById('impressionsCount').innerText = currentUser.adImpressions || 0;
 
-        if (currentUser.allowAds) {
-          allowAdsToggle.checked = true;
-          earningsBox.style.display = 'block';
-          manageAdsBtn.style.display = 'block'; 
-          impressionsCount.innerText = currentUser.adImpressions || 0;
-          const estEarnings = ((currentUser.adImpressions || 0) / 1000) * 0.075;
-          earningsAmount.innerText = `$${estEarnings.toFixed(2)}`;
-        } else {
-          allowAdsToggle.checked = false;
-          earningsBox.style.display = 'none';
-          manageAdsBtn.style.display = 'none';
-        }
-
-        // Check Push Notification Status
         await checkNotificationStatus();
+        document.getElementById('settingsContainer').style.display = 'flex';
 
       } catch (err) {
-        window.location.href = '/login.html';
+        console.error(err);
+        document.getElementById('errorContainer').style.display = 'block';
       }
     }
     init();
 
-    // --- Push Notification Logic ---
+    document.querySelectorAll('#fullName, #bio, #webTitle, #webUrl').forEach(el => {
+      el.addEventListener('input', () => {
+        const btn = document.getElementById('saveProfileBtn');
+        const isDirty = 
+          document.getElementById('fullName').value !== initialProfileData.fullName ||
+          document.getElementById('bio').value !== initialProfileData.bio ||
+          document.getElementById('webTitle').value !== initialProfileData.webTitle ||
+          document.getElementById('webUrl').value !== initialProfileData.webUrl;
+        btn.disabled = !isDirty;
+      });
+    });
+
     async function checkNotificationStatus() {
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
         document.getElementById('notifToggle').disabled = true;
         return;
       }
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-      
-      const toggle = document.getElementById('notifToggle');
-      
-      if (subscription && Notification.permission === 'granted') {
-        toggle.checked = true;
-      } else {
-        toggle.checked = false;
-      }
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        const toggle = document.getElementById('notifToggle');
+        toggle.checked = !!(subscription && Notification.permission === 'granted');
+      } catch (e) {}
     }
 
     async function toggleNotifications(isChecked) {
       const toggle = document.getElementById('notifToggle');
-      
       if (isChecked) {
         try {
           const permission = await Notification.requestPermission();
@@ -360,7 +442,7 @@
             credentials: 'include',
             body: JSON.stringify(subscription)
           });
-          
+
           showToast('Push notifications enabled!');
         } catch (err) {
           console.error('Subscription error:', err);
@@ -371,10 +453,8 @@
         try {
           const registration = await navigator.serviceWorker.ready;
           const subscription = await registration.pushManager.getSubscription();
-          
           if (subscription) {
             await subscription.unsubscribe();
-            
             await fetch('/api/push/unsubscribe', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -383,17 +463,16 @@
             });
           }
           showToast('Push notifications disabled.');
-        } catch (err) {
-          console.error('Unsubscribe error:', err);
-        }
+        } catch (err) { }
       }
     }
-    // -----------------------------
 
     async function uploadImage(input, type) {
       if (!input.files || !input.files[0]) return;
       const file = input.files[0];
       
+      if (file.size > 5 * 1024 * 1024) return showToast('Image must be under 5MB');
+
       const reader = new FileReader();
       reader.onload = function(e) {
         if (type === 'cover') {
@@ -432,6 +511,10 @@
       const websiteTitle = document.getElementById('webTitle').value.trim();
       const websiteUrl = document.getElementById('webUrl').value.trim();
 
+      if (websiteUrl && !/^https?:\/\//i.test(websiteUrl)) {
+        return showToast('Website URL must start with http:// or https://');
+      }
+
       try {
         const res = await fetch('/api/users/update-profile', {
           method: 'PUT',
@@ -439,8 +522,14 @@
           body: JSON.stringify({ fullName, bio, websiteTitle, websiteUrl }),
           credentials: 'include'
         });
-        if (res.ok) showToast('Profile updated successfully!');
-        else showToast('Failed to update profile.');
+        if (res.ok) {
+          showToast('Profile updated successfully!');
+          initialProfileData = { fullName, bio, webTitle: websiteTitle, webUrl: websiteUrl };
+          document.getElementById('saveProfileBtn').disabled = true;
+        } else {
+          const data = await res.json();
+          showToast(data.message || 'Failed to update profile.');
+        }
       } catch (err) { showToast('Server error.'); }
     }
 
@@ -462,7 +551,7 @@
         if (res.ok) {
           verifiedOldPassword = oldPass;
           showToast('Identity verified successfully!');
-          document.getElementById('securityTrack').style.transform = 'translateX(-50%)';
+          document.getElementById('securityTrack').classList.add('verified');
           document.getElementById('oldPass').value = '';
         } else {
           const data = await res.json();
@@ -477,7 +566,10 @@
 
     async function updatePassword() {
       const newPassword = document.getElementById('newPass').value;
-      if (!newPassword || newPassword.length < 6) return showToast('New password must be at least 6 characters.');
+      const confirmPass = document.getElementById('confirmPass').value;
+      
+      if (!newPassword || newPassword.length < 8) return showToast('New password must be at least 8 characters.');
+      if (newPassword !== confirmPass) return showToast('Passwords do not match.');
 
       const btn = document.getElementById('updateBtn');
       btn.innerText = 'Updating...'; btn.disabled = true;
@@ -507,28 +599,43 @@
     function resetSecurityForm() {
       verifiedOldPassword = "";
       document.getElementById('newPass').value = '';
-      document.getElementById('securityTrack').style.transform = 'translateX(0%)';
+      document.getElementById('confirmPass').value = '';
+      document.getElementById('securityTrack').classList.remove('verified');
     }
 
-    async function toggleAds(isChecked) {
-      try {
-        const res = await fetch('/api/users/toggle-ads', { method: 'PUT', credentials: 'include' });
-        if (res.ok) {
-          showToast(isChecked ? 'Ads enabled on your posts!' : 'Ads disabled.');
-          document.getElementById('earningsBox').style.display = isChecked ? 'block' : 'none';
-          document.getElementById('manageAdsBtn').style.display = isChecked ? 'block' : 'none';
-        } else {
-          showToast('Failed to update setting.');
-          document.getElementById('allowAdsToggle').checked = !isChecked;
-        }
-      } catch (err) {
-        showToast('Server error.');
-        document.getElementById('allowAdsToggle').checked = !isChecked;
-      }
+    function showModal(id) {
+      document.getElementById(id).classList.add('active');
     }
+
+    function hideModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    function showDeleteModal() {
+      document.getElementById('deleteConfirmInput').value = '';
+      document.getElementById('deletePassword').value = '';
+      document.getElementById('confirmDeleteBtn').disabled = true;
+      showModal('deleteModal');
+    }
+
+    function checkDeleteInputs() {
+      const text = document.getElementById('deleteConfirmInput').value;
+      const pass = document.getElementById('deletePassword').value;
+      document.getElementById('confirmDeleteBtn').disabled = (text !== 'DELETE' || !pass);
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) hideModal(overlay.id);
+      });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => hideModal(m.id));
+      }
+    });
 
     function logout() {
-      if (!confirm('Are you sure you want to log out?')) return;
       fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).then(() => {
         localStorage.removeItem('portfive_user');
         window.location.href = '/login.html';
@@ -536,20 +643,30 @@
     }
 
     async function deleteAccount() {
-      if (!confirm('Are you absolutely sure you want to delete your account? This action cannot be undone and all your posts will be lost.')) return;
-
-      const confirmText = prompt('Type "DELETE" to confirm account deletion:');
-      if (confirmText !== 'DELETE') return showToast('Deletion cancelled.');
+      const password = document.getElementById('deletePassword').value;
+      const btn = document.getElementById('confirmDeleteBtn');
+      btn.innerText = 'Deleting...'; btn.disabled = true;
 
       try {
-        const res = await fetch('/api/users/delete-account', { method: 'DELETE', credentials: 'include' });
+        const res = await fetch('/api/users/delete-account', { 
+          method: 'DELETE', 
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password }),
+          credentials: 'include' 
+        });
+        
         if (res.ok) {
           localStorage.removeItem('portfive_user');
           window.location.href = '/register.html';
         } else {
-          showToast('Failed to delete account.');
+          const data = await res.json();
+          showToast(data.message || 'Failed to delete account.');
+          btn.innerText = 'Delete'; btn.disabled = false;
         }
-      } catch (err) { showToast('Server error.'); }
+      } catch (err) { 
+        showToast('Server error.'); 
+        btn.innerText = 'Delete'; btn.disabled = false;
+      }
     }
   </script>
 </body>

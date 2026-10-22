@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Post - PortFive</title>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -16,32 +16,27 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); padding-bottom: 40px; }
 
-    /* Top Nav */
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
     .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 6px; border-radius: 50%; transition: 0.2s; }
     .back-btn:hover { background: var(--line); }
     .back-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
     .nav-title { font-family: 'Archivo', sans-serif; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; }
 
-    /* Container */
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    
-    /* Error Box */
+
     .error-msg { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 20px; display: none; }
 
-    /* Tabs */
     .tabs { display: flex; background: var(--line); border-radius: 10px; padding: 4px; margin-bottom: 24px; }
     .tab { flex: 1; text-align: center; padding: 10px; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; border-radius: 8px; transition: 0.2s; }
     .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-    /* Form Elements */
     .form-group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
     .form-label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text); }
     .form-control { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; font-size: 0.95rem; font-family: inherit; color: var(--text); outline: none; transition: 0.2s; }
     .form-control:focus { border-color: var(--primary); }
     textarea.form-control { resize: vertical; min-height: 120px; }
-    
-    /* File Upload Box */
+    select.form-control { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2318181B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px top 50%; background-size: 10px auto; }
+
     .upload-box { border: 2px dashed var(--line); border-radius: 10px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.2s; background: var(--bg); }
     .upload-box:hover { border-color: var(--primary); background: var(--surface); }
     .upload-box svg { width: 32px; height: 32px; stroke: var(--text-muted); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
@@ -51,19 +46,26 @@
     .remove-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(4px); }
     .remove-btn:hover { background: rgba(0,0,0,0.9); }
 
-    /* Preview Containers */
     .video-preview { display: none; margin-top: 16px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
     .video-preview img { width: 100%; display: block; }
 
-    /* Char Count */
     .char-count { font-size: 0.8rem; color: var(--text-muted); text-align: right; margin-top: 6px; display: block; }
 
-    /* Publish Button */
+    /* Toggle Switch */
+    .switch-row { display: flex; justify-content: space-between; align-items: center; }
+    .switch-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
+    .switch-info p { font-size: 0.8rem; color: var(--text-muted); }
+    .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
     .btn-publish { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 20px; font-family: 'Archivo', sans-serif; }
     .btn-publish:hover { background: var(--primary-hover); }
     .btn-publish:disabled { opacity: 0.6; cursor: default; }
 
-    /* Form visibility */
     .tab-content { display: none; }
     .tab-content.active { display: block; }
   </style>
@@ -85,6 +87,20 @@
       <div class="tab active" id="tab-image" onclick="switchTab('image')">Image</div>
       <div class="tab" id="tab-video" onclick="switchTab('video')">Video</div>
       <div class="tab" id="tab-pen" onclick="switchTab('pen')">Pen</div>
+    </div>
+
+    <!-- Common Ads Toggle -->
+    <div class="form-group">
+      <div class="switch-row">
+        <div class="switch-info">
+          <h4>Show Ads on this Post</h4>
+          <p>Earn revenue when users view this post.</p>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="showAdsToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
     </div>
 
     <!-- Image Form -->
@@ -149,8 +165,18 @@
         <textarea class="form-control" id="penContent" placeholder="Write your article here..." rows="8" maxlength="8000" oninput="updateCharCount()"></textarea>
         <span class="char-count" id="charCount">0 / 8000</span>
       </div>
+      
       <div class="form-group">
-        <label class="form-label">Cover Image (3:1 Ratio)</label>
+        <label class="form-label">Cover Option</label>
+        <select class="form-control" id="penCoverType" onchange="togglePenCoverUI()">
+          <option value="image">Add Cover Photo (3:1 Ratio)</option>
+          <option value="ad">Show Ads as Cover (320x50)</option>
+          <option value="none">None (Text Only)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="penCoverUploadGroup">
+        <label class="form-label">Upload Image</label>
         <div class="upload-box" id="penCoverBox" onclick="document.getElementById('penCoverFile').click()">
           <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
           <p>Click to select a 3:1 cover image</p>
@@ -169,17 +195,27 @@
   </div>
 
   <script>
-    const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
+    const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
     let currentTab = 'image';
 
     function switchTab(tab) {
       currentTab = tab;
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      
       document.getElementById('tab-' + tab).classList.add('active');
       document.getElementById('form-' + tab).classList.add('active');
       hideError();
+    }
+
+    function togglePenCoverUI() {
+      const type = document.getElementById('penCoverType').value;
+      const uploadGroup = document.getElementById('penCoverUploadGroup');
+      if (type === 'image') {
+        uploadGroup.style.display = 'block';
+      } else {
+        uploadGroup.style.display = 'none';
+        removePenCover();
+      }
     }
 
     function previewImage(input) {
@@ -236,12 +272,11 @@
       document.getElementById('thumbUploadBox').style.display = 'block';
     }
 
-    // --- Pen Cover Ratio Check (3:1) ---
     function previewPenCover(input) {
       const wrap = document.getElementById('penCoverPreviewWrap');
       const imgPreview = document.getElementById('penCoverPreview');
       const box = document.getElementById('penCoverBox');
-      
+
       if (input.files && input.files[0]) {
         if (input.files[0].size > MAX_IMAGE_BYTES) {
           input.value = ''; wrap.style.display = 'none'; box.style.display = 'block';
@@ -253,15 +288,11 @@
         imgObj.src = URL.createObjectURL(file);
 
         imgObj.onload = function() {
-          // Check if the aspect ratio is roughly 3:1 (allowing small margin for error)
           const ratio = this.width / this.height;
           if (Math.abs(ratio - 3) > 0.05) {
-            input.value = '';
-            wrap.style.display = 'none';
-            box.style.display = 'block';
+            input.value = ''; wrap.style.display = 'none'; box.style.display = 'block';
             return showError(`Cover must have a 3:1 aspect ratio (e.g., 1200x400). Your image is ${this.width}x${this.height}.`);
           }
-          
           hideError();
           imgPreview.src = imgObj.src;
           wrap.style.display = 'block';
@@ -288,7 +319,7 @@
         if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
         const host = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
         let id = null;
-        if (host === 'youtu.be') { id = u.pathname.slice(1).split('/')[0]; } 
+        if (host === 'youtu.be') { id = u.pathname.slice(1).split('/')[0]; }
         else if (host === 'youtube.com' || host === 'music.youtube.com') {
           if (u.pathname === '/watch') id = u.searchParams.get('v');
           else { const m = u.pathname.match(/^\/(embed|shorts|v|live)\/([^/?#]+)/); if (m) id = m[2]; }
@@ -300,12 +331,7 @@
     function previewYouTube(url) {
       const container = document.getElementById('videoPreviewContainer');
       const thumb = document.getElementById('videoThumb');
-
-      if (!url) {
-        container.style.display = 'none';
-        return;
-      }
-
+      if (!url) { container.style.display = 'none'; return; }
       const ytId = getYouTubeID(url);
       if (ytId) {
         thumb.src = 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
@@ -321,6 +347,7 @@
 
       const formData = new FormData();
       formData.append('postType', currentTab);
+      formData.append('showAds', document.getElementById('showAdsToggle').checked);
 
       if (currentTab === 'image') {
         const file = document.getElementById('imageFile').files[0];
@@ -334,7 +361,6 @@
         if (!getYouTubeID(videoUrl)) return showError('Please paste a valid YouTube link.');
         formData.append('videoUrl', videoUrl);
         formData.append('caption', document.getElementById('videoCaption').value);
-
         const thumbFile = document.getElementById('videoThumbFile').files[0];
         if (thumbFile) formData.append('media', thumbFile);
       }
@@ -343,12 +369,15 @@
         const content = document.getElementById('penContent').value.trim();
         if (!title || !content) return showError('Title and Content are required for a Pen.');
 
+        const coverType = document.getElementById('penCoverType').value;
         formData.append('title', title);
         formData.append('content', content);
+        formData.append('coverType', coverType);
 
-        const coverFile = document.getElementById('penCoverFile').files[0];
-        if (coverFile) {
-          // Final validation before submit
+        if (coverType === 'image') {
+          const coverFile = document.getElementById('penCoverFile').files[0];
+          if (!coverFile) return showError('Please select a cover image or change the Cover Option to None.');
+          
           const imgObj = new Image();
           imgObj.src = URL.createObjectURL(coverFile);
           await new Promise((resolve, reject) => {
@@ -359,12 +388,8 @@
               } else resolve();
             };
             imgObj.onerror = () => reject('Invalid image');
-          }).catch(err => {
-            showError(err);
-            return; 
-          });
+          }).catch(err => { showError(err); return; });
           if (document.getElementById('errorMsg').style.display === 'block') return;
-
           formData.append('media', coverFile);
         }
       }
@@ -373,15 +398,9 @@
       btn.disabled = true;
 
       try {
-        const res = await fetch('/api/posts', {
-          method: 'POST',
-          body: formData,
-          credentials: 'include'
-        });
-
+        const res = await fetch('/api/posts', { method: 'POST', body: formData, credentials: 'include' });
         let data = {};
         try { data = await res.json(); } catch (e) {}
-
         if (res.ok) {
           window.location.href = '/home.html';
         } else {

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Post - PortFive</title>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --text: #09090B;
+      --text-muted: #71717A; --line: #E4E4E7;
+      --primary: #18181B; --primary-hover: #27272A;
+      --accent: #6366F1; --accent-light: #EEF2FF;
+      --red: #EF4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); padding-bottom: 40px; }
+
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 6px; border-radius: 50%; transition: 0.2s; }
+    .back-btn:hover { background: var(--line); }
+    .back-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-title { font-family: 'Archivo', sans-serif; font-size: 1.2rem; font-weight: 700; letter-spacing: -0.5px; }
+
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+    .error-msg { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 20px; display: none; }
+    .loading-state { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 1rem; }
+
+    .form-group { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+    .form-label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text); }
+    .form-control { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; font-size: 0.95rem; font-family: inherit; color: var(--text); outline: none; transition: 0.2s; }
+    .form-control:focus { border-color: var(--primary); }
+    textarea.form-control { resize: vertical; min-height: 120px; }
+
+    .char-count { font-size: 0.8rem; color: var(--text-muted); text-align: right; margin-top: 6px; display: block; }
+
+    .btn-publish { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 20px; font-family: 'Archivo', sans-serif; }
+    .btn-publish:hover { background: var(--primary-hover); }
+    .btn-publish:disabled { opacity: 0.6; cursor: default; }
+
+    /* Hide form initially until data loads */
+    #editForm { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="top-nav">
+    <button class="back-btn" onclick="window.history.back()">
+      <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    </button>
+    <div class="nav-title">Edit Post</div>
+    <div style="width: 34px;"></div>
+  </div>
+
+  <div class="container">
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="loading-state" id="loadingState">Loading post details...</div>
+
+    <form id="editForm" onsubmit="submitEdit(event)">
+      
+      <!-- For Pens -->
+      <div id="penFields" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input type="text" class="form-control" id="penTitle" placeholder="Enter article title" maxlength="150">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Content</label>
+          <textarea class="form-control" id="penContent" placeholder="Write your article here..." rows="10" maxlength="8000" oninput="updateCharCount()"></textarea>
+          <span class="char-count" id="charCount">0 / 8000</span>
+        </div>
+      </div>
+
+      <!-- For Images / Videos -->
+      <div id="mediaFields" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Caption</label>
+          <textarea class="form-control" id="mediaCaption" placeholder="Write a caption..." rows="4" maxlength="500"></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-publish" id="publishBtn">Save Changes</button>
+    </form>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('id');
+    let currentPost = null;
+
+    async function fetchPost() {
+      if (!postId) {
+        showError('Invalid Post ID.');
+        document.getElementById('loadingState').style.display = 'none';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/posts/${postId}`, { credentials: 'include' });
+        if (!res.ok) {
+          if (res.status === 404) throw new Error('Post not found.');
+          if (res.status === 401) window.location.href = '/login.html';
+          throw new Error('Failed to load post.');
+        }
+        
+        currentPost = await res.json();
+        
+        // Populate fields based on post type
+        if (currentPost.postType === 'pen') {
+          document.getElementById('penFields').style.display = 'block';
+          document.getElementById('penTitle').value = currentPost.title || '';
+          document.getElementById('penContent').value = currentPost.content || '';
+          updateCharCount();
+        } else {
+          document.getElementById('mediaFields').style.display = 'block';
+          document.getElementById('mediaCaption').value = currentPost.caption || '';
+        }
+
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('editForm').style.display = 'block';
+
+      } catch (err) {
+        document.getElementById('loadingState').style.display = 'none';
+        showError(err.message);
+      }
+    }
+
+    function updateCharCount() {
+      const val = document.getElementById('penContent').value.length;
+      document.getElementById('charCount').innerText = val + ' / 8000';
+    }
+
+    async function submitEdit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('publishBtn');
+      hideError();
+
+      let payload = {};
+
+      if (currentPost.postType === 'pen') {
+        const title = document.getElementById('penTitle').value.trim();
+        const content = document.getElementById('penContent').value.trim();
+        if (!title || !content) return showError('Title and Content cannot be empty.');
+        
+        payload.title = title;
+        payload.content = content;
+      } else {
+        const caption = document.getElementById('mediaCaption').value.trim();
+        payload.caption = caption;
+      }
+
+      btn.innerText = 'Saving...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/posts/${postId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+
+        let data = {};
+        try { data = await res.json(); } catch (err) {}
+
+        if (res.ok) {
+          window.location.href = '/home.html';
+        } else {
+          showError(data.message || 'Failed to update post.');
+          btn.innerText = 'Save Changes';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        showError('Server error. Please try again.');
+        btn.innerText = 'Save Changes';
+        btn.disabled = false;
+      }
+    }
+
+    function showError(msg) {
+      const errorMsg = document.getElementById('errorMsg');
+      errorMsg.innerText = msg;
+      errorMsg.style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    function hideError() {
+      document.getElementById('errorMsg').style.display = 'none';
+    }
+
+    // Init
+    fetchPost();
+  </script>
+</body>
+</html>
