@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Post - PortFive</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#FAFAFA">
@@ -16,7 +16,7 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); -webkit-font-smoothing: antialiased; }
 
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; align-items: center; gap: 16px; }
     .back-btn { background: none; border: none; cursor: pointer; color: var(--text); padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: 0.2s; }
@@ -226,12 +226,12 @@
               adElement.dataset.counted = 'true';
               fetch(`/api/users/ad-impression/${authorId}`, { method: 'POST', credentials: 'include' }).catch(console.error);
             }
-          }, 3000); 
+          }, 3000);
         } else {
           if (entry.target.viewTimer) clearTimeout(entry.target.viewTimer);
         }
       });
-    }, { threshold: 0.5 }); 
+    }, { threshold: 0.5 });
 
     async function init() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -298,7 +298,8 @@
       const viewsCount = post.views || 0;
 
       let adHtml = '';
-      if (post.author.allowAds === true) {
+      // FIX: Check post-level showAds instead of user-level allowAds
+      if (post.showAds !== false) {
         adHtml = `
         <div class="ad-container" data-author-id="${esc(authorId)}">
           <span class="ad-label">Ad</span>
@@ -320,13 +321,13 @@
         const ytId = getYouTubeID(post.mediaUrl);
         mediaHTML = `
           <div class="video-container">
-            <iframe src="https://www.youtube-nocookie.com/embed/${esc(ytId)}?rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="https://www.youtube-nocookie.com/embed/${esc(ytId)}?rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
           </div>
         `;
       } else if (post.postType === 'pen') {
         mediaHTML = `
           ${post.mediaUrl ? `<img src="${esc(post.mediaUrl)}" class="pen-cover-img" alt="Cover">` : ''}
-          
+
           ${adHtml}
 
           <div class="pen-content-box">
@@ -381,7 +382,7 @@
         </div>
       `;
       document.getElementById('mainContainer').innerHTML = html;
-      
+
       document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
     }
 

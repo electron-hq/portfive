@@ -89,20 +89,6 @@
       <div class="tab" id="tab-pen" onclick="switchTab('pen')">Pen</div>
     </div>
 
-    <!-- Common Ads Toggle -->
-    <div class="form-group">
-      <div class="switch-row">
-        <div class="switch-info">
-          <h4>Show Ads on this Post</h4>
-          <p>Earn revenue when users view this post.</p>
-        </div>
-        <label class="switch">
-          <input type="checkbox" id="showAdsToggle" checked>
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
     <!-- Image Form -->
     <div class="tab-content active" id="form-image">
       <div class="form-group">
@@ -122,6 +108,20 @@
       <div class="form-group">
         <label class="form-label">Caption</label>
         <textarea class="form-control" id="imageCaption" placeholder="Write a caption..." rows="3"></textarea>
+      </div>
+
+      <!-- Image Ad Toggle -->
+      <div class="form-group">
+        <div class="switch-row">
+          <div class="switch-info">
+            <h4>Allow Ads</h4>
+            <p>Show ads below your image post.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="imageShowAds" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
     </div>
 
@@ -152,6 +152,20 @@
         <label class="form-label">Caption</label>
         <textarea class="form-control" id="videoCaption" placeholder="Write a caption..." rows="3"></textarea>
       </div>
+
+      <!-- Video Ad Toggle -->
+      <div class="form-group">
+        <div class="switch-row">
+          <div class="switch-info">
+            <h4>Allow Ads on Video Card</h4>
+            <p>Show ads below your video post.</p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="videoShowAds" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Pen Form -->
@@ -165,7 +179,7 @@
         <textarea class="form-control" id="penContent" placeholder="Write your article here..." rows="8" maxlength="8000" oninput="updateCharCount()"></textarea>
         <span class="char-count" id="charCount">0 / 8000</span>
       </div>
-      
+
       <div class="form-group">
         <label class="form-label">Cover Option</label>
         <select class="form-control" id="penCoverType" onchange="togglePenCoverUI()">
@@ -347,13 +361,13 @@
 
       const formData = new FormData();
       formData.append('postType', currentTab);
-      formData.append('showAds', document.getElementById('showAdsToggle').checked);
 
       if (currentTab === 'image') {
         const file = document.getElementById('imageFile').files[0];
         if (!file) return showError('Please select an image.');
         formData.append('media', file);
         formData.append('caption', document.getElementById('imageCaption').value);
+        formData.append('showAds', document.getElementById('imageShowAds').checked);
       }
       else if (currentTab === 'video') {
         const videoUrl = document.getElementById('videoUrl').value.trim();
@@ -361,6 +375,8 @@
         if (!getYouTubeID(videoUrl)) return showError('Please paste a valid YouTube link.');
         formData.append('videoUrl', videoUrl);
         formData.append('caption', document.getElementById('videoCaption').value);
+        formData.append('showAds', document.getElementById('videoShowAds').checked);
+        
         const thumbFile = document.getElementById('videoThumbFile').files[0];
         if (thumbFile) formData.append('media', thumbFile);
       }
@@ -373,11 +389,12 @@
         formData.append('title', title);
         formData.append('content', content);
         formData.append('coverType', coverType);
+        formData.append('showAds', true); // Pens always allow ads (as cover or bottom)
 
         if (coverType === 'image') {
           const coverFile = document.getElementById('penCoverFile').files[0];
           if (!coverFile) return showError('Please select a cover image or change the Cover Option to None.');
-          
+
           const imgObj = new Image();
           imgObj.src = URL.createObjectURL(coverFile);
           await new Promise((resolve, reject) => {

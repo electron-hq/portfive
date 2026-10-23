@@ -1,5 +1,7 @@
 const JobPost = require('../models/JobPost');
 const JobApplication = require('../models/JobApplication');
+const Notification = require('../models/Notification');
+const { sendPushNotification } = require('./pushController');
 
 // @desc    Get All Jobs (with optional search)
 const getAllJobs = async (req, res) => {
@@ -90,7 +92,7 @@ const deleteJob = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to delete this job' });
     }
     await JobPost.findByIdAndDelete(req.params.jobId);
-    await JobApplication.deleteMany({ jobId: req.params.jobId }); // Delete related messages
+    await JobApplication.deleteMany({ jobId: req.params.jobId });
     res.status(200).json({ message: 'Job deleted successfully' });
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
@@ -100,15 +102,32 @@ const applyToJob = async (req, res) => {
   try {
     const { message } = req.body;
     const jobId = req.params.jobId;
-    
+
     if (!message || !message.trim()) return res.status(400).json({ message: 'Message cannot be empty' });
-    
+
     const job = await JobPost.findById(jobId);
     if (!job) return res.status(404).json({ message: 'Job not found' });
     if (job.author.toString() === req.user.id) return res.status(400).json({ message: 'You cannot message your own job post' });
 
     try {
       await JobApplication.create({ jobId, applicant: req.user.id, message: message.trim() });
+      
+      // Notify Job Uploader
+      const applicant = await User.findById(req.user.id).select('fullName');
+      await Notification.create({
+        receiver: job.author,
+        sender: req.user.id,
+        type: 'job_application',
+        jobId: job._id,
+        text: job.title
+      });
+      
+      sendPushNotification(job.author, {
+        title: 'New Job Application',
+        body: `${applicant.fullName} applied for: ${job.title}`,
+        url: `/job-messages.html`
+      });
+
       res.status(201).json({ message: 'Message sent successfully' });
     } catch (err) {
       if (err.code === 11000) return res.status(400).json({ message: 'You have already sent a message for this job' });
@@ -120,11 +139,9 @@ const applyToJob = async (req, res) => {
 // @desc    Get all received messages for my jobs
 const getMyReceivedApplications = async (req, res) => {
   try {
-    // Get all jobs owned by this user
     const myJobs = await JobPost.find({ author: req.user.id }).select('_id title');
     const jobIds = myJobs.map(j => j._id);
 
-    // Get applications for these jobs
     const applications = await JobApplication.find({ jobId: { $in: jobIds } })
       .populate('applicant', 'fullName username profilePic')
       .populate('jobId', 'title companyName')

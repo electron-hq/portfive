@@ -4,7 +4,7 @@ const Notification = require('../models/Notification');
 // @route   GET /api/notifications
 const getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ recipient: req.user.id })
+    const notifications = await Notification.find({ receiver: req.user.id })
       .populate('sender', 'fullName username profilePic')
       .populate('postId', 'mediaUrl postType title')
       .sort({ createdAt: -1 })
@@ -20,7 +20,7 @@ const getNotifications = async (req, res) => {
 // @route   PUT /api/notifications/read
 const markAsRead = async (req, res) => {
   try {
-    await Notification.updateMany({ recipient: req.user.id, isRead: false }, { $set: { isRead: true } });
+    await Notification.updateMany({ receiver: req.user.id, isRead: false }, { $set: { isRead: true } });
     res.status(200).json({ message: 'Marked as read' });
   } catch (error) {
     console.error('Mark as read error:', error);

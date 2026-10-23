@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Notifications - PortFive</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#FAFAFA">
@@ -16,7 +16,7 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); -webkit-font-smoothing: antialiased; }
 
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; align-items: center; gap: 16px; }
     .back-btn { background: none; border: none; cursor: pointer; color: var(--text); padding: 4px; border-radius: 50%; }
@@ -30,20 +30,23 @@
     .notif-item { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--surface); border-radius: 12px; border: 1px solid var(--line); cursor: pointer; transition: 0.2s; }
     .notif-item:hover { background: #F4F4F5; }
     .notif-item.unread { background: var(--accent-light); border-color: #C7D2FE; }
-    
+
     .avatar-container { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #E4E4E7; }
     .avatar-container svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
-    
+
     .notif-content { flex: 1; min-width: 0; }
     .notif-text { font-size: 0.95rem; line-height: 1.4; color: var(--text); margin-bottom: 4px; }
     .notif-text strong { font-weight: 600; }
     .notif-time { font-size: 0.75rem; color: var(--text-muted); }
-    
+
     .notif-icon { width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; flex-shrink: 0; }
-    .notif-icon svg { width: 24px; height: 24px; fill: none; stroke-width: 2; }
+    .notif-icon svg { width: 24px; height: 24px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .icon-heart { stroke: var(--red); fill: var(--red); }
     .icon-comment { stroke: var(--accent); }
     .icon-follow { stroke: var(--accent); }
+    .icon-message { stroke: #10B981; }
+    .icon-job { stroke: var(--accent); }
+    .icon-unfollow { stroke: var(--text-muted); }
 
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .empty-state svg { width: 60px; height: 60px; stroke: var(--line); margin-bottom: 15px; stroke-width: 1.5; }
@@ -138,7 +141,6 @@
           return;
         }
 
-        // Mark all as read after loading
         fetch('/api/notifications/read', { method: 'PUT', credentials: 'include' });
 
         container.innerHTML = notifs.map(n => {
@@ -151,6 +153,9 @@
           if (n.type === 'follow' || n.type === 'mutual_follow') {
             text = n.type === 'mutual_follow' ? `<strong>${esc(sender.fullName)}</strong> and you are now friends!` : `<strong>${esc(sender.fullName)}</strong> started following you.`;
             iconSvg = `<svg viewBox="0 0 24 24" class="icon-follow"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
+          } else if (n.type === 'unfollow') {
+            text = `<strong>${esc(sender.fullName)}</strong> unfollowed you.`;
+            iconSvg = `<svg viewBox="0 0 24 24" class="icon-unfollow"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="23" y1="11" x2="17" y2="11"></line></svg>`;
           } else if (n.type === 'like') {
             text = `<strong>${esc(sender.fullName)}</strong> loved your ${post.postType === 'pen' ? 'article' : 'post'}.`;
             iconSvg = `<svg viewBox="0 0 24 24" class="icon-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`;
@@ -159,6 +164,14 @@
             text = `<strong>${esc(sender.fullName)}</strong> commented on your ${post.postType === 'pen' ? 'article' : 'post'}.`;
             iconSvg = `<svg viewBox="0 0 24 24" class="icon-comment"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
             link = `/post.html?id=${esc(post._id)}`;
+          } else if (n.type === 'message') {
+            text = `<strong>${esc(sender.fullName)}</strong> sent you a message: "${esc(n.text)}"`;
+            iconSvg = `<svg viewBox="0 0 24 24" class="icon-message"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+            link = `/chat-room.html?id=${esc(sender._id)}`;
+          } else if (n.type === 'job_application') {
+            text = `<strong>${esc(sender.fullName)}</strong> applied for your job: "${esc(n.text)}"`;
+            iconSvg = `<svg viewBox="0 0 24 24" class="icon-job"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>`;
+            link = `/job-messages.html`;
           }
 
           return `

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Images - PortFive</title>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#09090B">
@@ -156,12 +156,12 @@
               adElement.dataset.counted = 'true';
               fetch(`/api/users/ad-impression/${authorId}`, { method: 'POST', credentials: 'include' }).catch(console.error);
             }
-          }, 3000); 
+          }, 3000);
         } else {
           if (entry.target.viewTimer) clearTimeout(entry.target.viewTimer);
         }
       });
-    }, { threshold: 0.5 }); 
+    }, { threshold: 0.5 });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -175,7 +175,7 @@
         if (res.ok) {
           const data = await res.json();
           currentUserId = data.user.id || data.user._id;
-          
+
           const navPic = document.getElementById('navProfilePic');
           if (data.user.profilePic) navPic.style.backgroundImage = `url('${safeUrl(data.user.profilePic)}')`;
           else {
@@ -205,7 +205,9 @@
           const authorName = author.fullName || username;
           const profilePic = author.profilePic || '';
 
-          const showAd = author.allowAds === true;
+          // FIX: Check post-level showAds instead of user-level allowAds
+          const showAd = img.showAds !== false; 
+          
           const caption = img.caption || 'No caption';
           const hasLiked = img.hasLiked || false;
           const likesCount = img.likesCount || 0;

@@ -1,7 +1,9 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
+const { sendPushNotification } = require('./pushController');
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -29,9 +31,8 @@ const uploadAudioToCloudinary = (buffer) => {
   });
 };
 
-// Helper to check if users are mutual followers
 const areMutualFollowers = async (userId1, userId2) => {
-  if (userId1.toString() === userId2.toString()) return true; // self chat (not needed but safe)
+  if (userId1.toString() === userId2.toString()) return true;
   const user1 = await User.findById(userId1).select('following');
   const user2 = await User.findById(userId2).select('following');
   if (!user1 || !user2) return false;
@@ -41,7 +42,7 @@ const areMutualFollowers = async (userId1, userId2) => {
 const sendMessage = async (req, res) => {
   try {
     const { receiverId, text } = req.body;
-    
+
     if (!await areMutualFollowers(req.user.id, receiverId)) {
       return res.status(403).json({ message: 'You must mutually follow each other to chat.' });
     }
@@ -55,6 +56,25 @@ const sendMessage = async (req, res) => {
     const populated = await message.populate([{ path: 'sender', select: 'fullName username profilePic' }, { path: 'receiver', select: 'fullName username profilePic' }]);
     const populatedObj = populated.toObject();
     if (populatedObj.imageUrl) populatedObj.imageUrl = `/api/chat/image/${populatedObj._id}`;
+
+    // Create Notification and Push
+    const sender = populatedObj.sender;
+    let previewText = text ? text.trim() : (imageUrl ? 'Sent an image' : 'Sent a voice message');
+    if (previewText.length > 40) previewText = previewText.substring(0, 40) + '...';
+
+    await Notification.create({ 
+      receiver: receiverId, 
+      sender: req.user.id, 
+      type: 'message', 
+      text: previewText 
+    });
+    
+    sendPushNotification(receiverId, {
+      title: `New Message from ${sender.fullName}`,
+      body: previewText,
+      url: `/chat-room.html?id=${req.user.id}`
+    });
+
     res.status(201).json(populatedObj);
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
@@ -84,12 +104,15 @@ const getConversations = async (req, res) => {
 const getMessages = async (req, res) => {
   try {
     const userId = req.user.id, targetId = req.params.userId;
-
     if (!await areMutualFollowers(userId, targetId)) {
       return res.status(403).json({ message: 'You must mutually follow each other to view chats.' });
     }
 
     await Message.updateMany({ sender: targetId, receiver: userId, isRead: false }, { $set: { isRead: true } });
+    
+    // Mark message notifications as read
+    await Notification.updateMany({ receiver: userId, sender: targetId, type: 'message', isRead: false }, { $set: { isRead: true } });
+
     const messages = await Message.find({ $or: [{ sender: userId, receiver: targetId }, { sender: targetId, receiver: userId }] })
       .sort({ createdAt: 1 }).populate('sender', 'fullName username profilePic').populate('receiver', 'fullName username profilePic').lean();
     const secureMessages = messages.map(msg => { if (msg.imageUrl) msg.imageUrl = `/api/chat/image/${msg._id}`; return msg; });
