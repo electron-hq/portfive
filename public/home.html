@@ -26,7 +26,7 @@
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
     .logo { font-family: 'Archivo', sans-serif; font-size: 1.55rem; font-weight: 800; letter-spacing: -0.8px; }
     .logo span { color: var(--accent); }
-    .nav-icons { display: flex; gap: 10px; align-items: center; }
+    .nav-icons { display: flex; gap: 8px; align-items: center; }
 
     .icon-btn { position: relative; background: none; border: none; cursor: pointer; color: var(--text); padding: 8px; border-radius: 50%; transition: 0.2s; display: flex; text-decoration: none; }
     .icon-btn:hover { background: var(--line); }
@@ -40,7 +40,7 @@
     .create-post-box:hover { border-color: #D4D4D8; }
     .create-post-box .input-fake { flex: 1; background: var(--bg); padding: 14px 20px; border-radius: 999px; color: var(--text-muted); font-size: 0.95rem; border: 1px solid transparent; font-weight: 500; }
 
-    /* --- FACEBOOK STYLE 1-COLUMN LAYOUT --- */
+    /* --- FEED LAYOUT --- */
     .feed-container {
       display: flex;
       flex-direction: column;
@@ -48,14 +48,27 @@
       padding-bottom: 40px;
     }
 
-    .post-card, .ad-native-card {
+    .post-card {
       background: var(--surface);
-      border: 1px solid var(--line);
+      border: 1px solid #D4D4D8;
       border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      box-shadow: 0 4px 12px rgba(9,9,11,0.04);
       overflow: hidden;
       width: 100%;
       transition: transform 0.2s ease;
+    }
+
+    .ad-native-card {
+      background: #F8F9FA;
+      border: 1px dashed #A1A1AA;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(9,9,11,0.02);
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
     }
 
     /* Post Header */
@@ -86,11 +99,9 @@
       display: block;
     }
 
-    /* YouTube Style Video */
     .video-thumb { width: 100%; aspect-ratio: 16 / 9; position: relative; background: #000; }
     .video-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    
-    /* SVG Play Icon */
+
     .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 64px; height: 64px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; pointer-events: none; }
     .play-icon svg { width: 28px; height: 28px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; margin-left: 4px; }
 
@@ -98,7 +109,7 @@
     .pen-card-content { padding: 4px 16px 12px; }
     .pen-title { font-size: 1.15rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px; color: var(--text); font-family: 'Archivo', sans-serif; }
     .pen-snippet { font-size: 0.95rem; color: var(--text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 6; -webkit-box-orient: vertical; overflow: hidden; }
-    
+
     .pen-cover-container {
       width: 100%;
       margin-top: 8px;
@@ -113,7 +124,6 @@
       border-radius: 8px;
     }
 
-    /* Pen Ad Cover */
     .pen-ad-cover {
       width: 100%;
       display: flex;
@@ -128,18 +138,10 @@
     }
     .pen-ad-cover .ad-label { position: absolute; top: 4px; right: 8px; font-size: 0.55rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; }
     .pen-ad-cover iframe { width: 100%; max-width: 320px; height: 50px; border: none; overflow: hidden; }
-    
+
     .see-more-btn { background: none; border: none; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; cursor: pointer; padding: 4px 0 0; display: block; }
     .see-more-btn:hover { color: var(--text); text-decoration: underline; }
 
-    /* Native Ad Card */
-    .ad-native-card {
-      background: #FFFFFF;
-      position: relative;
-      min-height: 300px;
-      display: flex;
-      flex-direction: column;
-    }
     .ad-label-badge {
       position: absolute;
       top: 10px;
@@ -165,12 +167,12 @@
     /* Post Footer & Action Bar */
     .post-footer { padding: 12px 16px; }
     .post-caption { font-size: 0.9rem; line-height: 1.4; color: var(--text); margin-bottom: 10px; }
-    
+
     .action-bar { display: flex; justify-content: space-between; border-top: 1px solid #F4F4F5; padding-top: 6px; align-items: center; }
     .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: none; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; padding: 10px 0; border-radius: 6px; transition: 0.2s; font-family: inherit; }
     .action-btn:hover { background: var(--bg); color: var(--text); }
     .action-btn svg { width: 22px; height: 22px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
-    
+
     .action-btn.loved { color: var(--red); }
     .action-btn.loved svg { fill: var(--red); stroke: var(--red); animation: pop 0.3s ease; }
     @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
@@ -181,7 +183,8 @@
     .menu-wrapper { position: relative; }
     .card-menu-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
     .card-menu-btn:hover { background: var(--bg); color: var(--text); }
-    .card-menu-btn svg { width: 20px; height: 20px; stroke-width: 2; fill: none; stroke: currentColor; }
+    .card-menu-btn svg { width: 20px; height: 20px; stroke: none; fill: currentColor; }
+    .card-menu-btn svg circle { fill: currentColor; stroke: none; }
 
     .dropdown-menu { position: absolute; right: 0; top: 30px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; display: none; flex-direction: column; min-width: 130px; overflow: hidden; }
     .dropdown-menu.show { display: flex; }
@@ -201,17 +204,16 @@
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     .sk-card { border-radius: 12px; height: 300px; width: 100%; }
 
-    /* Modals & Lightbox */
     .video-modal, .lightbox {
       position: fixed; inset: 0; background: rgba(0,0,0,0.9);
       z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(5px);
     }
     .video-modal.active, .lightbox.active { display: flex; }
-    
+
     .modal-close { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); border: none; color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; z-index: 2010; }
     .modal-close:hover { background: rgba(255,255,255,0.2); }
     .modal-close svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    
+
     .modal-content { width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 16px; }
     .iframe-wrapper { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
     .iframe-wrapper iframe { width: 100%; height: 100%; border: none; display: block; }
@@ -221,11 +223,9 @@
     .modal-meta-info .name { font-size: 0.95rem; font-weight: 600; }
     .modal-meta-info .username { font-size: 0.8rem; color: #A1A1AA; }
 
-    /* Lightbox Specific */
     .lightbox { background: rgba(0,0,0,0.95); cursor: zoom-out; z-index: 4000; }
     .lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
 
-    /* Custom Confirm Modal */
     .custom-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px; }
     .custom-modal-overlay.active { display: flex; }
     .custom-modal-box { background: var(--surface); width: 100%; max-width: 400px; border-radius: 14px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
@@ -239,7 +239,6 @@
     .modal-actions .btn-danger { background: var(--red); color: white; }
     .modal-actions .btn-primary { background: var(--primary); color: white; }
 
-    /* Comments Bottom Sheet Modal */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     .comments-modal { position: fixed; bottom: 0; left: 0; right: 0; height: 75vh; background: var(--surface); border-radius: 20px 20px 0 0; z-index: 2001; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); box-shadow: 0 -4px 24px rgba(0,0,0,0.1); max-width: 680px; margin: 0 auto; }
@@ -271,11 +270,15 @@
     .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 5000; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    .load-more-container { text-align: center; padding: 20px 20px 40px; display: none; }
-    .btn-load-more { background: var(--surface); color: var(--text); border: 1px solid var(--line); padding: 12px 24px; border-radius: 30px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(9,9,11,0.03); }
-    .btn-load-more:hover { background: var(--bg); }
+    /* Infinite Scroll Sentinels & Spinner */
+    .feed-end-container { text-align: center; padding: 20px; display: none; }
+    .feed-end-msg { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
+    #feedSentinel { height: 10px; width: 100%; }
+    
+    .loading-spinner-container { display: none; text-align: center; padding: 20px; }
+    .spinner { display: inline-block; width: 24px; height: 24px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* Solid Bottom Nav */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #FAFAFA; border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 68px; z-index: 1000; max-width: 680px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); }
     .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.65rem; font-weight: 600; gap: 5px; transition: 0.2s; width: 60px; }
     .nav-item.active { color: var(--accent); }
@@ -291,6 +294,10 @@
   <div class="top-nav">
     <div class="logo">Port<span>Five</span></div>
     <div class="nav-icons">
+      <!-- NEW: Videos Icon -->
+      <a href="/videos.html" class="icon-btn" aria-label="Videos">
+        <svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+      </a>
       <a href="/chat.html" class="icon-btn" aria-label="Messages">
         <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         <span class="badge" id="chatBadge" style="display:none;">0</span>
@@ -307,10 +314,7 @@
       <div class="input-fake">What's on your mind?</div>
     </div>
 
-    <div class="feed-container" id="feedContainer">
-      <div class="sk sk-card"></div>
-      <div class="sk sk-card"></div>
-    </div>
+    <div class="feed-container" id="feedContainer"></div>
 
     <div class="global-empty-state" id="globalEmptyState">
       <div class="icon-wrapper">
@@ -325,12 +329,15 @@
       <a href="/create-post.html" class="btn-start">Create a Post</a>
     </div>
 
-    <div class="load-more-container" id="loadMoreContainer">
-      <button class="btn-load-more" onclick="refreshFeed()">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-        Refresh Feed
-      </button>
+    <div class="loading-spinner-container" id="feedLoading">
+      <div class="spinner"></div>
     </div>
+
+    <div class="feed-end-container" id="feedEndContainer">
+      <span class="feed-end-msg">You're all caught up!</span>
+    </div>
+    
+    <div id="feedSentinel"></div>
   </div>
 
   <!-- Image Lightbox -->
@@ -351,7 +358,7 @@
     </div>
   </div>
 
-  <!-- Comments Modal (Updated to Bottom Sheet style) -->
+  <!-- Comments Modal -->
   <div class="modal-overlay" id="commentsOverlay" onclick="closeCommentsModal()"></div>
   <div class="comments-modal" id="commentsModal">
     <div class="modal-drag-handle"></div>
@@ -401,6 +408,12 @@
     let socket = null;
     let modalActionCallback = null;
     let currentCommentPostId = null;
+
+    // Infinite Scroll State
+    let isLoading = false;
+    let hasMore = true;
+    let seenIds = [];
+    let postIndexCounter = 0;
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
@@ -474,13 +487,11 @@
 
     const VIDEO_PLACEHOLDER = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180"><rect width="320" height="180" fill="#18181B"/></svg>');
 
-    // Image Ad Observer (3 seconds)
     const imageAdObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const authorId = entry.target.getAttribute('data-author-id');
           if (!authorId) return;
-          
           entry.target.adTimer = setTimeout(() => {
             if (!entry.target.dataset.adCounted) {
               entry.target.dataset.adCounted = 'true';
@@ -494,21 +505,17 @@
       });
     }, { threshold: 0.5 });
 
-    // Read Observer for Pens (5 seconds -> triggers both Read & Ad Impression)
     const readObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         const postId = entry.target.getAttribute('data-post-id');
         const authorId = entry.target.getAttribute('data-author-id');
         if (!postId || !authorId) return;
-
         if (entry.isIntersecting) {
           const today = new Date().toISOString().split('T')[0];
           const storageKey = `read_${postId}_${today}`;
-
           if (!localStorage.getItem(storageKey)) {
             entry.target.readTimer = setTimeout(() => {
               localStorage.setItem(storageKey, 'true');
-              
               fetch(`/api/posts/${postId}/read`, { method: 'POST', credentials: 'include' })
                 .then(res => {
                   if (res.ok) {
@@ -520,7 +527,6 @@
                     }
                   }
                 }).catch(console.error);
-
               if (!entry.target.dataset.adCounted) {
                 entry.target.dataset.adCounted = 'true';
                 fetch(`/api/users/ad-impression/${authorId}`, { method: 'POST', credentials: 'include' }).catch(console.error);
@@ -532,6 +538,13 @@
         }
       });
     }, { threshold: 0.5 });
+
+    const feedSentinel = document.getElementById('feedSentinel');
+    const feedObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !isLoading) {
+        loadPage();
+      }
+    }, { rootMargin: '100px' });
 
     async function init() {
       try {
@@ -549,7 +562,6 @@
             navPic.innerHTML = getAvatarSVG(data.user);
           }
 
-          // Set avatar in comment modal
           document.getElementById('modalMyAvatar').innerHTML = getAvatarSVG(data.user);
 
           socket = io();
@@ -558,6 +570,8 @@
           socket.on('receive_notification', () => { fetchBadges(); });
 
           fetchBadges();
+          
+          loadPage();
         } else { window.location.href = '/login.html'; }
       } catch (err) { window.location.href = '/login.html'; }
     }
@@ -582,56 +596,73 @@
       } catch (err) { console.error('Error fetching badges:', err); }
     }
 
-    async function loadFeed() {
+    async function loadPage() {
+      if (isLoading) return;
+      isLoading = true;
+
       const container = document.getElementById('feedContainer');
-      const loadMoreContainer = document.getElementById('loadMoreContainer');
-      container.innerHTML = `<div class="sk sk-card"></div><div class="sk sk-card"></div>`;
-      loadMoreContainer.style.display = 'none';
-      document.getElementById('globalEmptyState').style.display = 'none';
+      const loadingEl = document.getElementById('feedLoading');
+      const endContainer = document.getElementById('feedEndContainer');
+      const emptyState = document.getElementById('globalEmptyState');
+
+      if (seenIds.length === 0) {
+        container.innerHTML = `<div class="sk sk-card"></div><div class="sk sk-card"></div>`;
+        emptyState.style.display = 'none';
+        endContainer.style.display = 'none';
+      } else {
+        loadingEl.style.display = 'block';
+        endContainer.style.display = 'none';
+      }
 
       try {
-        const [vidRes, imgRes, penRes] = await Promise.all([
-          fetch('/api/posts/top/video', { credentials: 'include' }),
-          fetch('/api/posts/top/image', { credentials: 'include' }),
-          fetch('/api/posts/top/pen', { credentials: 'include' })
-        ]);
+        const excludeQuery = seenIds.length > 0 ? `&excludeIds=${seenIds.join(',')}` : '';
+        const res = await fetch(`/api/posts/feed?limit=10${excludeQuery}`, { credentials: 'include' });
+        const data = await res.json();
+        
+        hasMore = data.hasMore;
+        const posts = data.posts;
 
-        const getJson = async (r) => { try { return await r.json(); } catch(e) { return []; } };
-        let videos = await getJson(vidRes);
-        let images = await getJson(imgRes);
-        let pens = await getJson(penRes);
-
-        if (!Array.isArray(videos)) videos = [];
-        if (!Array.isArray(images)) images = [];
-        if (!Array.isArray(pens)) pens = [];
-
-        if (videos.length === 0 && images.length === 0 && pens.length === 0) {
+        if (seenIds.length === 0 && posts.length === 0) {
           container.innerHTML = '';
-          document.getElementById('globalEmptyState').style.display = 'block';
+          emptyState.style.display = 'block';
+          isLoading = false;
+          loadingEl.style.display = 'none';
           return;
         }
 
-        let allPosts = [...videos, ...images, ...pens];
-        allPosts.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
         let feedHTML = '';
-        allPosts.forEach((post, index) => {
-          feedHTML += generatePostHTML(post, index);
-          if ((index + 1) % 4 === 0) { 
+        posts.forEach((post, idx) => {
+          seenIds.push(post._id);
+          feedHTML += generatePostHTML(post, postIndexCounter + idx);
+          if ((postIndexCounter + idx + 1) % 4 === 0) {
             feedHTML += generateNativeAdHTML();
           }
         });
+        
+        postIndexCounter += posts.length;
+        
+        if (seenIds.length === posts.length) {
+          container.innerHTML = feedHTML;
+        } else {
+          container.insertAdjacentHTML('beforeend', feedHTML);
+        }
 
-        container.innerHTML = feedHTML;
+        container.querySelectorAll('.post-card[data-post-type="image"][data-show-ads="true"]').forEach(card => imageAdObserver.observe(card));
+        container.querySelectorAll('.post-card[data-post-type="pen"][data-show-ads="true"]').forEach(card => readObserver.observe(card));
 
-        document.querySelectorAll('.post-card[data-post-type="image"][data-show-ads="true"]').forEach(card => imageAdObserver.observe(card));
-        document.querySelectorAll('.post-card[data-post-type="pen"][data-show-ads="true"]').forEach(card => readObserver.observe(card));
-
-        loadMoreContainer.style.display = 'block';
+        if (hasMore) {
+          feedObserver.observe(feedSentinel);
+        } else {
+          feedObserver.unobserve(feedSentinel);
+          endContainer.style.display = 'block';
+        }
 
       } catch (err) {
         console.error(err);
-        document.getElementById('globalEmptyState').style.display = 'block';
+        if (seenIds.length === 0) emptyState.style.display = 'block';
+      } finally {
+        isLoading = false;
+        loadingEl.style.display = 'none';
       }
     }
 
@@ -749,7 +780,7 @@
       }
       else if (post.postType === 'pen') {
         const snippet = (post.content || '');
-        
+
         if (post.mediaType === 'image' && post.mediaUrl) {
           body = `
             <div class="pen-card-content">
@@ -804,21 +835,16 @@
       return `<div class="post-card" id="post-${uniqueId}" data-post-id="${esc(post._id)}" data-post-type="${esc(post.postType)}" data-author-id="${esc(authorId)}" data-show-ads="${showAds}">${header}${body}${footer}</div>`;
     }
 
-    function refreshFeed() {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      loadFeed();
-    }
-
     async function toggleSave(e, postId, btn) {
       e.stopPropagation();
       const isSaved = btn.classList.contains('saved');
       if (isSaved) { btn.classList.remove('saved'); showToast('Removed from saved'); }
       else { btn.classList.add('saved'); showToast('Saved successfully'); }
-      
+
       try { await fetch(`/api/posts/${postId}/save`, { method: 'POST', credentials: 'include' }); }
-      catch (err) { 
+      catch (err) {
         if (isSaved) btn.classList.add('saved'); else btn.classList.remove('saved');
-        showToast('Network error'); 
+        showToast('Network error');
       }
     }
 
@@ -849,11 +875,11 @@
       const input = document.getElementById('modalInput');
       input.value = '';
       input.style.display = showInput ? 'block' : 'none';
-      
+
       const confirmBtn = document.getElementById('modalConfirmBtn');
       confirmBtn.innerText = btnText;
       confirmBtn.className = `btn ${isDanger ? 'btn-danger' : 'btn-primary'}`;
-      
+
       modalActionCallback = callback;
       document.getElementById('actionModal').classList.add('active');
     }
@@ -890,11 +916,11 @@
         if (!reason || !reason.trim()) return showToast('Please provide a reason.');
         closeActionModal();
         try {
-          const res = await fetch(`/api/posts/${postId}/report`, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            credentials: 'include', 
-            body: JSON.stringify({ reason: reason.trim() }) 
+          const res = await fetch(`/api/posts/${postId}/report`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ reason: reason.trim() })
           });
           if (res.ok) showToast('Post reported successfully. Moderators will review it.');
           else { const data = await res.json(); showToast(data.message || 'Failed to report post.'); }
@@ -918,9 +944,9 @@
       document.getElementById('commentsOverlay').classList.add('active');
       document.getElementById('commentsModal').classList.add('active');
       document.body.style.overflow = 'hidden';
-      
+
       document.getElementById('modalCommentsList').innerHTML = '<div style="text-align:center; padding: 20px; color: var(--text-muted);">Loading comments...</div>';
-      
+
       fetch(`/api/posts/${postId}/comments`, { credentials: 'include' })
         .then(res => res.json())
         .then(comments => {
@@ -970,7 +996,7 @@
       const input = document.getElementById('commentInput');
       const content = input.value.trim();
       if (!content || !currentCommentPostId) return;
-      
+
       input.value = '';
       try {
         const res = await fetch(`/api/posts/${currentCommentPostId}/comments`, {
@@ -981,7 +1007,7 @@
         });
         if (res.ok) {
           showToast('Comment added');
-          openCommentsModal(currentCommentPostId); // Reload comments
+          openCommentsModal(currentCommentPostId);
         } else {
           showToast('Failed to add comment');
         }
@@ -1004,7 +1030,7 @@
         clearTimeout(videoViewTimer);
         videoViewTimer = setTimeout(() => {
           localStorage.setItem(storageKey, 'true');
-          
+
           fetch(`/api/posts/${postId}/view`, { method: 'POST', credentials: 'include' })
             .then(res => {
               if (res.ok) {
@@ -1020,7 +1046,7 @@
           if (showAds) {
             fetch(`/api/users/ad-impression/${authorId}`, { method: 'POST', credentials: 'include' }).catch(console.error);
           }
-          
+
         }, 10000);
       }
     }
@@ -1033,7 +1059,6 @@
     }
 
     init();
-    loadFeed();
   </script>
 </body>
 </html>

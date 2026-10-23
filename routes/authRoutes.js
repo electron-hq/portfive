@@ -12,16 +12,24 @@ const loginLimiter = rateLimit({
   message: { message: 'Too many login attempts, please try again later.' }
 });
 
-// Register & Recover: Max 5 attempts per 60 min to prevent spam.
+// Register: Max 5 attempts per 60 min to prevent spam.
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 5,
   message: { message: 'Too many requests, please try again later.' }
 });
 
+// Recovery: Strict, separate counter from register (per Handoff critical fix)
+const recoverLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: false,
+  message: { message: 'Too many recovery attempts, please try again later.' }
+});
+
 router.post('/register', registerLimiter, registerUser);
 router.post('/login', loginLimiter, loginUser);
-router.post('/recover', registerLimiter, recoverPassword);
+router.post('/recover', recoverLimiter, recoverPassword);
 router.get('/check-username/:username', checkUsername);
 router.get('/me', protect, getMe);
 router.post('/logout', logoutUser);

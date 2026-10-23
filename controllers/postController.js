@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 const User = require('../models/User');
@@ -68,12 +69,50 @@ const createPost = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Failed to create post.' }); }
 };
 
+// NEW: Randomized Feed with $sample
+const getFeed = async (req, res) => {
+  try {
+    const limit = 10;
+    const excludeIds = req.query.excludeIds ? req.query.excludeIds.split(',') : [];
+    
+    const pipeline = [];
+    if (excludeIds.length > 0) {
+      // Filter out invalid IDs to prevent crashes
+      const validIds = excludeIds.filter(id => mongoose.isValidObjectId(id));
+      pipeline.push({ $match: { _id: { $nin: validIds.map(id => new mongoose.Types.ObjectId(id)) } } });
+    }
+    // Randomly sample 10 posts
+    pipeline.push({ $sample: { size: limit } });
+
+    const posts = await Post.aggregate(pipeline);
+    
+    // Populate author manually since aggregate doesn't auto-populate
+    await Post.populate(posts, { path: 'author', select: 'fullName username profilePic' });
+
+    const user = await User.findById(req.user.id).select('savedPosts');
+    const savedIds = user.savedPosts ? user.savedPosts.map(id => id.toString()) : [];
+    
+    const formattedPosts = posts.map(post => ({
+      ...post,
+      likesCount: post.reactions ? post.reactions.length : 0,
+      hasLiked: post.reactions?.some(r => r.user.toString() === req.user.id),
+      isSaved: savedIds.includes(post._id.toString())
+    }));
+
+    // hasMore is true if we got exactly `limit` posts
+    res.status(200).json({ posts: formattedPosts, hasMore: posts.length === limit });
+  } catch (error) {
+    console.error('Feed error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const getTopPosts = async (req, res) => {
   try {
     const { type } = req.params;
     let query = { postType: type };
     const limit = type === 'image' ? 50 : 10;
-    const posts = await Post.find(query).populate('author', 'fullName username profilePic').sort({ createdAt: -1 }).limit(limit).lean();
+    const posts = await Post.find(query).populate('author', 'fullName username profilePic allowAds adImpressions').sort({ createdAt: -1 }).limit(limit).lean();
     const user = await User.findById(req.user.id).select('savedPosts');
     const savedIds = user.savedPosts ? user.savedPosts.map(id => id.toString()) : [];
     res.status(200).json(posts.map(post => ({
@@ -116,7 +155,7 @@ const getUserPosts = async (req, res) => {
 
 const getSinglePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId).populate('author', 'fullName username profilePic').lean();
+    const post = await Post.findById(req.params.postId).populate('author', 'fullName username profilePic allowAds').lean();
     if (!post) return res.status(404).json({ message: 'Post not found' });
     const commentsCount = await Comment.countDocuments({ postId: post._id });
     const user = await User.findById(req.user.id).select('savedPosts');
@@ -233,7 +272,7 @@ const reportPost = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
-// --- NEW ADMIN MODERATION FUNCTIONS ---
+// --- ADMIN MODERATION FUNCTIONS ---
 
 const getReports = async (req, res) => {
   try {
@@ -242,7 +281,6 @@ const getReports = async (req, res) => {
       .populate({ path: 'postId', populate: { path: 'author', select: 'fullName username profilePic' } })
       .sort({ createdAt: -1 })
       .lean();
-    // Filter out reports where the post has already been deleted
     const validReports = reports.filter(r => r.postId !== null);
     res.status(200).json(validReports);
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
@@ -252,14 +290,9 @@ const deleteReportedPost = async (req, res) => {
   try {
     const report = await Report.findById(req.params.reportId);
     if (!report) return res.status(404).json({ message: 'Report not found' });
-    
-    // Delete the post
     await Post.findByIdAndDelete(report.postId);
     await Comment.deleteMany({ postId: report.postId });
-    
-    // Resolve all reports associated with this post
     await Report.updateMany({ postId: report.postId }, { status: 'resolved' });
-    
     res.status(200).json({ message: 'Post deleted and reports resolved.' });
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
@@ -268,7 +301,6 @@ const dismissReport = async (req, res) => {
   try {
     const report = await Report.findById(req.params.reportId);
     if (!report) return res.status(404).json({ message: 'Report not found' });
-    
     report.status = 'resolved';
     await report.save();
     res.status(200).json({ message: 'Report dismissed.' });
@@ -276,7 +308,7 @@ const dismissReport = async (req, res) => {
 };
 
 module.exports = {
-  createPost, getTopPosts, reactToPost, getUserPosts, getSinglePost,
+  createPost, getFeed, getTopPosts, reactToPost, getUserPosts, getSinglePost,
   getComments, addComment, incrementView, incrementRead, deletePost, updatePost,
   toggleSavePost, reportPost, getReports, deleteReportedPost, dismissReport
 };

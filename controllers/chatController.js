@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
+const mongoose = require('mongoose');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
 const { sendPushNotification } = require('./pushController');
@@ -10,6 +11,9 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+// SECURITY: Strict ObjectId validation to prevent NoSQL injection via object payloads
+const isValidObjectId = (id) => typeof id === 'string' && mongoose.Types.ObjectId.isValid(id);
 
 const uploadBufferToImgBB = async (buffer, filename) => {
   const apiKey = process.env.IMGBB_API_KEY;
@@ -35,16 +39,29 @@ const checkBlockStatus = async (userId1, userId2) => {
   const user1 = await User.findById(userId1).select('blockedUsers following');
   const user2 = await User.findById(userId2).select('blockedUsers following');
   if (!user1 || !user2) return { isBlocked: true, isMutual: false };
-  
+
   const isBlocked = user1.blockedUsers.includes(userId2) || user2.blockedUsers.includes(userId1);
   const isMutual = user1.following.includes(userId2) && user2.following.includes(userId1);
-  
+
   return { isBlocked, isMutual };
 };
 
 const sendMessage = async (req, res) => {
   try {
     const { receiverId, text } = req.body;
+
+    // SECURITY: Validate receiverId strictly
+    if (!isValidObjectId(receiverId)) {
+      return res.status(400).json({ message: 'Invalid receiver.' });
+    }
+    if (String(receiverId) === String(req.user.id)) {
+      return res.status(400).json({ message: 'Cannot message yourself.' });
+    }
+    // SECURITY: Validate text type if provided
+    if (text !== undefined && text !== null && typeof text !== 'string') {
+      return res.status(400).json({ message: 'Invalid message text.' });
+    }
+
     const { isBlocked, isMutual } = await checkBlockStatus(req.user.id, receiverId);
 
     if (isBlocked) return res.status(403).json({ message: 'You cannot message this user.' });
@@ -55,7 +72,7 @@ const sendMessage = async (req, res) => {
       if (req.file.mimetype.startsWith('image/')) imageUrl = await uploadBufferToImgBB(req.file.buffer, 'chat-' + req.user.id + '-' + Date.now());
       else audioUrl = await uploadAudioToCloudinary(req.file.buffer);
     }
-    
+
     const message = await Message.create({ sender: req.user.id, receiver: receiverId, text: text ? text.trim() : '', imageUrl, audioUrl });
     const populated = await message.populate([{ path: 'sender', select: 'fullName username profilePic' }, { path: 'receiver', select: 'fullName username profilePic' }]);
     const populatedObj = populated.toObject();
@@ -66,7 +83,7 @@ const sendMessage = async (req, res) => {
     if (previewText.length > 40) previewText = previewText.substring(0, 40) + '...';
 
     await Notification.create({ receiver: receiverId, sender: req.user.id, type: 'message', text: previewText });
-    
+
     sendPushNotification(receiverId, {
       title: `New Message from ${sender.fullName}`,
       body: previewText,
@@ -85,7 +102,7 @@ const getConversations = async (req, res) => {
 
     const messages = await Message.find({ $or: [{ sender: userId }, { receiver: userId }] })
       .sort({ createdAt: -1 }).populate('sender', 'fullName username profilePic').populate('receiver', 'fullName username profilePic').lean();
-      
+
     const conversations = new Map();
     messages.forEach(msg => {
       if (!msg.sender || !msg.receiver) return;
@@ -93,12 +110,12 @@ const getConversations = async (req, res) => {
       const otherUser = isSender ? msg.receiver : msg.sender;
       const otherId = otherUser._id.toString();
 
-      if (blockedIds.includes(otherId)) return; // Skip blocked users
+      if (blockedIds.includes(otherId)) return;
 
       let lastMsgText = msg.text;
       if (msg.imageUrl && !lastMsgText) lastMsgText = '[Image]';
       if (msg.audioUrl && !lastMsgText) lastMsgText = '[Voice Message]';
-      
+
       if (!conversations.has(otherId)) {
         conversations.set(otherId, { user: otherUser, lastMessage: lastMsgText, unreadCount: (!isSender && !msg.isRead) ? 1 : 0, timestamp: msg.createdAt });
       } else if (!isSender && !msg.isRead) conversations.get(otherId).unreadCount++;
@@ -109,7 +126,14 @@ const getConversations = async (req, res) => {
 
 const getMessages = async (req, res) => {
   try {
-    const userId = req.user.id, targetId = req.params.userId;
+    const userId = req.user.id;
+    const targetId = req.params.userId;
+
+    // SECURITY: Validate targetId
+    if (!isValidObjectId(targetId)) {
+      return res.status(400).json({ message: 'Invalid user.' });
+    }
+
     const { isBlocked, isMutual } = await checkBlockStatus(userId, targetId);
 
     if (isBlocked) return res.status(403).json({ message: 'Chat locked due to block.' });
@@ -127,6 +151,11 @@ const getMessages = async (req, res) => {
 
 const getChatImage = async (req, res) => {
   try {
+    // SECURITY: Validate messageId
+    if (!isValidObjectId(req.params.messageId)) {
+      return res.status(400).send('Invalid message id');
+    }
+
     const msg = await Message.findById(req.params.messageId);
     if (!msg || !msg.imageUrl) return res.status(404).send('Image not found');
     if (msg.sender.toString() !== req.user.id && msg.receiver.toString() !== req.user.id) return res.status(403).send('Unauthorized');
@@ -139,6 +168,14 @@ const getChatImage = async (req, res) => {
 
 const editMessage = async (req, res) => {
   try {
+    // SECURITY: Validate messageId and text
+    if (!isValidObjectId(req.params.messageId)) {
+      return res.status(400).json({ message: 'Invalid message id' });
+    }
+    if (typeof req.body.text !== 'string' || !req.body.text.trim()) {
+      return res.status(400).json({ message: 'Invalid text' });
+    }
+
     const msg = await Message.findById(req.params.messageId);
     if (!msg || msg.sender.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
     msg.text = req.body.text.trim(); msg.isEdited = true; await msg.save();
@@ -148,6 +185,11 @@ const editMessage = async (req, res) => {
 
 const deleteMessage = async (req, res) => {
   try {
+    // SECURITY: Validate messageId
+    if (!isValidObjectId(req.params.messageId)) {
+      return res.status(400).json({ message: 'Invalid message id' });
+    }
+
     const msg = await Message.findById(req.params.messageId);
     if (!msg || msg.sender.toString() !== req.user.id) return res.status(403).json({ message: 'Not authorized' });
     await Message.findByIdAndDelete(req.params.messageId);

@@ -17,7 +17,7 @@
     body { background: var(--bg); font-family: 'Inter', sans-serif; padding-bottom: 85px; color: var(--text); -webkit-font-smoothing: antialiased; }
 
     /* Top Navbar */
-    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; }
     .nav-left { display: flex; align-items: center; gap: 15px; }
     .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 6px; border-radius: 50%; transition: 0.2s; }
     .back-btn:hover { background: var(--line); }
@@ -61,7 +61,9 @@
     .options-wrapper { position: relative; }
     .options-btn { background: none; border: 1px solid var(--line); border-radius: 8px; width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; cursor: pointer; color: var(--text); transition: 0.2s; }
     .options-btn:hover { background: var(--bg); }
-    .options-btn svg { width: 20px; height: 20px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .options-btn svg { width: 20px; height: 20px; stroke: none; fill: currentColor; }
+    .options-btn svg circle { fill: currentColor; stroke: none; }
+    
     .dropdown-menu { position: absolute; right: 0; top: 45px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; display: none; flex-direction: column; min-width: 120px; overflow: hidden; }
     .dropdown-menu.show { display: flex; }
     .dropdown-item { background: none; border: none; text-align: left; padding: 10px 14px; font-size: 0.85rem; font-weight: 500; color: var(--text); cursor: pointer; font-family: inherit; transition: 0.2s; }
@@ -122,6 +124,19 @@
     .empty-state svg { width: 48px; height: 48px; stroke: var(--line); margin-bottom: 15px; stroke-width: 1.5; }
     .empty-state p { font-size: 0.95rem; margin-bottom: 15px; }
     .btn-create { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; font-size: 0.9rem; display: inline-block; }
+
+    /* Modals & Toast */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: var(--surface); width: 100%; max-width: 400px; border-radius: 14px; padding: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
+    .modal-box h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+    .modal-box p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-actions .btn { flex: 1; }
+    .modal-actions .btn-danger { background: var(--red); color: white; }
+
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 3000; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
     /* Bottom Nav */
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 68px; z-index: 1000; max-width: 600px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); }
@@ -214,6 +229,20 @@
 
   </div>
 
+  <!-- Custom Modal for Block User -->
+  <div class="modal-overlay" id="blockModal">
+    <div class="modal-box">
+      <h3 style="color: var(--red);">Block User</h3>
+      <p>Are you sure you want to block this user? This will remove any follow connections and chat history.</p>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeBlockModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="executeBlock()">Block</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Action completed</div>
+
   <div class="bottom-nav">
     <a href="/jobs.html" class="nav-item"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>Jobs</a>
     <a href="/pens.html" class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Pens</a>
@@ -264,6 +293,12 @@
         return id && /^[A-Za-z0-9_-]{11}$/.test(id) ? id : null;
       } catch (e) { return null; }
     }
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
 
     async function init() {
       try {
@@ -297,8 +332,8 @@
           loadSavedPosts();
         }
       } catch (err) {
-        alert('Failed to load profile');
-        window.location.href = '/home.html';
+        showToast('Failed to load profile');
+        setTimeout(() => window.location.href = '/home.html', 1500);
       }
     }
 
@@ -330,7 +365,7 @@
       }
 
       const actions = document.getElementById('profileActions');
-      
+
       if (currentUser.id === targetUserId) {
         actions.innerHTML = `<a href="/settings.html" class="btn btn-outline">Edit Profile</a>`;
         document.getElementById('editCoverBtn').style.display = 'flex';
@@ -362,7 +397,7 @@
                  <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                </button>
                <div class="dropdown-menu" id="profileOptions">
-                 <button class="dropdown-item danger" onclick="blockUser()">Block User</button>
+                 <button class="dropdown-item danger" onclick="showBlockModal()">Block User</button>
                </div>
              </div>
            `;
@@ -376,9 +411,9 @@
       const menu = document.getElementById('profileOptions');
       if (menu) menu.classList.toggle('show');
     }
-    document.addEventListener('click', () => { 
+    document.addEventListener('click', () => {
       const menu = document.getElementById('profileOptions');
-      if (menu) menu.classList.remove('show'); 
+      if (menu) menu.classList.remove('show');
     });
 
     async function toggleFollow() {
@@ -392,27 +427,38 @@
       } catch (err) {}
     }
 
-    async function blockUser() {
-      if (!confirm('Are you sure you want to block this user? This will remove any follow connections and chat history.')) return;
+    function showBlockModal() {
+      document.getElementById('profileOptions').classList.remove('show');
+      document.getElementById('blockModal').classList.add('active');
+    }
+
+    function closeBlockModal() {
+      document.getElementById('blockModal').classList.remove('active');
+    }
+
+    async function executeBlock() {
+      closeBlockModal();
       try {
         const res = await fetch(`/api/users/block/${targetUserId}`, { method: 'POST', credentials: 'include' });
         if (res.ok) {
-          window.location.reload();
+          showToast('User blocked');
+          setTimeout(() => window.location.reload(), 1000);
         } else {
-          alert('Failed to block user.');
+          showToast('Failed to block user.');
         }
-      } catch (err) { alert('Server error.'); }
+      } catch (err) { showToast('Server error.'); }
     }
 
     async function unblockUser() {
       try {
         const res = await fetch(`/api/users/unblock/${targetUserId}`, { method: 'POST', credentials: 'include' });
         if (res.ok) {
-          window.location.reload();
+          showToast('User unblocked');
+          setTimeout(() => window.location.reload(), 1000);
         } else {
-          alert('Failed to unblock user.');
+          showToast('Failed to unblock user.');
         }
-      } catch (err) { alert('Server error.'); }
+      } catch (err) { showToast('Server error.'); }
     }
 
     function switchTab(tab) {

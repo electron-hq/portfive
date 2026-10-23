@@ -14,7 +14,7 @@
       --red: #EF4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); padding-bottom: 40px; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); padding-bottom: 100px; }
 
     .top-nav { position: sticky; top: 0; z-index: 100; background: rgba(250, 250, 250, 0.98); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; }
     .back-btn { background: none; border: none; cursor: pointer; color: var(--text); display: flex; align-items: center; padding: 6px; border-radius: 50%; transition: 0.2s; }
@@ -35,12 +35,14 @@
     .form-control { width: 100%; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; font-size: 0.95rem; font-family: inherit; color: var(--text); outline: none; transition: 0.2s; }
     .form-control:focus { border-color: var(--primary); }
     textarea.form-control { resize: vertical; min-height: 120px; }
+    
     select.form-control { appearance: none; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2318181B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px top 50%; background-size: 10px auto; }
 
     .upload-box { border: 2px dashed var(--line); border-radius: 10px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.2s; background: var(--bg); }
     .upload-box:hover { border-color: var(--primary); background: var(--surface); }
-    .upload-box svg { width: 32px; height: 32px; stroke: var(--text-muted); fill: none; stroke-width: 1.5; margin-bottom: 10px; }
+    .upload-box svg { width: 32px; height: 32px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; margin-bottom: 10px; }
     .upload-box p { font-size: 0.9rem; color: var(--text-muted); }
+    
     .preview-wrap { display: none; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
     .preview-wrap img { width: 100%; height: auto; display: block; }
     .remove-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(4px); }
@@ -62,7 +64,23 @@
     input:checked + .slider { background-color: var(--accent); }
     input:checked + .slider:before { transform: translateX(20px); }
 
-    .btn-publish { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 20px; font-family: 'Archivo', sans-serif; }
+    /* Sticky Bottom Bar for Publish Button */
+    .sticky-bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--line);
+      padding: 12px 20px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      z-index: 1000;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+    }
+
+    .btn-publish { width: 100%; background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: 'Archivo', sans-serif; }
     .btn-publish:hover { background: var(--primary-hover); }
     .btn-publish:disabled { opacity: 0.6; cursor: default; }
 
@@ -110,7 +128,6 @@
         <textarea class="form-control" id="imageCaption" placeholder="Write a caption..." rows="3"></textarea>
       </div>
 
-      <!-- Image Ad Toggle -->
       <div class="form-group">
         <div class="switch-row">
           <div class="switch-info">
@@ -118,7 +135,7 @@
             <p>Show ads below your image post.</p>
           </div>
           <label class="switch">
-            <input type="checkbox" id="imageShowAds" checked>
+            <input type="checkbox" id="imageShowAds"> <!-- Removed checked -->
             <span class="slider"></span>
           </label>
         </div>
@@ -153,7 +170,6 @@
         <textarea class="form-control" id="videoCaption" placeholder="Write a caption..." rows="3"></textarea>
       </div>
 
-      <!-- Video Ad Toggle -->
       <div class="form-group">
         <div class="switch-row">
           <div class="switch-info">
@@ -161,7 +177,7 @@
             <p>Show ads below your video post.</p>
           </div>
           <label class="switch">
-            <input type="checkbox" id="videoShowAds" checked>
+            <input type="checkbox" id="videoShowAds"> <!-- Removed checked -->
             <span class="slider"></span>
           </label>
         </div>
@@ -204,7 +220,10 @@
         <input type="file" id="penCoverFile" accept="image/*" style="display:none;" onchange="previewPenCover(this)">
       </div>
     </div>
+  </div>
 
+  <!-- Sticky Bottom Bar for Publish Button -->
+  <div class="sticky-bottom-bar">
     <button class="btn-publish" id="publishBtn" onclick="submitPost()">Publish Post</button>
   </div>
 
@@ -376,7 +395,7 @@
         formData.append('videoUrl', videoUrl);
         formData.append('caption', document.getElementById('videoCaption').value);
         formData.append('showAds', document.getElementById('videoShowAds').checked);
-        
+
         const thumbFile = document.getElementById('videoThumbFile').files[0];
         if (thumbFile) formData.append('media', thumbFile);
       }

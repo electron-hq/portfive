@@ -4,7 +4,7 @@ const multer = require('multer');
 const { protect } = require('../middlewares/authMiddleware');
 const { adminProtect } = require('../middlewares/adminMiddleware');
 const {
-  createPost, getTopPosts, reactToPost, getUserPosts, getSinglePost,
+  createPost, getFeed, getTopPosts, reactToPost, getUserPosts, getSinglePost,
   getComments, addComment, incrementView, incrementRead, deletePost, updatePost,
   toggleSavePost, reportPost, getReports, deleteReportedPost, dismissReport
 } = require('../controllers/postController');
@@ -25,12 +25,14 @@ const handleUpload = (field) => (req, res, next) => {
   });
 };
 
-// Admin Routes (Must be above /:postId to avoid conflicts)
+// Admin Routes
 router.get('/admin/reports', protect, adminProtect, getReports);
 router.delete('/admin/reports/:reportId', protect, adminProtect, deleteReportedPost);
 router.put('/admin/reports/:reportId/dismiss', protect, adminProtect, dismissReport);
 
+// Main Routes
 router.post('/', protect, handleUpload('media'), createPost);
+router.get('/feed', protect, getFeed); // NEW: Paginated Feed
 router.get('/top/:type', protect, getTopPosts);
 router.get('/user/:userId', protect, getUserPosts);
 router.get('/:postId', protect, getSinglePost);

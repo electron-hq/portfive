@@ -14,15 +14,12 @@ const subscribe = async (req, res) => {
       return res.status(400).json({ message: 'Invalid subscription object' });
     }
 
-    const existing = await Subscription.findOne({ 
-      user: req.user.id, 
-      'subscription.endpoint': subscription.endpoint 
-    });
-
-    if (!existing) {
-      await Subscription.create({ user: req.user.id, subscription });
-      console.log(`✅ Push Subscription saved for user: ${req.user.id}`);
-    }
+    // Upsert: Update if exists, insert if not (prevents duplicates but ensures latest keys)
+    await Subscription.findOneAndUpdate(
+      { user: req.user.id, 'subscription.endpoint': subscription.endpoint },
+      { user: req.user.id, subscription },
+      { upsert: true, new: true }
+    );
 
     res.status(201).json({ message: 'Subscribed successfully' });
   } catch (error) {
@@ -31,15 +28,12 @@ const subscribe = async (req, res) => {
   }
 };
 
-// New Unsubscribe Function
 const unsubscribe = async (req, res) => {
   try {
     const { endpoint } = req.body;
     if (!endpoint) return res.status(400).json({ message: 'Endpoint is required' });
 
     await Subscription.findOneAndDelete({ user: req.user.id, 'subscription.endpoint': endpoint });
-    console.log(`🗑️ Push Subscription removed for user: ${req.user.id}`);
-    
     res.status(200).json({ message: 'Unsubscribed successfully' });
   } catch (error) {
     console.error('Unsubscribe error:', error);
@@ -53,11 +47,12 @@ const sendPushNotification = async (userId, payload) => {
     if (!subscriptions || subscriptions.length === 0) return;
 
     const pushPayload = JSON.stringify(payload);
-    
+
     const sendPromises = subscriptions.map(async (sub) => {
       try {
         await webpush.sendNotification(sub.subscription, pushPayload);
       } catch (error) {
+        // If subscription is invalid/expired (410 Gone or 404 Not Found), remove it
         if (error.statusCode === 410 || error.statusCode === 404) {
           await Subscription.findByIdAndDelete(sub._id);
         } else {
