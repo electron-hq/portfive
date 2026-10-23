@@ -69,18 +69,6 @@
     .btn-outline:hover { background: var(--bg); }
     .btn-full { width: 100%; }
 
-    /* Notification Toggle Switch */
-    .toggle-row { display: flex; justify-content: space-between; align-items: center; }
-    .toggle-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
-    .toggle-info p { font-size: 0.8rem; color: var(--text-muted); }
-    
-    .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 34px; }
-    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-    input:checked + .slider { background-color: var(--accent); }
-    input:checked + .slider:before { transform: translateX(20px); }
-
     /* Security Slider */
     .security-track { display: block; }
     .security-slide { display: none; }
@@ -89,15 +77,26 @@
 
     .verify-success { display: flex; align-items: center; gap: 8px; color: var(--accent); font-size: 0.9rem; font-weight: 600; margin-bottom: 15px; padding: 10px; background: var(--accent-light); border-radius: 8px; }
 
-    /* Danger Zone */
-    .danger-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--line); cursor: pointer; }
-    .danger-item:last-child { border-bottom: none; }
-    .danger-item:hover { background: var(--bg); }
-    .danger-item span { font-weight: 600; font-size: 0.95rem; color: var(--text); }
-    .danger-item.logout span { color: var(--text); }
-    .danger-item.delete span { color: var(--red); }
-    .danger-item svg { width: 20px; height: 20px; stroke: var(--text-muted); fill: none; stroke-width: 2; }
-    .danger-item.delete svg { stroke: var(--red); }
+    /* Toggle Switch */
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+    .toggle-info h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 3px; }
+    .toggle-info p { font-size: 0.8rem; color: var(--text-muted); }
+    .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CBD5E1; transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    /* Settings List Item */
+    .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--line); cursor: pointer; transition: background 0.2s; }
+    .settings-item:last-child { border-bottom: none; }
+    .settings-item:hover { background: var(--bg); }
+    .settings-item span { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+    .settings-item svg { width: 20px; height: 20px; stroke: var(--text-muted); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .settings-item.logout span { color: var(--text); }
+    .settings-item.delete span { color: var(--red); }
+    .settings-item.delete svg { stroke: var(--red); }
 
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--primary); color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 500; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s; z-index: 3000; }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
@@ -259,13 +258,34 @@
       </div>
     </div>
 
+    <!-- Help & Legal -->
+    <div class="card">
+      <div class="card-header">Help & Legal</div>
+      <div class="settings-item" onclick="window.location.href='/privacy.html'">
+        <span>Privacy Policy</span>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div class="settings-item" onclick="window.location.href='/terms.html'">
+        <span>Terms of Service</span>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div class="settings-item" onclick="window.location.href='/cookies.html'">
+        <span>Cookie Policy</span>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </div>
+      <div class="settings-item" onclick="window.location.href='mailto:team.electron.innology@gmail.com'">
+        <span>Contact Support</span>
+        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+      </div>
+    </div>
+
     <!-- Account Actions -->
     <div class="card">
-      <div class="danger-item logout" onclick="showModal('logoutModal')">
+      <div class="settings-item logout" onclick="showModal('logoutModal')">
         <span>Logout</span>
         <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
       </div>
-      <div class="danger-item delete" onclick="showDeleteModal()">
+      <div class="settings-item delete" onclick="showDeleteModal()">
         <span>Delete Account Permanently</span>
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
       </div>
@@ -422,11 +442,10 @@
         try {
           const permission = await Notification.requestPermission();
           if (permission !== 'granted') {
-            showToast('Notification permission denied by browser.');
+            showToast('Notification permission denied.');
             toggle.checked = false;
             return;
           }
-
           const registration = await navigator.serviceWorker.ready;
           const res = await fetch('/api/push/vapid-public-key');
           const { key } = await res.json();
@@ -442,10 +461,8 @@
             credentials: 'include',
             body: JSON.stringify(subscription)
           });
-
           showToast('Push notifications enabled!');
         } catch (err) {
-          console.error('Subscription error:', err);
           showToast('Failed to enable notifications.');
           toggle.checked = false;
         }

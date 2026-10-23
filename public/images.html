@@ -22,6 +22,7 @@
 
     .image-slide { height: calc(100dvh - 65px); scroll-snap-align: start; display: flex; flex-direction: column; background: var(--bg); overflow: hidden; }
 
+    /* Fixed Flex Layout for Image and Ad */
     .content-area {
       flex: 1;
       min-height: 0;
@@ -29,17 +30,17 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 16px;
+      padding: 12px 16px;
+      position: relative;
     }
 
     .image-wrapper {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      max-width: 100%;
-      max-height: 100%;
-      gap: 12px;
+      align-items: center;
     }
 
     .post-image {
@@ -58,13 +59,13 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 4px 0;
+      padding: 8px 0 0 0; /* Space between image and ad */
       position: relative;
       flex-shrink: 0;
       background: transparent;
       border-radius: 4px;
     }
-    .ad-label { position: absolute; top: -10px; right: 0; font-size: 0.6rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+    .ad-label { position: absolute; top: -4px; right: 0; font-size: 0.6rem; color: #A1A1AA; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
     .ad-container iframe { width: 320px; height: 50px; border: none; overflow: hidden; display: block; }
 
     .heart-animation { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); color: var(--red); opacity: 0; pointer-events: none; z-index: 30; }
@@ -145,7 +146,6 @@
       }, 1500);
     }
 
-    // Ad Impression Tracker (3 sec)
     const adObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -205,7 +205,6 @@
           const authorName = author.fullName || username;
           const profilePic = author.profilePic || '';
 
-          // FIX: Check post-level showAds instead of user-level allowAds
           const showAd = img.showAds !== false; 
           
           const caption = img.caption || 'No caption';
@@ -219,13 +218,14 @@
             <div class="content-area">
               <div class="image-wrapper">
                 <img src="${esc(img.mediaUrl)}" class="post-image" onerror="this.src='https://via.placeholder.com/600x800/111111/ffffff?text=Image+Not+Found'">
-
-                ${showAd ? `
-                <div class="ad-container" data-author-id="${esc(authorId)}">
-                  <span class="ad-label">Ad</span>
-                  <iframe src="/ad-320x50.html" frameborder="0" scrolling="no" onload="checkAdBlock(this)"></iframe>
-                </div>` : ''}
               </div>
+              
+              ${showAd ? `
+              <div class="ad-container" data-author-id="${esc(authorId)}">
+                <span class="ad-label">Ad</span>
+                <iframe src="/ad-320x50.html" frameborder="0" scrolling="no" onload="checkAdBlock(this)"></iframe>
+              </div>` : ''}
+
               <div class="heart-animation" id="heart-${esc(img._id)}">
                 <svg width="80" height="80" viewBox="0 0 24 24" fill="#EF4444" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
               </div>

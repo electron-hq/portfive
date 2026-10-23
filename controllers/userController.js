@@ -24,7 +24,7 @@ const getSuggestedUsers = async (req, res) => {
   try {
     const currentUser = await User.findById(req.user.id);
     const users = await User.find({
-      _id: { $nin: [...currentUser.following, req.user.id] }
+      _id: { $nin: [...currentUser.following, req.user.id, ...currentUser.blockedUsers] }
     }).select('fullName username profilePic badge').limit(10);
     res.status(200).json(users);
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
@@ -33,13 +33,16 @@ const getSuggestedUsers = async (req, res) => {
 const getUserProfile = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.userId)) return res.status(400).json({ message: 'Invalid User ID' });
-    const targetUser = await User.findById(req.params.userId).select('fullName username profilePic coverPic bio website followers following badge');
+    const targetUser = await User.findById(req.params.userId).select('fullName username profilePic coverPic bio website followers following badge blockedUsers');
     if (!targetUser) return res.status(404).json({ message: 'User not found' });
     
     const currentUser = await User.findById(req.user.id);
     const isFollowing = currentUser.following.includes(targetUser._id);
     const isMutual = targetUser.following.includes(currentUser._id) && isFollowing;
     
+    const isBlocked = currentUser.blockedUsers.includes(targetUser._id);
+    const isBlockedBy = targetUser.blockedUsers.includes(currentUser._id);
+
     res.status(200).json({
       user: {
         _id: targetUser._id, fullName: targetUser.fullName, username: targetUser.username,
@@ -48,7 +51,7 @@ const getUserProfile = async (req, res) => {
       }, 
       followersCount: targetUser.followers.length,
       followingCount: targetUser.following.length, 
-      isFollowing, isMutual
+      isFollowing, isMutual, isBlocked, isBlockedBy
     });
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
@@ -57,9 +60,14 @@ const followUser = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.targetId)) return res.status(400).json({ message: 'Invalid ID' });
     if (req.user.id === req.params.targetId) return res.status(400).json({ message: 'You cannot follow yourself' });
+    
     const targetUser = await User.findById(req.params.targetId);
     const currentUser = await User.findById(req.user.id);
     if (!targetUser || !currentUser) return res.status(404).json({ message: 'User not found' });
+    
+    if (currentUser.blockedUsers.includes(targetUser._id) || targetUser.blockedUsers.includes(currentUser._id)) {
+      return res.status(403).json({ message: 'Cannot follow a blocked user' });
+    }
 
     if (!currentUser.following.includes(req.params.targetId)) {
       await User.findByIdAndUpdate(req.user.id, { $push: { following: req.params.targetId } });
@@ -91,7 +99,6 @@ const unfollowUser = async (req, res) => {
     const targetUser = await User.findById(req.params.targetId);
     if (!currentUser || !targetUser) return res.status(404).json({ message: 'User not found' });
 
-    // Check if they were mutual before unfollowing
     const wasMutual = currentUser.following.includes(req.params.targetId) && targetUser.following.includes(req.user.id);
 
     await User.findByIdAndUpdate(req.user.id, { $pull: { following: req.params.targetId } });
@@ -102,7 +109,6 @@ const unfollowUser = async (req, res) => {
       await updatedTarget.save();
     }
 
-    // If they were mutual, delete all chats between them
     if (wasMutual) {
       await Message.deleteMany({
         $or: [
@@ -116,12 +122,65 @@ const unfollowUser = async (req, res) => {
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
+const blockUser = async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.targetId)) return res.status(400).json({ message: 'Invalid ID' });
+    if (req.user.id === req.params.targetId) return res.status(400).json({ message: 'You cannot block yourself' });
+
+    const user = await User.findById(req.user.id);
+    const target = await User.findById(req.params.targetId);
+    if (!user || !target) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.blockedUsers.includes(req.params.targetId)) {
+      await User.findByIdAndUpdate(req.user.id, { 
+        $push: { blockedUsers: req.params.targetId },
+        $pull: { followers: req.params.targetId, following: req.params.targetId }
+      });
+      await User.findByIdAndUpdate(req.params.targetId, { 
+        $pull: { followers: req.user.id, following: req.user.id }
+      });
+      
+      await Message.deleteMany({
+        $or: [
+          { sender: req.user.id, receiver: req.params.targetId },
+          { sender: req.params.targetId, receiver: req.user.id }
+        ]
+      });
+    }
+    res.status(200).json({ message: 'User blocked' });
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
+const unblockUser = async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.targetId)) return res.status(400).json({ message: 'Invalid ID' });
+    await User.findByIdAndUpdate(req.user.id, { $pull: { blockedUsers: req.params.targetId } });
+    res.status(200).json({ message: 'User unblocked' });
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
+const getBlockedUsers = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('blockedUsers', 'fullName username profilePic');
+    res.status(200).json(user.blockedUsers || []);
+  } catch (error) { res.status(500).json({ message: 'Server error' }); }
+};
+
+// FIXED: getFriends now correctly gets mutual followers
 const getFriends = async (req, res) => {
   try {
     if (!mongoose.isValidObjectId(req.params.userId)) return res.status(400).json({ message: 'Invalid ID' });
-    const user = await User.findById(req.params.userId).populate('followers', 'fullName username profilePic badge');
+    
+    // Find users who are in my following list AND have me in their followers list
+    const user = await User.findById(req.params.userId).select('following');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.status(200).json(user.followers);
+    
+    const mutualFriends = await User.find({
+      _id: { $in: user.following },
+      followers: req.params.userId
+    }).select('fullName username profilePic badge');
+
+    res.status(200).json(mutualFriends);
   } catch (error) { res.status(500).json({ message: 'Server error' }); }
 };
 
@@ -291,6 +350,7 @@ const deleteAccount = async (req, res) => {
 
     await User.updateMany({ followers: userId }, { $pull: { followers: userId } });
     await User.updateMany({ following: userId }, { $pull: { following: userId } });
+    await User.updateMany({ blockedUsers: userId }, { $pull: { blockedUsers: userId } });
 
     await Post.updateMany({ 'reactions.user': userId }, { $pull: { reactions: { user: userId } } });
     await User.updateMany({ savedPosts: { $in: postIds } }, { $pull: { savedPosts: { $in: postIds } } });
@@ -307,6 +367,6 @@ const deleteAccount = async (req, res) => {
 
 module.exports = {
   getSuggestedUsers, getUserProfile, followUser, unfollowUser, getFriends, getSavedPosts,
-  updateProfile, uploadAvatar, uploadCover,
+  updateProfile, uploadAvatar, uploadCover, blockUser, unblockUser, getBlockedUsers,
   verifyIdentity, changePassword, toggleAds, updateAdPreferences, recordAdImpression, deleteAccount
 };

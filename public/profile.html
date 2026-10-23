@@ -49,13 +49,24 @@
     .avatar-inner { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #E4E4E7; }
     .avatar-inner svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
 
-    .profile-actions { display: flex; justify-content: flex-end; padding-top: 15px; margin-bottom: 15px; gap: 10px; }
+    .profile-actions { display: flex; justify-content: flex-end; padding-top: 15px; margin-bottom: 15px; gap: 10px; align-items: center; }
 
     .btn { padding: 9px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; transition: 0.2s; font-family: inherit; }
     .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--line); }
     .btn-outline:hover { background: var(--bg); border-color: #D4D4D8; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-primary:hover { background: var(--primary-hover); }
+
+    /* Options Menu */
+    .options-wrapper { position: relative; }
+    .options-btn { background: none; border: 1px solid var(--line); border-radius: 8px; width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; cursor: pointer; color: var(--text); transition: 0.2s; }
+    .options-btn:hover { background: var(--bg); }
+    .options-btn svg { width: 20px; height: 20px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .dropdown-menu { position: absolute; right: 0; top: 45px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; display: none; flex-direction: column; min-width: 120px; overflow: hidden; }
+    .dropdown-menu.show { display: flex; }
+    .dropdown-item { background: none; border: none; text-align: left; padding: 10px 14px; font-size: 0.85rem; font-weight: 500; color: var(--text); cursor: pointer; font-family: inherit; transition: 0.2s; }
+    .dropdown-item:hover { background: var(--bg); }
+    .dropdown-item.danger { color: var(--red); }
 
     .profile-details h1 { font-family: 'Archivo', sans-serif; font-size: 1.6rem; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; letter-spacing: -0.5px; }
     .profile-username { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 14px; display: block; font-weight: 500; }
@@ -106,15 +117,6 @@
     .pen-card h3 { font-family: 'Archivo', sans-serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
     .pen-card p { font-size: 0.9rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; line-height: 1.6; }
     .pen-card .meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; font-weight: 500; }
-
-    /* Followers List */
-    .friends-list { display: flex; flex-direction: column; gap: 12px; }
-    .friend-card { background: var(--surface); padding: 15px; border-radius: 12px; border: 1px solid var(--line); display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.2s; }
-    .friend-card:hover { border-color: #D4D4D8; }
-    .friend-avatar { width: 50px; height: 50px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: #E4E4E7; }
-    .friend-avatar svg { display: block; width: 100%; height: 100%; border-radius: 50%; }
-    .friend-info h4 { font-size: 1rem; display: flex; align-items: center; gap: 5px; font-weight: 600; }
-    .friend-info p { color: var(--text-muted); font-size: 0.85rem; }
 
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .empty-state svg { width: 48px; height: 48px; stroke: var(--line); margin-bottom: 15px; stroke-width: 1.5; }
@@ -176,7 +178,7 @@
 
         <div class="profile-stats">
           <div onclick="switchTab('posts')"><span class="num" id="statPosts">0</span> <span class="label">Posts</span></div>
-          <div onclick="switchTab('friends')"><span class="num" id="statFriends">0</span> <span class="label">Followers</span></div>
+          <div><span class="num" id="statFriends">0</span> <span class="label">Followers</span></div>
           <div><span class="num" id="statFollowing">0</span> <span class="label">Following</span></div>
         </div>
       </div>
@@ -185,7 +187,6 @@
 
   <div class="tabs">
     <div class="tab active" id="tab-posts" onclick="switchTab('posts')">Posts</div>
-    <div class="tab" id="tab-friends" onclick="switchTab('friends')">Followers</div>
     <div class="tab" id="tab-saved" onclick="switchTab('saved')" style="display:none;">Saved</div>
   </div>
 
@@ -200,9 +201,6 @@
       </div>
       <div id="postsContentArea"></div>
     </div>
-
-    <!-- Followers Tab -->
-    <div class="tab-content" id="content-friends"></div>
 
     <!-- Saved Tab -->
     <div class="tab-content" id="content-saved">
@@ -294,7 +292,6 @@
         profileData = await res.json();
         renderProfile();
         loadPosts();
-        loadFriends();
         if (currentUser.id === targetUserId) {
           document.getElementById('tab-saved').style.display = 'block';
           loadSavedPosts();
@@ -314,7 +311,6 @@
       const webLink = document.getElementById('profileWebsite');
       if (u.website && u.website.url && isSafeHttpUrl(u.website.url)) {
         webLink.href = u.website.url;
-        // Default to domain if title is missing
         let title = u.website.title;
         if (!title) {
            try { title = new URL(u.website.url).hostname; } catch(e) { title = 'Visit Us!'; }
@@ -334,30 +330,56 @@
       }
 
       const actions = document.getElementById('profileActions');
+      
       if (currentUser.id === targetUserId) {
         actions.innerHTML = `<a href="/settings.html" class="btn btn-outline">Edit Profile</a>`;
         document.getElementById('editCoverBtn').style.display = 'flex';
         document.getElementById('editAvatarBtn').style.display = 'flex';
       } else {
-        if (profileData.isMutual) {
-          // MUTUAL FOLLOW: Show Message (Primary) and Unfollow (Outline)
-          actions.innerHTML = `
-            <a href="/chat-room.html?id=${esc(u._id)}" class="btn btn-primary">
-              <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; margin-right:4px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-              Message
-            </a>
-            <button class="btn btn-outline" onclick="toggleFollow()" id="followBtn">Unfollow</button>
-          `;
+        let actionButtons = '';
+        if (profileData.isBlockedBy) {
+           actionButtons += `<div class="btn btn-outline" style="cursor:default; color:var(--text-muted); border-style:dashed;">User has blocked you</div>`;
+        } else if (profileData.isBlocked) {
+           actionButtons += `<button class="btn btn-primary" onclick="unblockUser()">Unblock</button>`;
         } else {
-          // NOT MUTUAL: Show ONLY Follow/Unfollow.
-          const followText = profileData.isFollowing ? 'Unfollow' : 'Follow';
-          const followClass = profileData.isFollowing ? 'btn-outline' : 'btn-primary';
-          actions.innerHTML = `
-            <button class="btn ${followClass}" onclick="toggleFollow()" id="followBtn">${followText}</button>
-          `;
+           if (profileData.isMutual) {
+             actionButtons += `
+               <a href="/chat-room.html?id=${esc(u._id)}" class="btn btn-primary">
+                 <svg viewBox="0 0 24 24" style="width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; margin-right:4px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                 Message
+               </a>
+               <button class="btn btn-outline" onclick="toggleFollow()" id="followBtn">Unfollow</button>
+             `;
+           } else {
+             const followText = profileData.isFollowing ? 'Unfollow' : 'Follow';
+             const followClass = profileData.isFollowing ? 'btn-outline' : 'btn-primary';
+             actionButtons += `<button class="btn ${followClass}" onclick="toggleFollow()" id="followBtn">${followText}</button>`;
+           }
+
+           actionButtons += `
+             <div class="options-wrapper">
+               <button class="options-btn" onclick="toggleOptions(event)">
+                 <svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+               </button>
+               <div class="dropdown-menu" id="profileOptions">
+                 <button class="dropdown-item danger" onclick="blockUser()">Block User</button>
+               </div>
+             </div>
+           `;
         }
+        actions.innerHTML = actionButtons;
       }
     }
+
+    function toggleOptions(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('profileOptions');
+      if (menu) menu.classList.toggle('show');
+    }
+    document.addEventListener('click', () => { 
+      const menu = document.getElementById('profileOptions');
+      if (menu) menu.classList.remove('show'); 
+    });
 
     async function toggleFollow() {
       const isFollowing = profileData.isFollowing;
@@ -365,10 +387,32 @@
       try {
         const res = await fetch(`${endpoint}${targetUserId}`, { method: 'POST', credentials: 'include' });
         if (res.ok) {
-          // Reload profile data to get correct isMutual state
           await loadProfile();
         }
       } catch (err) {}
+    }
+
+    async function blockUser() {
+      if (!confirm('Are you sure you want to block this user? This will remove any follow connections and chat history.')) return;
+      try {
+        const res = await fetch(`/api/users/block/${targetUserId}`, { method: 'POST', credentials: 'include' });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          alert('Failed to block user.');
+        }
+      } catch (err) { alert('Server error.'); }
+    }
+
+    async function unblockUser() {
+      try {
+        const res = await fetch(`/api/users/unblock/${targetUserId}`, { method: 'POST', credentials: 'include' });
+        if (res.ok) {
+          window.location.reload();
+        } else {
+          alert('Failed to unblock user.');
+        }
+      } catch (err) { alert('Server error.'); }
     }
 
     function switchTab(tab) {
@@ -378,7 +422,7 @@
       document.getElementById(`content-${tab}`).classList.add('active');
     }
 
-    // --- Posts Logic with Sub-tabs ---
+    // --- Posts Logic ---
 
     async function loadPosts() {
       const subTabs = document.getElementById('postsSubTabs');
@@ -390,7 +434,6 @@
 
         document.getElementById('statPosts').innerText = allProfilePosts.length || 0;
 
-        // Update Sub-tab counts
         const imgCount = allProfilePosts.filter(p => p.postType === 'image').length;
         const vidCount = allProfilePosts.filter(p => p.postType === 'video').length;
         const penCount = allProfilePosts.filter(p => p.postType === 'pen').length;
@@ -460,32 +503,7 @@
       }
     }
 
-    // --- Followers Logic ---
-
-    async function loadFriends() {
-      const container = document.getElementById('content-friends');
-      try {
-        const res = await fetch(`/api/users/friends/${targetUserId}`, { credentials: 'include' });
-        const friends = await res.json();
-
-        if (friends.length === 0) {
-          container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg><p>No followers yet.</p></div>`;
-          return;
-        }
-
-        container.innerHTML = `<div class="friends-list">` + friends.map(f => `
-          <div class="friend-card" onclick="window.location.href='/profile.html?id=${esc(f._id)}'">
-            <div class="friend-avatar">${getAvatarSVG(f)}</div>
-            <div class="friend-info">
-              <h4>${esc(f.fullName)} ${f.badge ? `<svg class="badge-icon" viewBox="0 0 24 24" style="width:14px; height:14px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>` : ''}</h4>
-              <p>@${esc(f.username)}</p>
-            </div>
-          </div>
-        `).join('') + `</div>`;
-      } catch (err) {}
-    }
-
-    // --- Saved Posts Logic with Sub-tabs ---
+    // --- Saved Posts Logic ---
 
     async function loadSavedPosts() {
       const subTabs = document.getElementById('savedSubTabs');
@@ -495,7 +513,6 @@
         const res = await fetch(`/api/users/saved/${targetUserId}`, { credentials: 'include' });
         allSavedPosts = await res.json();
 
-        // Update Sub-tab counts
         const imgCount = allSavedPosts.filter(p => p.postType === 'image').length;
         const vidCount = allSavedPosts.filter(p => p.postType === 'video').length;
         const penCount = allSavedPosts.filter(p => p.postType === 'pen').length;

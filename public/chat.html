@@ -24,6 +24,11 @@
     .icon-btn:hover { background: var(--line); }
     .icon-btn svg { width: 22px; height: 22px; stroke-width: 2; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
+    /* Tabs */
+    .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: 60px; z-index: 99; }
+    .tab { flex: 1; text-align: center; padding: 14px 10px; font-weight: 600; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
+    .tab.active { color: var(--text); border-bottom-color: var(--primary); }
+
     .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
     /* Search Bar */
@@ -52,7 +57,13 @@
     .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
     .empty-state svg { width: 60px; height: 60px; stroke: var(--line); margin-bottom: 15px; stroke-width: 1.5; }
     .empty-state p { font-size: 1rem; }
-    
+
+    /* Friends/Blocked actions */
+    .action-btn { padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: var(--red); color: white; }
+    .btn-outline { background: transparent; border: 1px solid var(--line); color: var(--text); }
+
     .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(250, 250, 250, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--line); display: flex; justify-content: space-around; align-items: center; height: 68px; z-index: 1000; max-width: 600px; margin: 0 auto; padding-bottom: env(safe-area-inset-bottom); }
     .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text-muted); font-size: 0.6rem; font-weight: 600; gap: 5px; transition: 0.2s; width: 60px; }
     .nav-item svg { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -70,15 +81,20 @@
     </a>
   </div>
 
+  <div class="tabs">
+    <div class="tab active" id="tab-chats" onclick="switchTab('chats')">Chats</div>
+    <div class="tab" id="tab-friends" onclick="switchTab('friends')">Friends</div>
+    <div class="tab" id="tab-blocked" onclick="switchTab('blocked')">Blocked</div>
+  </div>
+
   <div class="container">
-    <!-- Search Bar -->
-    <div class="search-wrap">
+    <div class="search-wrap" id="searchWrap">
       <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input type="text" class="search-input" id="searchInput" placeholder="Search chats by name or username..." autocomplete="off">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search..." autocomplete="off">
     </div>
 
-    <div class="chat-list" id="chatList">
-      <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">Loading chats...</div>
+    <div class="chat-list" id="listContainer">
+      <div style="text-align:center; padding:40px 20px; color:var(--text-muted);">Loading...</div>
     </div>
   </div>
 
@@ -91,14 +107,20 @@
   </div>
 
   <script>
-    let allChats = []; // Store fetched chats for client-side filtering
+    let currentUserId = null;
+    let currentTab = 'chats';
+    let allData = { chats: [], friends: [], blocked: [] };
 
     function esc(value) {
-      return String(value === null || value === undefined ? '' : value)
-        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      return String(value === null || value === undefined ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
     function safeUrl(url) {
-      return String(url || '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\s/g, '%20').replace(/</g, '%3C').replace(/>/g, '%3E');
+      return String(url || '').replace(/'/g, '%27').replace(/"/g, '%22').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\s/g, '%20');
+    }
+    function getAvatarSVG(user) {
+      if (user && user.profilePic) return `<div style="width:100%; height:100%; background-image:url('${safeUrl(user.profilePic)}'); background-size:cover; background-position:center;"></div>`;
+      const first = user && user.fullName ? Array.from(String(user.fullName).trim())[0] : '';
+      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision"><rect width="100" height="100" fill="#E4E4E7"/><text x="50" y="50" font-size="46" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#09090B" text-anchor="middle" dominant-baseline="central">${esc((first || 'U').toUpperCase())}</text></svg>`;
     }
     function timeAgo(dateString) {
       if (!dateString) return '';
@@ -114,20 +136,13 @@
       if (days < 7) return days + 'd';
       return date.toLocaleDateString();
     }
-    function getAvatarSVG(user) {
-      if (user && user.profilePic) {
-        return `<div style="width:100%; height:100%; background-image:url('${safeUrl(user.profilePic)}'); background-size:cover; background-position:center;"></div>`;
-      }
-      const first = user && user.fullName ? Array.from(String(user.fullName).trim())[0] : '';
-      const initial = esc((first || 'U').toUpperCase());
-      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" role="img" aria-label="Avatar"><rect width="100" height="100" fill="#E4E4E7"/><text x="50" y="50" font-size="46" font-family="'Inter', Arial, sans-serif" font-weight="700" fill="#09090B" text-anchor="middle" dominant-baseline="central">${initial}</text></svg>`;
-    }
 
     async function init() {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok) {
           const data = await res.json();
+          currentUserId = data.user.id || data.user._id;
           const navPic = document.getElementById('navProfilePic');
           if (data.user.profilePic) {
             navPic.style.backgroundImage = `url('${safeUrl(data.user.profilePic)}')`;
@@ -136,73 +151,132 @@
           } else {
             navPic.innerHTML = getAvatarSVG(data.user);
           }
-          loadChats();
+          loadTabData('chats');
         } else { window.location.href = '/login.html'; }
       } catch (err) { window.location.href = '/login.html'; }
     }
 
-    async function loadChats() {
-      const container = document.getElementById('chatList');
-      try {
-        const res = await fetch('/api/chat/conversations', { credentials: 'include' });
-        allChats = await res.json();
-        
-        // Render initial chats
-        renderChats(allChats);
+    async function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById('searchInput').value = '';
+      
+      if (tab === 'blocked') {
+        document.getElementById('searchWrap').style.display = 'none'; // No search needed for blocked
+      } else {
+        document.getElementById('searchWrap').style.display = 'block';
+      }
 
-      } catch (err) {
-        console.error(err);
-        container.innerHTML = '<div style="text-align:center; color:var(--red); padding:20px;">Failed to load chats.</div>';
+      if (allData[tab].length === 0) {
+        loadTabData(tab);
+      } else {
+        renderTabData(tab, allData[tab]);
       }
     }
 
-    // Function to render chats based on the array passed (either full list or filtered list)
-    function renderChats(chatsToRender) {
-      const container = document.getElementById('chatList');
+    async function loadTabData(tab) {
+      const container = document.getElementById('listContainer');
+      container.innerHTML = '<div style="text-align:center; padding:40px 20px; color:var(--text-muted);">Loading...</div>';
 
-      if (!chatsToRender || chatsToRender.length === 0) {
+      try {
+        let url = '';
+        if (tab === 'chats') url = '/api/chat/conversations';
+        else if (tab === 'friends') url = `/api/users/friends/${currentUserId}`;
+        else if (tab === 'blocked') url = '/api/users/blocked';
+
+        const res = await fetch(url, { credentials: 'include' });
+        const data = await res.json();
+        allData[tab] = data || [];
+        renderTabData(tab, allData[tab]);
+      } catch (err) {
+        container.innerHTML = '<div style="text-align:center; color:var(--red); padding:20px;">Failed to load.</div>';
+      }
+    }
+
+    function renderTabData(tab, data) {
+      const container = document.getElementById('listContainer');
+
+      if (!data || data.length === 0) {
         container.innerHTML = `<div class="empty-state">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-          <p>No chats found.</p>
-          <p style="font-size:0.85rem; margin-top:8px;">Go to someone's profile to start chatting.</p>
+          <p>No ${tab} found.</p>
         </div>`;
         return;
       }
 
-      container.innerHTML = chatsToRender.map(c => {
-        const u = c.user;
-        const time = timeAgo(c.timestamp);
-        return `
-          <div class="chat-item" onclick="window.location.href='/chat-room.html?id=${esc(u._id)}'">
-            <div class="avatar-container">${getAvatarSVG(u)}</div>
-            <div class="chat-info">
-              <div class="chat-header">
-                <span class="chat-name">${esc(u.fullName)}</span>
-                <span class="chat-time">${esc(time)}</span>
-              </div>
-              <div class="chat-preview">
-                <span class="chat-last-msg">${esc(c.lastMessage)}</span>
-                ${c.unreadCount > 0 ? `<span class="unread-badge">${c.unreadCount}</span>` : ''}
+      let html = '';
+      if (tab === 'chats') {
+        html = data.map(c => {
+          const u = c.user;
+          return `
+            <div class="chat-item" onclick="window.location.href='/chat-room.html?id=${esc(u._id)}'">
+              <div class="avatar-container">${getAvatarSVG(u)}</div>
+              <div class="chat-info">
+                <div class="chat-header">
+                  <span class="chat-name">${esc(u.fullName)}</span>
+                  <span class="chat-time">${timeAgo(c.timestamp)}</span>
+                </div>
+                <div class="chat-preview">
+                  <span class="chat-last-msg">${esc(c.lastMessage)}</span>
+                  ${c.unreadCount > 0 ? `<span class="unread-badge">${c.unreadCount}</span>` : ''}
+                </div>
               </div>
             </div>
+          `;
+        }).join('');
+      } 
+      else if (tab === 'friends') {
+        html = data.map(f => `
+          <div class="chat-item" onclick="window.location.href='/profile.html?id=${esc(f._id)}'">
+            <div class="avatar-container">${getAvatarSVG(f)}</div>
+            <div class="chat-info">
+              <div class="chat-name">${esc(f.fullName)}</div>
+              <div class="chat-last-msg">@${esc(f.username)}</div>
+            </div>
+            <button class="action-btn btn-primary" onclick="event.stopPropagation(); window.location.href='/chat-room.html?id=${esc(f._id)}'">Message</button>
           </div>
-        `;
-      }).join('');
+        `).join('');
+      }
+      else if (tab === 'blocked') {
+        html = data.map(b => `
+          <div class="chat-item">
+            <div class="avatar-container" onclick="window.location.href='/profile.html?id=${esc(b._id)}'">${getAvatarSVG(b)}</div>
+            <div class="chat-info" onclick="window.location.href='/profile.html?id=${esc(b._id)}'">
+              <div class="chat-name">${esc(b.fullName)}</div>
+              <div class="chat-last-msg">@${esc(b.username)}</div>
+            </div>
+            <button class="action-btn btn-danger" onclick="unblockUser('${esc(b._id)}')">Unblock</button>
+          </div>
+        `).join('');
+      }
+
+      container.innerHTML = html;
     }
 
-    // Search functionality
+    async function unblockUser(userId) {
+      if (!confirm('Are you sure you want to unblock this user?')) return;
+      try {
+        const res = await fetch(`/api/users/unblock/${userId}`, { method: 'POST', credentials: 'include' });
+        if (res.ok) {
+          allData.blocked = allData.blocked.filter(u => u._id !== userId);
+          renderTabData('blocked', allData.blocked);
+        }
+      } catch (err) { alert('Failed to unblock'); }
+    }
+
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase().trim();
-      
+      if (currentTab === 'blocked') return;
+
       if (!query) {
-        renderChats(allChats);
+        renderTabData(currentTab, allData[currentTab]);
       } else {
-        const filtered = allChats.filter(c => {
-          const nameMatch = c.user.fullName && c.user.fullName.toLowerCase().includes(query);
-          const usernameMatch = c.user.username && c.user.username.toLowerCase().includes(query);
-          return nameMatch || usernameMatch;
+        const filtered = allData[currentTab].filter(item => {
+          const u = currentTab === 'chats' ? item.user : item;
+          return u.fullName.toLowerCase().includes(query) || u.username.toLowerCase().includes(query);
         });
-        renderChats(filtered);
+        renderTabData(currentTab, filtered);
       }
     });
 

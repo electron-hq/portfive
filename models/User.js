@@ -16,16 +16,17 @@ const UserSchema = new mongoose.Schema({
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   savedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
   badge: { type: Boolean, default: false }, // 100 Followers auto-badge
+  blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // NEW: Blocked Users
 
   // Security & Recovery
   recoveryCodes: [{
     codeHash: { type: String, required: true },
     isUsed: { type: Boolean, default: false }
   }],
-  tokenVersion: { type: Number, default: 0 }, // For session invalidation
+  tokenVersion: { type: Number, default: 0 },
   
   // Admin & Moderation
-  isAdmin: { type: Boolean, default: false }, // NEW: Admin flag
+  isAdmin: { type: Boolean, default: false },
 
   // Creator Monetization
   allowAds: { type: Boolean, default: false },

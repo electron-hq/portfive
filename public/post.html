@@ -155,6 +155,7 @@
     let currentUserId = null;
     let currentPostId = null;
     let postData = null;
+    let viewTimer = null;
 
     function esc(value) {
       return String(value === null || value === undefined ? '' : value)
@@ -258,7 +259,6 @@
           }
           document.getElementById('modalMyAvatar').innerHTML = getAvatarSVG(meData.user);
 
-          fetch(`/api/posts/${currentPostId}/view`, { method: 'POST', credentials: 'include' }).catch(console.error);
           loadPostAndComments(meData.user);
         } else { window.location.href = '/login.html'; }
       } catch (err) {
@@ -296,9 +296,9 @@
       const likesCount = post.likesCount || 0;
       const commentsCount = post.commentsCount || 0;
       const viewsCount = post.views || 0;
+      const readsCount = post.readsCount || 0;
 
       let adHtml = '';
-      // FIX: Check post-level showAds instead of user-level allowAds
       if (post.showAds !== false) {
         adHtml = `
         <div class="ad-container" data-author-id="${esc(authorId)}">
@@ -347,6 +347,24 @@
         <button onclick="window.location.href='/edit-post.html?id=${esc(post._id)}'" style="background:none;border:none;color:var(--accent);cursor:pointer;font-weight:600;font-size:0.85rem;">Edit</button>
       ` : '';
 
+      // Conditional View/Read Counter
+      let viewCounterHtml = '';
+      if (post.postType === 'video') {
+        viewCounterHtml = `
+          <div class="action-btn static" title="Views">
+            <svg viewBox="0 0 24 24"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+            <span class="view-count" data-count="${viewsCount}">${formatCount(viewsCount)}</span>
+          </div>
+        `;
+      } else if (post.postType === 'pen') {
+        viewCounterHtml = `
+          <div class="action-btn static" title="Reads">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+            <span class="read-count" data-count="${readsCount}">${formatCount(readsCount)}</span>
+          </div>
+        `;
+      }
+
       const html = `
         <div class="post-card">
           <div class="post-header">
@@ -374,16 +392,46 @@
               <span id="actionCommentCount">${formatCount(commentsCount)}</span>
             </button>
 
-            <div class="action-btn static">
-              <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              <span>${formatCount(viewsCount)}</span>
-            </div>
+            ${viewCounterHtml}
           </div>
         </div>
       `;
       document.getElementById('mainContainer').innerHTML = html;
 
       document.querySelectorAll('.ad-container').forEach(ad => adObserver.observe(ad));
+
+      // Start tracking
+      if (post.postType === 'video') {
+        startTracking('view', post._id, 10000);
+      } else if (post.postType === 'pen') {
+        startTracking('read', post._id, 5000);
+      }
+    }
+
+    // Tracking logic (10s for video, 5s for pen)
+    function startTracking(type, postId, delay) {
+      const today = new Date().toISOString().split('T')[0];
+      const storageKey = `${type}_${postId}_${today}`;
+      
+      if (!localStorage.getItem(storageKey)) {
+        viewTimer = setTimeout(() => {
+          localStorage.setItem(storageKey, 'true');
+          const endpoint = type === 'view' ? 'view' : 'read';
+          fetch(`/api/posts/${postId}/${endpoint}`, { method: 'POST', credentials: 'include' })
+            .then(res => {
+              if (res.ok) {
+                const selector = type === 'view' ? '.view-count' : '.read-count';
+                const el = document.querySelector(`.action-btn.static[title="${type === 'view' ? 'Views' : 'Reads'}"] ${selector}`);
+                if (el) {
+                  let c = parseInt(el.getAttribute('data-count') || '0');
+                  el.setAttribute('data-count', c + 1);
+                  el.textContent = formatCount(c + 1);
+                }
+              }
+            })
+            .catch(console.error);
+        }, delay);
+      }
     }
 
     function renderComments(comments) {
