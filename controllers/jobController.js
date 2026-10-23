@@ -1,19 +1,25 @@
 const JobPost = require('../models/JobPost');
 const JobApplication = require('../models/JobApplication');
 const Notification = require('../models/Notification');
+const User = require('../models/User');
 const { sendPushNotification } = require('./pushController');
+
+// Escape regex special characters so user input is treated as plain text
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // @desc    Get All Jobs (with optional search)
 const getAllJobs = async (req, res) => {
   try {
-    const { search } = req.query;
+    const rawSearch = req.query.search;
+    const search = typeof rawSearch === 'string' ? rawSearch.trim().slice(0, 100) : '';
     let query = { isActive: true };
 
     if (search) {
+      const safe = escapeRegex(search);
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { companyName: { $regex: search, $options: 'i' } },
-        { location: { $regex: search, $options: 'i' } }
+        { title: { $regex: safe, $options: 'i' } },
+        { companyName: { $regex: safe, $options: 'i' } },
+        { location: { $regex: safe, $options: 'i' } }
       ];
     }
 
@@ -111,7 +117,7 @@ const applyToJob = async (req, res) => {
 
     try {
       await JobApplication.create({ jobId, applicant: req.user.id, message: message.trim() });
-      
+
       // Notify Job Uploader
       const applicant = await User.findById(req.user.id).select('fullName');
       await Notification.create({
@@ -121,7 +127,7 @@ const applyToJob = async (req, res) => {
         jobId: job._id,
         text: job.title
       });
-      
+
       sendPushNotification(job.author, {
         title: 'New Job Application',
         body: `${applicant.fullName} applied for: ${job.title}`,
